@@ -22,7 +22,7 @@ import { showErrorToast } from '@/lib/utils';
 import { useSearch } from '@/hooks/useSearch';
 import { useDropdownAction } from '@/hooks/useDropdownAction';
 import { activateUser, deactivateUser } from '@/lib/features/auth/authThunk';
-import { selectIsOrganizationAdmin, selectOrganizationId } from '@/lib/features/auth/authSelector';
+import { selectIsSuperAdmin, selectOrganizationId } from '@/lib/features/auth/authSelector';
 import InviteUser from '@/app/dashboard/_components/inviteUser';
 import { IAdmin } from '@/types/admin.interface';
 import { getAllAdmins, inviteAdmin } from '@/lib/features/admins/adminsThunk';
@@ -43,7 +43,7 @@ const AdminPanel = (): JSX.Element => {
     open: false,
   });
   const { searchTerm, handleSearch } = useSearch(handleSubmit);
-  const isOrganizationAdmin = useAppSelector(selectIsOrganizationAdmin);
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const orgId = useAppSelector(selectOrganizationId);
   const { isLoading, setQueryParameters, paginationData, queryParameters, tableData, updatePage } =
     useFetchPaginatedData<IAdmin>(getAllAdmins);
@@ -166,8 +166,8 @@ const AdminPanel = (): JSX.Element => {
         open={openInviteModal}
         content={
           <InviteUser
-            title="Admin Invitation"
-            buttonTitle="Invite Admin"
+            title="Hospital Invitation"
+            buttonTitle="Invite Hospital"
             submit={(inviteAdmin) => onSubmit(inviteAdmin)}
             isLoading={isInviting}
           />
@@ -181,7 +181,7 @@ const AdminPanel = (): JSX.Element => {
               <form className="flex" onSubmit={handleSubmit}>
                 <Input
                   error=""
-                  placeholder="Search Admin"
+                  placeholder="Search Hospital"
                   className="max-w-[333px] sm:w-[333px]"
                   type="search"
                   leftIcon={<Search className="text-gray-500" size={20} />}
@@ -204,13 +204,13 @@ const AdminPanel = (): JSX.Element => {
                 className="h-10 cursor-pointer bg-gray-50 sm:flex"
               />
             </div>
-            {isOrganizationAdmin && (
+            {isSuperAdmin && (
               <div className="space-x-4">
                 <Button
                   onClick={() => setOpenInviteModal(true)}
                   child={
                     <>
-                      <UserRoundPlus /> Invite Admin
+                      <UserRoundPlus /> Invite Hospital
                     </>
                   }
                   className="h-10"

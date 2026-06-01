@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useEffect, useState } from 'react';
+import { JSX, useEffect, useMemo, useState } from 'react';
 import { getGreeting } from '@/lib/date';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser, selectExtra } from '@/lib/features/auth/authSelector';
@@ -9,14 +9,19 @@ import {
   getHospitalAppointmentStatsByDateRange,
 } from '@/lib/features/analytics/analyticsThunk';
 import { showErrorToast } from '@/lib/utils';
+import {
+  ANALYTICS_TIME_RANGE_OPTIONS,
+  getDateRangeForTimeRange,
+  toAnalyticsDateRangeParams,
+  toAnalyticsDateRangeParamsRequired,
+} from '@/lib/utils/analyticsUtils';
 import { toast } from '@/hooks/use-toast';
 import { IHospital } from '@/types/hospital.interface';
 import { TimeRange } from '@/types/analytics.interface';
 import AppointmentStatsCards from './appointmentStatsCards';
 import AppointmentTrendsChart from './appointmentTrendsChart';
-import { SelectInput, SelectOption } from '@/components/ui/select';
+import { SelectInput } from '@/components/ui/select';
 import { Control, useForm } from 'react-hook-form';
-import moment from 'moment';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import {
@@ -25,13 +30,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-
-const timeRangeOptions: SelectOption[] = [
-  { value: 'today', label: 'Today' },
-  { value: 'week', label: 'This Week' },
-  { value: 'month', label: 'This Month' },
-  { value: 'year', label: 'This Year' },
-];
 
 const chartConfig = {
   pending: {
@@ -56,52 +54,16 @@ const AnalyticsDashboard = (): JSX.Element => {
     defaultValues: { timeRange: 'month' },
   });
 
-  const [timeRange, setTimeRange] = useState<TimeRange>('month');
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
   const trends = useAppSelector((state) => state.analytics.trends);
   const stats = useAppSelector((state) => state.analytics.stats);
 
-  // Watch time range changes
   const selectedTimeRange = watch('timeRange');
-
-  useEffect(() => {
-    if (selectedTimeRange !== timeRange) {
-      setTimeRange(selectedTimeRange);
-    }
-  }, [selectedTimeRange, timeRange]);
-
-  // Calculate date range based on selected time range
-  useEffect(() => {
-    const now = moment();
-    let start: moment.Moment;
-    let end: moment.Moment;
-
-    switch (timeRange) {
-      case 'today':
-        start = now.clone().startOf('day');
-        end = now.clone().endOf('day');
-        break;
-      case 'week':
-        start = now.clone().startOf('isoWeek');
-        end = now.clone().endOf('isoWeek');
-        break;
-      case 'year':
-        start = now.clone().startOf('year');
-        end = now.clone().endOf('year');
-        break;
-      case 'month':
-      default:
-        start = now.clone().startOf('month');
-        end = now.clone().endOf('month');
-        break;
-    }
-
-    setStartDate(start.toDate());
-    setEndDate(end.toDate());
-  }, [timeRange]);
+  const { startDate, endDate } = useMemo(
+    () => getDateRangeForTimeRange(selectedTimeRange),
+    [selectedTimeRange],
+  );
 
   // Fetch trends data
   useEffect(() => {
@@ -113,15 +75,9 @@ const AnalyticsDashboard = (): JSX.Element => {
 
       setIsLoading(true);
       try {
-        const params: { startDate?: string; endDate?: string } = {};
-        if (startDate) {
-          params.startDate = startDate.toISOString();
-        }
-        if (endDate) {
-          params.endDate = endDate.toISOString();
-        }
-
-        const { payload } = await dispatch(getHospitalAppointmentTrends(params));
+        const { payload } = await dispatch(
+          getHospitalAppointmentTrends(toAnalyticsDateRangeParams(startDate, endDate)),
+        );
 
         if (payload && showErrorToast(payload)) {
           toast(payload);
@@ -145,10 +101,9 @@ const AnalyticsDashboard = (): JSX.Element => {
 
       try {
         const { payload } = await dispatch(
-          getHospitalAppointmentStatsByDateRange({
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-          }),
+          getHospitalAppointmentStatsByDateRange(
+            toAnalyticsDateRangeParamsRequired(startDate, endDate),
+          ),
         );
 
         if (payload && showErrorToast(payload)) {
@@ -185,7 +140,7 @@ const AnalyticsDashboard = (): JSX.Element => {
         <div className="w-[200px]">
           <SelectInput
             name="timeRange"
-            options={timeRangeOptions}
+            options={ANALYTICS_TIME_RANGE_OPTIONS}
             ref={null}
             control={control as unknown as Control}
             className="bg-grayscale-300 rounded-3xl text-sm font-medium text-black outline-hidden focus:border-none focus:shadow-none"

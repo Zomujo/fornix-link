@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { AvailabilityProps } from '@/types/booking.interface';
 import { extractGMTTime } from '@/lib/date';
+import { getHospitalAppointmentSelectableDates } from '@/lib/utils/bookingUtils';
 import {
   getAppointmentSlotsByDate,
   getAppointmentSlotsDates,
@@ -40,21 +41,12 @@ const AvailableDates = ({
   const timeSlotsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // For hospital appointments, allow any future date (no slot restrictions)
     if (isHospitalAppointment) {
-      // Generate available dates for the next 3 months
-      const dates: Date[] = [];
-      const today = new Date();
-      for (let i = 0; i < 90; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        dates.push(date);
-      }
-      setCanBookDates(dates);
+      setCanBookDates(getHospitalAppointmentSelectableDates());
       return;
     }
 
-    async function slotsAvailable(): Promise<void> {
+    async function loadDoctorBookableDates(): Promise<void> {
       setIsLoadingAppointmentDates(true);
       const lastDateOfTheMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
       const { payload } = await dispatch(
@@ -84,16 +76,15 @@ const AvailableDates = ({
       setIsLoadingAppointmentDates(false);
     }
 
-    void slotsAvailable();
+    void loadDoctorBookableDates();
   }, [currentDate, isHospitalAppointment]);
 
   useEffect(() => {
-    // Skip slot fetching for hospital appointments (they don't use slots)
     if (isHospitalAppointment) {
       return;
     }
 
-    async function slotsAvailable(): Promise<void> {
+    async function loadDoctorTimeSlotsForSelectedDate(): Promise<void> {
       setAvailableTimeSlots([]);
       setIsAvailableSlotLoading(true);
       const { payload } = await dispatch(
@@ -122,7 +113,7 @@ const AvailableDates = ({
       setIsAvailableSlotLoading(false);
     }
 
-    void slotsAvailable();
+    void loadDoctorTimeSlotsForSelectedDate();
   }, [date, isHospitalAppointment]);
 
   // Scroll to time slots when they're loaded after date selection

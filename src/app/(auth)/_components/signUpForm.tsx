@@ -8,15 +8,9 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { AlertMessage } from '@/components/ui/alert';
-import { IOrganizationRequest, IUserSignUp, IHospitalSignUp } from '@/types/auth.interface';
+import { IUserSignUp, IHospitalSignUp } from '@/types/auth.interface';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import {
-  requestOrganization,
-  signUp,
-  initiateGoogleOAuth,
-  hospitalSignUp,
-} from '@/lib/features/auth/authThunk';
+import { signUp, initiateGoogleOAuth, hospitalSignUp } from '@/lib/features/auth/authThunk';
 import { selectThunkState } from '@/lib/features/auth/authSelector';
 import { Role } from '@/types/shared.enum';
 import { ImageVariant, Modal } from '@/components/ui/dialog';
@@ -24,9 +18,12 @@ import Location, { Option } from '@/components/location/location';
 import { ISelected } from '@/components/ui/dropdown-menu';
 import UserSignUp, { UserSignUpMethods } from '@/app/(auth)/_components/userSignUp';
 import GoogleOAuthButton from '@/components/ui/googleOAuthButton';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { capitalize } from '@/lib/utils';
+import { LocalStorageManager } from '@/lib/localStorage';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
+
+const SIGN_UP_ROLES = [Role.Patient, Role.Doctor, Role.Hospital] as const;
 
 const roleOptions: ISelected[] = [
   {
@@ -43,48 +40,77 @@ export type SignUpFormProps = {
   slotId?: string;
 };
 
+const parseOptionalCoordinate = (
+  value: string | undefined,
+  min: number,
+  max: number,
+  label: string,
+): number | undefined => {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  const num = Number(trimmed);
+  if (Number.isNaN(num)) {
+    throw new Error(`${label} must be a number`);
+  }
+  if (num < min || num > max) {
+    throw new Error(`${label} must be between ${min} and ${max}`);
+  }
+  return num;
+};
+
+const hospitalSignUpSchema = z
+  .object({
+    email: emailSchema,
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+    hospitalName: nameSchema,
+    location: requiredStringSchema(),
+    lat: z.string().optional(),
+    long: z.string().optional(),
+    gpsLink: requiredStringSchema(),
+    phone: z.string().optional(),
+  })
+  .refine(({ password, confirmPassword }) => password === confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
+  .superRefine(({ lat, long }, ctx) => {
+    const latProvided = Boolean(lat?.trim());
+    const longProvided = Boolean(long?.trim());
+
+    if (latProvided !== longProvided) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Provide both latitude and longitude, or leave both empty',
+        path: ['lat'],
+      });
+      return;
+    }
+
+    if (!latProvided) {
+      return;
+    }
+
+    try {
+      parseOptionalCoordinate(lat, -90, 90, 'Latitude');
+      parseOptionalCoordinate(long, -180, 180, 'Longitude');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid coordinate';
+      const path = message.startsWith('Latitude') ? 'lat' : 'long';
+      ctx.addIssue({ code: 'custom', message, path: [path] });
+    }
+  });
+
+type HospitalSignUpFormValues = z.infer<typeof hospitalSignUpSchema>;
+
 const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.Element => {
   const userSignUpRef = useRef<UserSignUpMethods>(null);
-  const organizationsSchema = z.object({
-    name: nameSchema,
-    email: emailSchema,
-    location: requiredStringSchema(),
-    long: z.number().default(0),
-    lat: z.number().default(0),
-    gpsLink: requiredStringSchema(),
-  });
 
-  const hospitalSignUpSchema = z
-    .object({
-      email: emailSchema,
-      password: z.string().min(8, 'Password must be at least 8 characters'),
-      confirmPassword: z.string(),
-      hospitalName: nameSchema,
-      location: requiredStringSchema(),
-      long: z.number().default(0),
-      lat: z.number().default(0),
-      gpsLink: requiredStringSchema(),
-      phone: z.string().optional(),
-    })
-    .refine(({ password, confirmPassword }) => password === confirmPassword, {
-      message: 'Passwords do not match',
-      path: ['confirmPassword'],
-    });
-
+  const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm<IOrganizationRequest>({
-    resolver: zodResolver(organizationsSchema),
-    mode: MODE.ON_TOUCH,
-  });
 
   const {
     register: registerHospital,
@@ -92,12 +118,12 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
     watch: watchHospital,
     setValue: setValueHospital,
     formState: { errors: errorsHospital, isValid: isValidHospital },
-  } = useForm<IHospitalSignUp>({
+  } = useForm<HospitalSignUpFormValues>({
     resolver: zodResolver(hospitalSignUpSchema),
     mode: MODE.ON_TOUCH,
+    defaultValues: { lat: '', long: '' },
   });
 
-  const location = watch('location');
   const hospitalLocation = watchHospital('location');
 
   const dispatch = useAppDispatch();
@@ -105,58 +131,41 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
   const [successMessage, setSuccessMessage] = useState('');
   const { isLoading, isOAuthLoading, errorMessage } = useAppSelector(selectThunkState);
 
-  const onSubmit = async (userCredentials: IOrganizationRequest | IUserSignUp): Promise<void> => {
-    let payload: unknown;
+  const onSubmit = async (userCredentials: IUserSignUp): Promise<void> => {
     setSuccessMessage('');
-    if (role === Role.Admin && 'name' in userCredentials) {
-      const formattedCredentials = {
-        ...userCredentials,
-        name: capitalize(userCredentials.name.trim()),
-      };
-      payload = await dispatch(requestOrganization(formattedCredentials)).unwrap();
-    } else if (role !== Role.Admin && role !== Role.Hospital && 'firstName' in userCredentials) {
-      payload = await dispatch(signUp({ ...userCredentials, role, doctorId, slotId })).unwrap();
-    } else {
-      return;
-    }
+    const payload = await dispatch(signUp({ ...userCredentials, role, doctorId, slotId })).unwrap();
     if (payload) {
       setSuccessMessage(payload as string);
-      reset();
       userSignUpRef.current?.resetUserSignUp();
     }
 
     setOpenModal(true);
   };
 
-  const onHospitalSubmit = async (hospitalCredentials: IHospitalSignUp): Promise<void> => {
+  const onHospitalSubmit = async (hospitalCredentials: HospitalSignUpFormValues): Promise<void> => {
     setSuccessMessage('');
-    const formattedCredentials = {
-      ...hospitalCredentials,
+    const { lat, long, ...rest } = hospitalCredentials;
+    const parsedLat = parseOptionalCoordinate(lat, -90, 90, 'Latitude');
+    const parsedLong = parseOptionalCoordinate(long, -180, 180, 'Longitude');
+    const formattedCredentials: IHospitalSignUp = {
+      ...rest,
       hospitalName: capitalize(hospitalCredentials.hospitalName.trim()),
+      ...(parsedLat != null && parsedLong != null ? { lat: parsedLat, long: parsedLong } : {}),
     };
-    const { payload } = await dispatch(hospitalSignUp(formattedCredentials));
-    if (payload) {
-      // Hospital sign-up logs in automatically, redirect to dashboard
-      globalThis.location.href = '/dashboard';
-      return;
+    try {
+      await dispatch(hospitalSignUp(formattedCredentials)).unwrap();
+      LocalStorageManager.clearSessionExpiredFlag();
+      const redirectUrl = LocalStorageManager.getAndClearRedirectUrl();
+      router.replace(redirectUrl ?? '/dashboard');
+    } catch {
+      setOpenModal(true);
     }
-    setOpenModal(true);
   };
 
   const [openModal, setOpenModal] = useState(false);
 
-  const handleLocationValue = ({ value }: Option): void => {
-    const gpsLink = `https://maps.google.com/?q=${encodeURIComponent(value.description)}`;
-    setValue('lat', 0);
-    setValue('long', 0);
-    setValue('gpsLink', gpsLink, { shouldValidate: true });
-    setValue('location', value.description, { shouldValidate: true });
-  };
-
   const handleHospitalLocationValue = ({ value }: Option): void => {
     const gpsLink = `https://maps.google.com/?q=${encodeURIComponent(value.description)}`;
-    setValueHospital('lat', 0);
-    setValueHospital('long', 0);
     setValueHospital('gpsLink', gpsLink, { shouldValidate: true });
     setValueHospital('location', value.description, { shouldValidate: true });
   };
@@ -174,8 +183,6 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
         return 'Book appointments and manage your health';
       case Role.Doctor:
         return 'Provide healthcare services and manage patients';
-      case Role.Admin:
-        return 'Manage your healthcare organization';
       case Role.Hospital:
         return 'Manage hospital operations and view appointments';
       default:
@@ -197,7 +204,7 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
             open={openModal}
             content={successMessage}
             showImage={true}
-            imageVariant={role === Role.Admin ? ImageVariant.Success : ImageVariant.Email}
+            imageVariant={role === Role.Hospital ? ImageVariant.Success : ImageVariant.Email}
             showClose={true}
             setState={setOpenModal}
           />
@@ -254,7 +261,7 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
           </div>
         </div>
       )}
-      {role !== Role.Admin && role !== Role.Hospital && (
+      {role !== Role.Hospital && (
         <>
           <GoogleOAuthButton
             onClick={handleGoogleSignUp}
@@ -281,7 +288,7 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
             <Input
               labelName="Email"
               error={errorsHospital.email?.message}
-              placeholder="admin@hospital.com"
+              placeholder="contact@yourhospital.com"
               {...registerHospital('email')}
             />
             <Input
@@ -318,6 +325,24 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
                 }
               }}
             />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                labelName="Latitude (Optional)"
+                error={errorsHospital.lat?.message}
+                placeholder="5.6037"
+                type="number"
+                step="any"
+                {...registerHospital('lat')}
+              />
+              <Input
+                labelName="Longitude (Optional)"
+                error={errorsHospital.long?.message}
+                placeholder="-0.1870"
+                type="number"
+                step="any"
+                {...registerHospital('long')}
+              />
+            </div>
             <Input
               labelName="Phone (Optional)"
               error={errorsHospital.phone?.message}
@@ -333,54 +358,6 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
             isLoading={isLoading}
           />
         </form>
-      )}
-      {role === Role.Admin && (
-        <>
-          <AlertMessage
-            message="This selection doesn&rsquo;t create an account automatically. We&rsquo;ll contact you
-            after processing your request."
-            title="Importance Notice"
-            className="border-primary"
-            titleClassName="font-semibold text-primary"
-          />
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-8">
-            <Input
-              labelName="Hospital's Name"
-              error={'name' in errors ? errors.name?.message : ''}
-              placeholder={PLACEHOLDER_HOSPITAL_NAME}
-              {...register('name')}
-            />
-
-            <Location
-              placeHolder="Liberation Road, Accra"
-              error={errors.location?.message || ''}
-              value={location || ''}
-              onChange={(value) => {
-                setValue('location', value, { shouldValidate: true });
-              }}
-              handleLocationValue={handleLocationValue}
-              onBlur={() => {
-                if (!location) {
-                  setValue('location', '', { shouldTouch: true, shouldValidate: true });
-                }
-              }}
-            />
-            <Input
-              labelName="Email"
-              error={errors.email?.message}
-              placeholder="johndoe@gmail.com"
-              {...register('email')}
-            />
-
-            <Button
-              type="submit"
-              className="mt-4 w-full"
-              child="Request Organization Access"
-              disabled={!isValid || isLoading}
-              isLoading={isLoading}
-            />
-          </form>
-        </>
       )}
       <div className="mt-4 text-center">
         <span>Already have an account?</span>

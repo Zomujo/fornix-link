@@ -18,21 +18,21 @@ import { MODE } from '@/constants/constants';
 import { phoneNumberSchema, requiredStringSchema } from '@/schemas/zod.schemas';
 import { cn } from '@/lib/utils';
 
-interface HospitalAppointmentModalProps {
-  open: boolean;
-  setOpen: React.Dispatch<SetStateAction<boolean>>;
-  hospitalName?: string;
-  onSubmit: (data: HospitalAppointmentFormData) => Promise<void>;
-  isLoading?: boolean;
-}
-
-export interface HospitalAppointmentFormData {
+export type HospitalAppointmentFormData = {
   name: string;
   telephone: string;
   serviceType?: string;
   additionalInfo?: string;
   date: string;
-}
+};
+
+type HospitalAppointmentModalProps = {
+  open: boolean;
+  setOpen: React.Dispatch<SetStateAction<boolean>>;
+  hospitalName?: string;
+  onSubmit: (data: HospitalAppointmentFormData) => Promise<void>;
+  isLoading?: boolean;
+};
 
 const hospitalAppointmentSchema = z.object({
   name: requiredStringSchema().min(2, 'Name must be at least 2 characters'),

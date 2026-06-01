@@ -5,7 +5,7 @@ import { StatsCards } from '@/app/dashboard/_components/statsCards';
 import { IStatsCard } from '@/types/stats.interface';
 import { IAppointmentStats } from '@/types/analytics.interface';
 
-interface AppointmentStatsCardsProps {
+type AppointmentStatsCardsProps = {
   stats: IAppointmentStats | null;
   trends?: {
     thisMonth: number;
@@ -13,7 +13,7 @@ interface AppointmentStatsCardsProps {
     percentage: number;
   };
   isLoading?: boolean;
-}
+};
 
 const AppointmentStatsCards = ({
   stats,

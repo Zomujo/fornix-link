@@ -22,12 +22,12 @@ import {
   declineHospitalAppointment,
   getHospitalAppointments,
 } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
-import { selectUser, selectOrganizationId } from '@/lib/features/auth/authSelector';
+import { selectUser } from '@/lib/features/auth/authSelector';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
 import { IPagination, IQueryParams } from '@/types/shared.interface';
 import { IAppointment } from '@/types/appointment.interface';
-import { IHospitalAppointment } from '@/types/hospital-appointment.interface';
+import type { IHospitalAppointment } from '@/types/hospital-appointment.interface';
 import { AcceptDeclineStatus, OrderDirection, Role } from '@/types/shared.enum';
 import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 import { AsyncThunk } from '@reduxjs/toolkit';
@@ -96,7 +96,6 @@ function getAppointmentType(
 const AppointmentRequests = (): JSX.Element => {
   const { on } = useWebSocket();
   const user = useAppSelector(selectUser);
-  const orgId = useAppSelector(selectOrganizationId);
   const [confirmation, setConfirmation] = useState<ConfirmationProps>({
     acceptCommand: () => {},
     rejectCommand: () => {},
@@ -138,7 +137,6 @@ const AppointmentRequests = (): JSX.Element => {
       orderDirection: OrderDirection.Descending,
       doctorId: user?.role === Role.Doctor ? user?.id : undefined,
       patientId: user?.role === Role.Patient ? user?.id : undefined,
-      orgId: user?.role === Role.Admin ? orgId : undefined,
       page: 1,
       search: '',
       status: '',
@@ -186,6 +184,8 @@ const AppointmentRequests = (): JSX.Element => {
       additionalInfo: '',
       isFollowUp: false,
       date: '',
+      time: '',
+      slotId: '',
     },
   });
 
@@ -255,7 +255,7 @@ const AppointmentRequests = (): JSX.Element => {
         const { doctor, patient } = original;
         const isDoctor = user?.role === Role.Doctor;
         const isHospital = user?.role === Role.Hospital;
-        const isAdmin = user?.role === Role.Admin || user?.role === Role.SuperAdmin || isSuperAdmin;
+        const isAdmin = isSuperAdmin;
         // Determine which entity to show as "person"
         const person =
           isDoctor || isAdmin || isHospital
@@ -493,7 +493,7 @@ const AppointmentRequests = (): JSX.Element => {
                     appointmentId: id,
                   });
                 },
-                visible: user?.role === Role.Admin || user?.role === Role.SuperAdmin || user?.role === Role.Hospital,
+                visible: user?.role === Role.SuperAdmin || user?.role === Role.Hospital,
               },
             ]}
           />

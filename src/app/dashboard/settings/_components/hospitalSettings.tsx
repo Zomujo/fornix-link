@@ -185,9 +185,6 @@ function getOrgFromExtra(extra: unknown, role: Role | undefined): OrgSource {
   if (!extra || !role) {
     return undefined;
   }
-  if (role === Role.Admin && extra && typeof extra === 'object' && 'org' in extra) {
-    return (extra as { org: IHospital }).org as OrgSource;
-  }
   if (role === Role.Hospital && extra && typeof extra === 'object' && 'id' in extra) {
     return extra as OrgSource;
   }
@@ -256,7 +253,7 @@ function getInitialFormValues(org: OrgSource): HospitalFormValues {
 const dummyOrg: OrgSource = {
   id: 'demo-hospital-id',
   name: PLACEHOLDER_HOSPITAL_NAME,
-  email: 'admin@hospital.com',
+  email: 'contact@yourhospital.com',
   location: 'Liberation Road, Accra',
   status: ApproveDeclineStatus.Approved,
   distance: 0,
@@ -491,10 +488,7 @@ const HospitalSettings = (): JSX.Element => {
   const hospitalImages = watch('images') ?? [];
 
   useEffect(() => {
-    const slug =
-      role === Role.Hospital
-        ? (extra as { slug?: string } | undefined)?.slug
-        : (extra as { org?: { slug?: string } } | undefined)?.org?.slug;
+    const slug = (extra as { slug?: string } | undefined)?.slug;
     if (!slug) {
       setIsFetchingHospital(false);
       return;

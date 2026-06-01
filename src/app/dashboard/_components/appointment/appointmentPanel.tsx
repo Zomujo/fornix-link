@@ -9,7 +9,7 @@ import { OrderDirection, Role } from '@/types/shared.enum';
 import { capitalize, cn, showErrorToast } from '@/lib/utils';
 import { IPagination, IQueryParams } from '@/types/shared.interface';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { selectOrganizationId, selectUser } from '@/lib/features/auth/authSelector';
+import { selectUser } from '@/lib/features/auth/authSelector';
 import { IAppointment } from '@/types/appointment.interface';
 import { toast } from '@/hooks/use-toast';
 import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
@@ -31,7 +31,6 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
   const { on } = useWebSocket();
   const [loading, setLoading] = useState(false);
   const user = useAppSelector(selectUser);
-  const organizationId = useAppSelector(selectOrganizationId);
   const dispatch = useAppDispatch();
   const { getQueryParam } = useQueryParam();
   const selectedDateParam = getQueryParam(AppointmentDate.selectedDate);
@@ -49,7 +48,6 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     orderDirection: OrderDirection.Ascending,
     doctorId: user?.role === Role.Doctor ? user?.id : undefined,
     patientId: user?.role === Role.Patient ? user?.id : undefined,
-    orgId: user?.role === Role.Admin ? organizationId : undefined,
     startDate: startOfWeek.toDate(),
     endDate: endOfWeek.toDate(),
     pageSize: 100,
@@ -61,9 +59,8 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
       ...prev,
       doctorId: user?.role === Role.Doctor ? user?.id : undefined,
       patientId: user?.role === Role.Patient ? user?.id : undefined,
-      orgId: user?.role === Role.Admin ? organizationId : undefined,
     }));
-  }, [user?.role, user?.id, organizationId]);
+  }, [user?.role, user?.id]);
 
   on(NotificationEvent.NewRequest, (data: unknown) => {
     const notification = data as INotification;

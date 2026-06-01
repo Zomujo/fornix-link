@@ -38,7 +38,6 @@ export enum AcceptDeclineStatus {
 }
 
 export enum Role {
-  Admin = 'admin',
   SuperAdmin = 'superadmin',
   Doctor = 'doctor',
   Patient = 'patient',

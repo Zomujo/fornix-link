@@ -2,17 +2,26 @@ import { Dispatch, SetStateAction } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 
 export interface IInitializeAppointment {
-  slotId?: string;
+  slotId: string;
   reason: string;
   additionalInfo: string;
   isFollowUp: boolean;
 }
 
-export interface IBookingForm extends IInitializeAppointment {
+export interface IBookingFormBase {
   date: string;
-  time?: string;
+  reason: string;
   appointmentType: string;
+  additionalInfo: string;
+  isFollowUp: boolean;
 }
+
+export interface IBookingForm extends IBookingFormBase {
+  time: string;
+  slotId: string;
+}
+
+export interface IHospitalBookingForm extends IBookingFormBase {}
 
 export type IBookingSlotId = Pick<IBookingForm, 'slotId'>;
 

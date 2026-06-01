@@ -4,15 +4,22 @@ import { Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
+/** Set to false when hospital review API and persistence are integrated. */
+const REVIEWS_FEATURE_DISABLED = true;
+
 interface ReviewSectionProps {
   hospitalName: string;
 }
 
-const ReviewSection = ({ hospitalName }: ReviewSectionProps): JSX.Element => {
+const ReviewSection = ({ hospitalName }: ReviewSectionProps): JSX.Element | null => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (REVIEWS_FEATURE_DISABLED) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();

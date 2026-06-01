@@ -119,8 +119,6 @@ export const SidebarLayout = ({
     switch (role) {
       case Role.SuperAdmin:
         return 'Super Admin';
-      case Role.Admin:
-        return 'Admin';
       case Role.Doctor:
         return 'Doctor';
       case Role.Patient:
@@ -306,7 +304,6 @@ const ProfileDropdownMenu = (): JSX.Element => {
 export const getSidebarByRole = (role?: Role, type?: SidebarType): ISidebar => {
   if (type === SidebarType.Settings) {
     switch (role) {
-      case Role.Admin:
       case Role.SuperAdmin:
         return ADMIN_SETTINGS_SIDEBAR;
       case Role.Doctor:
@@ -320,7 +317,6 @@ export const getSidebarByRole = (role?: Role, type?: SidebarType): ISidebar => {
     return PATIENT_RECORD_SIDEBAR;
   } else {
     switch (role) {
-      case Role.Admin:
       case Role.SuperAdmin:
         return ADMIN_SIDE_BAR;
       case Role.Doctor:

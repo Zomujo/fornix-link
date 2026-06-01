@@ -14,7 +14,6 @@ const SettingsHome = (): JSX.Element => {
   const home: Partial<Record<Role, JSX.Element>> = {
     [Role.Doctor]: <PersonalInfo />,
     [Role.Patient]: <PatientInfo />,
-    [Role.Admin]: <HospitalSettings />,
     [Role.Hospital]: <HospitalSettings />,
     [Role.SuperAdmin]: <>Yet to be implemented</>,
   };

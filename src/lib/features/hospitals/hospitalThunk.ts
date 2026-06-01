@@ -12,6 +12,7 @@ import {
 import { AcceptDeclineStatus } from '@/types/shared.enum';
 import { Toast } from '@/hooks/use-toast';
 import { generateSuccessToast, getValidQueryString } from '@/lib/utils';
+import { buildHospitalOrgFormData } from '@/lib/utils/formDataUtils';
 
 export const getHospitals = createAsyncThunk(
   'hospitals/getHospitals',
@@ -55,56 +56,6 @@ export const getNearByHospitals = createAsyncThunk(
   },
 );
 
-function appendFormDataEntry(formData: FormData, key: string, value: unknown): void {
-  if (key === 'images' && Array.isArray(value)) {
-    const files = value.filter((v): v is File => v instanceof File);
-    for (const file of files) {
-      formData.append('images', file, file.name);
-    }
-    return;
-  }
-  if (key === 'imageOrder' && Array.isArray(value)) {
-    formData.append('imageOrder', JSON.stringify(value));
-    return;
-  }
-  if (key === 'image') {
-    if (value instanceof File) {
-      formData.append('image', value, value.name);
-    } else if (value === null) {
-      formData.append('clearLogo', 'true');
-    }
-    return;
-  }
-  if (value === null) {
-    formData.append(key, '');
-    return;
-  }
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      formData.append(key, String(item));
-    }
-    return;
-  }
-  if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
-    formData.append(key, String(value));
-  }
-}
-
-/**
- * Build FormData for PATCH: only include keys present in payload.
- * null values are sent as empty string so backend can set fields to null (e.g. clear logo).
- */
-function buildFormData(payload: Record<string, unknown>): FormData {
-  const formData = new FormData();
-  for (const [key, value] of Object.entries(payload)) {
-    if (value === undefined) {
-      continue;
-    }
-    appendFormDataEntry(formData, key, value);
-  }
-  return formData;
-}
-
 export const updateHospitalDetails = createAsyncThunk(
   'hospitals/updateHospitalDetails',
   async (hospitalProfile: Partial<IHospitalProfile>): Promise<Toast> => {
@@ -116,7 +67,7 @@ export const updateHospitalDetails = createAsyncThunk(
 
       // Always use FormData if we have files OR imageOrder (since imageOrder needs special handling in multipart)
       if (hasFiles || hospitalProfile.imageOrder) {
-        const formData = buildFormData(hospitalProfile as Record<string, unknown>);
+        const formData = buildHospitalOrgFormData(hospitalProfile as Record<string, unknown>);
         const { data } = await axios.patchForm<IResponse<IHospitalProfile>>('orgs', formData);
         return generateSuccessToast(data.message);
       }

@@ -1,26 +1,26 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { IResponse } from '@/types/shared.interface';
+import { IResponse, IQueryParams } from '@/types/shared.interface';
 import axios, { axiosErrorHandler } from '@/lib/axios';
 import { Toast } from '@/hooks/use-toast';
-import { IAppointmentTrends, IAppointmentStats } from '@/types/analytics.interface';
+import { getValidQueryString } from '@/lib/utils';
+import {
+  AnalyticsDateRangeParams,
+  AnalyticsDateRangeParamsRequired,
+  IAppointmentTrends,
+  IAppointmentStats,
+} from '@/types/analytics.interface';
+
+const HOSPITAL_APPOINTMENT_TRENDS_PATH = 'dashboard/hospital/appointment-trends';
+const HOSPITAL_APPOINTMENT_STATS_PATH = 'dashboard/hospital/appointment-stats';
 
 export const getHospitalAppointmentTrends = createAsyncThunk(
   'analytics/getHospitalAppointmentTrends',
-  async (params?: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<Toast | IAppointmentTrends> => {
+  async (params?: AnalyticsDateRangeParams): Promise<Toast | IAppointmentTrends> => {
     try {
-      const queryParams = new URLSearchParams();
-      if (params?.startDate) {
-        queryParams.append('startDate', params.startDate);
-      }
-      if (params?.endDate) {
-        queryParams.append('endDate', params.endDate);
-      }
-      const queryString = queryParams.toString();
-      const querySuffix = queryString ? `?${queryString}` : '';
-      const url = `dashboard/hospital/appointment-trends${querySuffix}`;
+      const queryString = getValidQueryString((params ?? {}) as unknown as IQueryParams);
+      const url = queryString
+        ? `${HOSPITAL_APPOINTMENT_TRENDS_PATH}?${queryString}`
+        : HOSPITAL_APPOINTMENT_TRENDS_PATH;
       const { data } = await axios.get<IResponse<IAppointmentTrends>>(url);
       return data.data;
     } catch (error) {
@@ -31,14 +31,10 @@ export const getHospitalAppointmentTrends = createAsyncThunk(
 
 export const getHospitalAppointmentStatsByDateRange = createAsyncThunk(
   'analytics/getHospitalAppointmentStatsByDateRange',
-  async (params: { startDate: string; endDate: string }): Promise<Toast | IAppointmentStats> => {
+  async (params: AnalyticsDateRangeParamsRequired): Promise<Toast | IAppointmentStats> => {
     try {
-      const queryParams = new URLSearchParams({
-        startDate: params.startDate,
-        endDate: params.endDate,
-      });
       const { data } = await axios.get<IResponse<IAppointmentStats>>(
-        `dashboard/hospital/appointment-stats?${queryParams.toString()}`,
+        `${HOSPITAL_APPOINTMENT_STATS_PATH}?${getValidQueryString(params as unknown as IQueryParams)}`,
       );
       return data.data;
     } catch (error) {

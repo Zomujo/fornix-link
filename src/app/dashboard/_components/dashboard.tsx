@@ -33,15 +33,14 @@ const DashboardFallback = (): JSX.Element => (
 const Dashboard = (): JSX.Element => {
   const role = useAppSelector(selectUserRole);
 
-  const home: Record<Role, JSX.Element> = {
+  const home: Partial<Record<Role, JSX.Element>> = {
     [Role.Doctor]: <DoctorHome />,
     [Role.Patient]: <PatientHome />,
-    [Role.Admin]: <AdminHome />,
     [Role.SuperAdmin]: <AdminHome />,
     [Role.Hospital]: <HospitalHome />,
   };
 
-  return home[role!];
+  return (role && home[role]) ?? <DashboardFallback />;
 };
 
 export default Dashboard;

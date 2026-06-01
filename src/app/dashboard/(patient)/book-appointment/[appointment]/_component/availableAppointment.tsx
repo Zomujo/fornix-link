@@ -7,7 +7,13 @@ import AppointmentReason from './appointmentReason';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MODE } from '@/constants/constants';
-import { IBookingForm } from '@/types/booking.interface';
+import { IBookingForm, IHospitalBookingForm } from '@/types/booking.interface';
+import {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from 'react-hook-form';
 import { AvatarComp } from '@/components/ui/avatar';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +31,7 @@ import { getHospital } from '@/lib/features/hospitals/hospitalThunk';
 import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import Image from 'next/image';
 import { AppointmentType } from '@/types/slots.interface';
-import { bookingSchema } from '@/schemas/booking.schema';
+import { bookingSchema, hospitalBookingSchema } from '@/schemas/booking.schema';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { SERVICE_CHARGE_PERCENTAGE } from '@/constants/payment.constants';
 
@@ -63,24 +69,22 @@ const AvailableAppointment = (): JSX.Element => {
     getValues,
     watch,
     formState: { errors, isValid },
-  } = useForm<IBookingForm>({
-    resolver: zodResolver(bookingSchema),
+  } = useForm<IBookingForm | IHospitalBookingForm>({
+    resolver: zodResolver(
+      isHospitalAppointment ? hospitalBookingSchema : bookingSchema,
+    ),
     mode: MODE.ON_TOUCH,
     defaultValues: {
       appointmentType: AppointmentType.Virtual,
       date: dateToday.toISOString(),
-      slotId: isHospitalAppointment ? '' : undefined,
+      ...(isHospitalAppointment ? {} : { time: '', slotId: '' }),
     },
   });
 
-  const onSubmit = async ({
-    reason,
-    additionalInfo,
-    slotId,
-    date,
-    time,
-    isFollowUp,
-  }: IBookingForm): Promise<void> => {
+  const onSubmit = async (
+    formData: IBookingForm | IHospitalBookingForm,
+  ): Promise<void> => {
+    const { reason, additionalInfo, date, isFollowUp } = formData;
     if (!information) {
       return;
     }
@@ -116,6 +120,7 @@ const AvailableAppointment = (): JSX.Element => {
     }
 
     // Doctor appointments use payment flow with slots
+    const { slotId, time } = formData as IBookingForm;
     if (!slotId || !time) {
       toast({
         title: 'Error',
@@ -193,21 +198,21 @@ const AvailableAppointment = (): JSX.Element => {
         </div>
         {currentStep === 1 && (
           <AvailableDates
-            register={register}
-            setValue={setValue}
+            register={register as UseFormRegister<IBookingForm>}
+            setValue={setValue as UseFormSetValue<IBookingForm>}
             setCurrentStep={setCurrentStep}
-            watch={watch}
+            watch={watch as UseFormWatch<IBookingForm>}
             isHospitalAppointment={isHospitalAppointment}
           />
         )}
         {currentStep === 2 && (
           <AppointmentReason
-            register={register}
-            setValue={setValue}
+            register={register as UseFormRegister<IBookingForm>}
+            setValue={setValue as UseFormSetValue<IBookingForm>}
             setCurrentStep={setCurrentStep}
             isValid={isValid}
-            watch={watch}
-            errors={errors}
+            watch={watch as UseFormWatch<IBookingForm>}
+            errors={errors as FieldErrors<IBookingForm>}
           />
         )}
         {currentStep === 3 && (
@@ -275,7 +280,7 @@ const AvailableAppointment = (): JSX.Element => {
             {!isHospitalAppointment && (
               <div className="mb-4 flex items-center justify-between">
                 <div className="text-gray-500">Time</div>
-                <div className="font-medium">{getValues('time')}</div>
+                <div className="font-medium">{(getValues() as IBookingForm).time}</div>
               </div>
             )}
             <div className="mb-4 flex items-center justify-between gap-4">
