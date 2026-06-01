@@ -4,10 +4,7 @@ import {
   getHospitalAppointmentTrends,
   getHospitalAppointmentStatsByDateRange,
 } from './analyticsThunk';
-import {
-  isAppointmentStatsPayload,
-  isAppointmentTrendsPayload,
-} from '@/lib/utils/analyticsUtils';
+import { isAppointmentStatsPayload, isAppointmentTrendsPayload } from '@/lib/utils/analyticsUtils';
 
 type AnalyticsState = {
   trends: IAppointmentTrends | null;

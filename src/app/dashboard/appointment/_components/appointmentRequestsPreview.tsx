@@ -60,9 +60,7 @@ function PatientColumnCell({
 function PatientColumnHeader({ user }: Readonly<{ user: IUser | null }>): JSX.Element {
   return (
     <div className="flex cursor-pointer whitespace-nowrap">
-      {user?.role === Role.Doctor ||
-      user?.role === Role.Hospital ||
-      user?.role === Role.SuperAdmin
+      {user?.role === Role.Doctor || user?.role === Role.Hospital || user?.role === Role.SuperAdmin
         ? 'Patient Name'
         : 'Doctor Name'}
     </div>
@@ -92,20 +90,20 @@ const AppointmentRequestsPreview = (): JSX.Element => {
       ? (extra as { id: string }).id
       : undefined;
 
-  const { isLoading, tableData } = useFetchPaginatedData<
-    IAppointment,
-    AppointmentStatus | ''
-  >(getAppointments, {
-    orderBy: 'createdAt',
-    orderDirection: OrderDirection.Descending,
-    doctorId: user?.role === Role.Doctor ? user?.id : undefined,
-    patientId: user?.role === Role.Patient ? user?.id : undefined,
-    orgId: user?.role === Role.Hospital ? hospitalId : undefined,
-    page: 1,
-    search: '',
-    status: '',
-    pageSize: 3, // Only fetch 3 items for preview
-  });
+  const { isLoading, tableData } = useFetchPaginatedData<IAppointment, AppointmentStatus | ''>(
+    getAppointments,
+    {
+      orderBy: 'createdAt',
+      orderDirection: OrderDirection.Descending,
+      doctorId: user?.role === Role.Doctor ? user?.id : undefined,
+      patientId: user?.role === Role.Patient ? user?.id : undefined,
+      orgId: user?.role === Role.Hospital ? hospitalId : undefined,
+      page: 1,
+      search: '',
+      status: '',
+      pageSize: 3, // Only fetch 3 items for preview
+    },
+  );
 
   const columns = useMemo(() => createAppointmentRequestColumns(user), [user]);
 

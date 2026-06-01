@@ -1,8 +1,4 @@
-export type FormDataEntryAppender = (
-  formData: FormData,
-  key: string,
-  value: unknown,
-) => void;
+export type FormDataEntryAppender = (formData: FormData, key: string, value: unknown) => void;
 
 /**
  * Build FormData from a plain object: only keys present in payload are included.

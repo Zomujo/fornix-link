@@ -82,9 +82,7 @@ export function toAnalyticsDateRangeParamsRequired(
 }
 
 export function isAppointmentTrendsPayload(payload: unknown): payload is IAppointmentTrends {
-  return (
-    !!payload && !showErrorToast(payload) && typeof payload === 'object' && 'rows' in payload
-  );
+  return !!payload && !showErrorToast(payload) && typeof payload === 'object' && 'rows' in payload;
 }
 
 export function isAppointmentStatsPayload(payload: unknown): payload is IAppointmentStats {

@@ -8,12 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MODE } from '@/constants/constants';
 import { IBookingForm, IHospitalBookingForm } from '@/types/booking.interface';
-import {
-  FieldErrors,
-  UseFormRegister,
-  UseFormSetValue,
-  UseFormWatch,
-} from 'react-hook-form';
+import { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { AvatarComp } from '@/components/ui/avatar';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
@@ -70,9 +65,7 @@ const AvailableAppointment = (): JSX.Element => {
     watch,
     formState: { errors, isValid },
   } = useForm<IBookingForm | IHospitalBookingForm>({
-    resolver: zodResolver(
-      isHospitalAppointment ? hospitalBookingSchema : bookingSchema,
-    ),
+    resolver: zodResolver(isHospitalAppointment ? hospitalBookingSchema : bookingSchema),
     mode: MODE.ON_TOUCH,
     defaultValues: {
       appointmentType: AppointmentType.Virtual,
@@ -81,9 +74,7 @@ const AvailableAppointment = (): JSX.Element => {
     },
   });
 
-  const onSubmit = async (
-    formData: IBookingForm | IHospitalBookingForm,
-  ): Promise<void> => {
+  const onSubmit = async (formData: IBookingForm | IHospitalBookingForm): Promise<void> => {
     const { reason, additionalInfo, date, isFollowUp } = formData;
     if (!information) {
       return;

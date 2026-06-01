@@ -11,9 +11,7 @@ export const HOSPITAL_APPOINTMENT_BOOKING_WINDOW_DAYS = 90;
  * Hospital bookings only need a preferred visit date, so every day in this window
  * is treated as selectable on the client.
  */
-export function getHospitalAppointmentSelectableDates(
-  fromDate: Date = new Date(),
-): Date[] {
+export function getHospitalAppointmentSelectableDates(fromDate: Date = new Date()): Date[] {
   return Array.from({ length: HOSPITAL_APPOINTMENT_BOOKING_WINDOW_DAYS }, (_, dayOffset) => {
     const selectableDate = new Date(fromDate);
     selectableDate.setDate(fromDate.getDate() + dayOffset);
