@@ -23,8 +23,6 @@ import { capitalize } from '@/lib/utils';
 import { LocalStorageManager } from '@/lib/localStorage';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
 
-const SIGN_UP_ROLES = [Role.Patient, Role.Doctor, Role.Hospital] as const;
-
 const roleOptions: ISelected[] = [
   {
     label: 'Patient',

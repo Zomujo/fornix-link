@@ -21,7 +21,7 @@ export interface IBookingForm extends IBookingFormBase {
   slotId: string;
 }
 
-export interface IHospitalBookingForm extends IBookingFormBase {}
+export type IHospitalBookingForm = IBookingFormBase;
 
 export type IBookingSlotId = Pick<IBookingForm, 'slotId'>;
 

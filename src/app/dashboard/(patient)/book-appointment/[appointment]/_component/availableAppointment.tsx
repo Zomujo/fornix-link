@@ -4,11 +4,16 @@ import { Building2, ChevronLeft } from 'lucide-react';
 import React, { JSX, useCallback, useEffect, useState } from 'react';
 import AvailableDates from './availableDates';
 import AppointmentReason from './appointmentReason';
-import { useForm } from 'react-hook-form';
+import {
+  FieldErrors,
+  useForm,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MODE } from '@/constants/constants';
 import { IBookingForm, IHospitalBookingForm } from '@/types/booking.interface';
-import { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { AvatarComp } from '@/components/ui/avatar';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
