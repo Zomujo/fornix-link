@@ -59,7 +59,9 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
   }, [slug, dispatch]);
 
   const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
-    if (!hospital) { return; }
+    if (!hospital) {
+      return;
+    }
     setIsBookingLoading(true);
     try {
       const result = await dispatch(
