@@ -11,6 +11,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/assets/images';
+import { useAppDispatch } from '@/lib/hooks';
+import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
+import { showErrorToast } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import HospitalAppointmentModal, {
+  HospitalAppointmentFormData,
+} from '@/app/dashboard/(patient)/find-hospitals/_components/hospitalAppointmentModal';
 
 interface HospitalCardProps {
   hospital: IHospitalListItem;
@@ -18,8 +25,12 @@ interface HospitalCardProps {
 
 const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
   const [showPreview, setShowPreview] = useState(false);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const {
+    id,
     name,
     slug,
     organizationType,
@@ -47,6 +58,30 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
     router.push(`/dashboard/find-hospitals/${slug}`);
   };
 
+  const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
+    setIsBookingLoading(true);
+    try {
+      const result = await dispatch(
+        createHospitalAppointment({
+          hospitalId: id,
+          name: data.name,
+          telephone: data.telephone,
+          serviceType: data.serviceType,
+          additionalInfo: data.additionalInfo,
+          date: data.date,
+        }),
+      );
+      const payload = result.payload;
+      if (payload && showErrorToast(payload)) {
+        toast(payload);
+      } else {
+        toast(payload as Parameters<typeof toast>[0]);
+      }
+    } finally {
+      setIsBookingLoading(false);
+    }
+  };
+
   const getOrganizationTypeLabel = (type?: string): string => {
     switch (type) {
       case 'private':
@@ -64,6 +99,14 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
 
   return (
     <>
+      <HospitalAppointmentModal
+        open={bookingModalOpen}
+        setOpen={setBookingModalOpen}
+        hospitalName={name}
+        onSubmit={handleBookAppointment}
+        isLoading={isBookingLoading}
+      />
+
       {showPreview && primaryImage && (
         <button
           type="button"
@@ -158,6 +201,9 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleViewDetails}>View Details</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBookingModalOpen(true)}>
+                  Book Appointment
+                </DropdownMenuItem>
                 {primaryAddress?.city && (
                   <DropdownMenuItem
                     onClick={() => {

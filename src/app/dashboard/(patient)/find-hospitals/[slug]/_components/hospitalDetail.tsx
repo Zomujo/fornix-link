@@ -3,11 +3,13 @@ import React, { JSX, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { getHospitalBySlug } from '@/lib/features/hospitals/hospitalThunk';
+import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { useAppDispatch } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
 import { IHospitalDetail } from '@/types/hospital.interface';
 import {
   Building2,
+  CalendarCheck,
   MapPin,
   Phone,
   Mail,
@@ -22,6 +24,9 @@ import {
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import SkeletonDoctorPatientCard from '@/components/skeleton/skeletonDoctorPatientCard';
+import HospitalAppointmentModal, {
+  HospitalAppointmentFormData,
+} from '@/app/dashboard/(patient)/find-hospitals/_components/hospitalAppointmentModal';
 import ReviewSection from './reviewSection';
 
 interface HospitalDetailProps {
@@ -33,6 +38,8 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
   const router = useRouter();
   const [hospital, setHospital] = useState<IHospitalDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
   useEffect(() => {
     async function fetchHospital(): Promise<void> {
@@ -50,6 +57,31 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
 
     void fetchHospital();
   }, [slug, dispatch]);
+
+  const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
+    if (!hospital) { return; }
+    setIsBookingLoading(true);
+    try {
+      const result = await dispatch(
+        createHospitalAppointment({
+          hospitalId: hospital.id,
+          name: data.name,
+          telephone: data.telephone,
+          serviceType: data.serviceType,
+          additionalInfo: data.additionalInfo,
+          date: data.date,
+        }),
+      );
+      const payload = result.payload;
+      if (payload && showErrorToast(payload)) {
+        toast(payload);
+      } else {
+        toast(payload as Parameters<typeof toast>[0]);
+      }
+    } finally {
+      setIsBookingLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -180,8 +212,16 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      {/* Back Button - Positioned at top left of content */}
-      <div className="mb-2">
+      <HospitalAppointmentModal
+        open={bookingModalOpen}
+        setOpen={setBookingModalOpen}
+        hospitalName={hospital.name}
+        onSubmit={handleBookAppointment}
+        isLoading={isBookingLoading}
+      />
+
+      {/* Top row: Back button + Book Appointment button */}
+      <div className="mb-2 flex items-center justify-between">
         <Button
           onClick={() => router.back()}
           variant="ghost"
@@ -192,6 +232,15 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
             </>
           }
           className="w-fit text-gray-600 hover:text-gray-900"
+        />
+        <Button
+          onClick={() => setBookingModalOpen(true)}
+          child={
+            <>
+              <CalendarCheck size={16} />
+              Book Appointment
+            </>
+          }
         />
       </div>
 

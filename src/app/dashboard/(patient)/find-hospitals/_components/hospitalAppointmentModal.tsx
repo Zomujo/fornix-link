@@ -34,6 +34,8 @@ type HospitalAppointmentModalProps = {
   isLoading?: boolean;
 };
 
+const MAX_BOOKING_MONTHS = 3;
+
 const hospitalAppointmentSchema = z.object({
   name: requiredStringSchema().min(2, 'Name must be at least 2 characters'),
   telephone: phoneNumberSchema,
@@ -50,6 +52,15 @@ const hospitalAppointmentSchema = z.object({
         return selectedDate >= today;
       },
       { message: 'Appointment date must be today or in the future' },
+    )
+    .refine(
+      (value) => {
+        const selectedDate = new Date(value);
+        const maxDate = new Date();
+        maxDate.setMonth(maxDate.getMonth() + MAX_BOOKING_MONTHS);
+        return selectedDate <= maxDate;
+      },
+      { message: `Appointments can only be booked up to ${MAX_BOOKING_MONTHS} months in advance` },
     ),
 });
 
@@ -170,8 +181,20 @@ const HospitalAppointmentModal = ({
                       });
                     }
                   }}
-                  disabled={{ before: new Date() }}
+                  disabled={(day): boolean => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const maxDate = new Date();
+                    maxDate.setMonth(maxDate.getMonth() + MAX_BOOKING_MONTHS);
+                    return day < today || day > maxDate;
+                  }}
                   defaultMonth={new Date()}
+                  fromMonth={new Date()}
+                  toMonth={((): Date => {
+                    const m = new Date();
+                    m.setMonth(m.getMonth() + MAX_BOOKING_MONTHS);
+                    return m;
+                  })()}
                 />
               </PopoverContent>
             </Popover>
