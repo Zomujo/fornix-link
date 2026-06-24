@@ -165,7 +165,10 @@ function createDirtyOnlyResolver(
     const toValidate = Object.fromEntries(dirtyKeys.map((k) => [k, values[k]]));
     const result = partialSchema.safeParse(toValidate);
     if (result.success) {
-      return { values, errors: {} as FieldErrors<HospitalFormValues> };
+      return {
+        values: { ...values, ...result.data },
+        errors: {} as FieldErrors<HospitalFormValues>,
+      };
     }
     const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
     const errors: FieldErrors<HospitalFormValues> = {};
