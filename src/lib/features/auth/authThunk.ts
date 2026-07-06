@@ -103,18 +103,13 @@ export const signUp = createAsyncThunk(
 
 export const hospitalSignUp = createAsyncThunk(
   'authentication/hospitalSignUp',
-  async (hospitalCredentials: IHospitalSignUp, { dispatch, rejectWithValue }) => {
+  async (hospitalCredentials: IHospitalSignUp, { dispatch }) => {
     try {
-      const { data } = await axios.post<IResponse<ILoginResponse>>(
-        `${authPath}hospital-signup`,
-        hospitalCredentials,
-      );
-      dispatch(setUserInfo(data.data));
-      return data.data;
+      const { data } = await axios.post<IResponse>(`${authPath}hospital-signup`, hospitalCredentials);
+      return data.message;
     } catch (error) {
-      const message = axiosErrorHandler(error);
-      dispatch(setErrorMessage(message));
-      return rejectWithValue(message);
+      dispatch(setErrorMessage(axiosErrorHandler(error)));
+      return false;
     }
   },
 );

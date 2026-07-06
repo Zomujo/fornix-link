@@ -18,9 +18,8 @@ import Location, { Option } from '@/components/location/location';
 import { ISelected } from '@/components/ui/dropdown-menu';
 import UserSignUp, { UserSignUpMethods } from '@/app/(auth)/_components/userSignUp';
 import GoogleOAuthButton from '@/components/ui/googleOAuthButton';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { capitalize } from '@/lib/utils';
-import { LocalStorageManager } from '@/lib/localStorage';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
 
 const roleOptions: ISelected[] = [
@@ -106,7 +105,6 @@ type HospitalSignUpFormValues = z.infer<typeof hospitalSignUpSchema>;
 const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.Element => {
   const userSignUpRef = useRef<UserSignUpMethods>(null);
 
-  const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
 
@@ -115,6 +113,7 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
     handleSubmit: handleSubmitHospital,
     watch: watchHospital,
     setValue: setValueHospital,
+    reset: resetHospital,
     formState: { errors: errorsHospital, isValid: isValidHospital },
   } = useForm<HospitalSignUpFormValues>({
     resolver: zodResolver(hospitalSignUpSchema),
@@ -150,14 +149,13 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
       hospitalName: capitalize(hospitalCredentials.hospitalName.trim()),
       ...(parsedLat != null && parsedLong != null ? { lat: parsedLat, long: parsedLong } : {}),
     };
-    try {
-      await dispatch(hospitalSignUp(formattedCredentials)).unwrap();
-      LocalStorageManager.clearSessionExpiredFlag();
-      const redirectUrl = LocalStorageManager.getAndClearRedirectUrl();
-      router.replace(redirectUrl ?? '/dashboard');
-    } catch {
-      setOpenModal(true);
+    const payload = await dispatch(hospitalSignUp(formattedCredentials)).unwrap();
+    if (payload) {
+      setSuccessMessage(payload as string);
+      resetHospital();
     }
+
+    setOpenModal(true);
   };
 
   const [openModal, setOpenModal] = useState(false);
@@ -202,7 +200,7 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
             open={openModal}
             content={successMessage}
             showImage={true}
-            imageVariant={role === Role.Hospital ? ImageVariant.Success : ImageVariant.Email}
+            imageVariant={ImageVariant.Email}
             showClose={true}
             setState={setOpenModal}
           />

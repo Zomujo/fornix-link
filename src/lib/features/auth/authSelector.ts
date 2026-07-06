@@ -66,6 +66,12 @@ export const selectUserName = createSelector(
   (extra, user) => `${extra?.firstName ?? user?.firstName} ${extra?.lastName ?? user?.lastName}`,
 );
 
+export const selectUserContact = createSelector(
+  selectExtra,
+  selectUser,
+  (extra, user) => extra?.contact ?? user?.contact ?? '',
+);
+
 export const selectUserId = createSelector(selectAuthentication, ({ user }) => user?.id);
 
 export const selectPatientMustUpdateMandatoryInfo = createSelector(

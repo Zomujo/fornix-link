@@ -7,7 +7,7 @@ import { Modal } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppSelector } from '@/lib/hooks';
-import { selectUserName } from '@/lib/features/auth/authSelector';
+import { selectUserContact, selectUserName } from '@/lib/features/auth/authSelector';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarIcon } from 'lucide-react';
 import moment from 'moment';
@@ -72,6 +72,7 @@ const HospitalAppointmentModal = ({
   isLoading = false,
 }: HospitalAppointmentModalProps): JSX.Element => {
   const userName = useAppSelector(selectUserName);
+  const userContact = useAppSelector(selectUserContact);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -86,7 +87,7 @@ const HospitalAppointmentModal = ({
     mode: MODE.ON_TOUCH,
     defaultValues: {
       name: userName || '',
-      telephone: '',
+      telephone: userContact || '',
       serviceType: '',
       additionalInfo: '',
       date: '',
