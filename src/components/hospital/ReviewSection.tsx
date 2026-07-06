@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { JSX, useState } from 'react';
 import { Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ const ReviewSection = ({ hospitalName }: ReviewSectionProps): JSX.Element | null
 
     setTimeout(() => {
       toast({
-        title: 'Review Submitted Successfully! ✓',
+        title: 'Review Submitted Successfully! Ô£ô',
         description: `Thank you for your ${rating}-star review of ${hospitalName}. Your feedback helps others make better healthcare decisions.`,
         variant: 'success',
       });

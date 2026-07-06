@@ -1,4 +1,5 @@
 'use client';
+
 import { MapPin, X, MoreVertical, Clock, Globe, BedDouble } from 'lucide-react';
 import Image from 'next/image';
 import React, { JSX, useState } from 'react';
@@ -11,24 +12,29 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/assets/images';
-import { useAppDispatch } from '@/lib/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/hooks';
+import { selectUser } from '@/lib/features/auth/authSelector';
 import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { showErrorToast } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { LocalStorageManager } from '@/lib/localStorage';
 import HospitalAppointmentModal, {
   HospitalAppointmentFormData,
-} from '@/app/dashboard/(patient)/find-hospitals/_components/hospitalAppointmentModal';
+} from '@/components/hospital/HospitalAppointmentModal';
+import { getHospitalDetailPath, HospitalViewMode } from '@/components/hospital/hospitalPaths';
 
 interface HospitalCardProps {
   hospital: IHospitalListItem;
+  mode: HospitalViewMode;
 }
 
-const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
+const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
   const [showPreview, setShowPreview] = useState(false);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const user = useAppSelector(selectUser);
   const {
     id,
     name,
@@ -41,7 +47,6 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
     bedCount,
   } = hospital;
 
-  // Primary display = first gallery image (type 'photo') sorted by displayOrder; logo = type 'logo'
   const galleryImages = (images?.filter((img) => img.type === 'photo') ?? []).sort((a, b) => {
     const orderA = (a.meta as { displayOrder?: number })?.displayOrder ?? 999;
     const orderB = (b.meta as { displayOrder?: number })?.displayOrder ?? 999;
@@ -55,7 +60,18 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
       console.error('Hospital slug is missing');
       return;
     }
-    router.push(`/dashboard/find-hospitals/${slug}`);
+    router.push(getHospitalDetailPath(slug, mode));
+  };
+
+  const handleBookingClick = (): void => {
+    if (mode === 'public' && !user) {
+      LocalStorageManager.saveRedirectUrl(
+        globalThis.location.pathname + globalThis.location.search,
+      );
+      router.push('/login');
+      return;
+    }
+    setBookingModalOpen(true);
   };
 
   const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
@@ -144,8 +160,7 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
         </button>
       )}
 
-      <div className="group relative flex w-full max-w-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 select-none hover:-translate-y-1 hover:shadow-xl sm:max-w-[350px] sm:rounded-3xl md:max-w-[380px]">
-        {/* Image Section with Frosted Glass Overlay */}
+      <div className="group relative flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 select-none hover:-translate-y-1 hover:shadow-xl sm:rounded-3xl">
         <div className="relative h-[240px] w-full overflow-hidden sm:h-[290px] md:h-[350px]">
           {primaryImage ? (
             <button
@@ -176,7 +191,6 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
             </div>
           )}
 
-          {/* Logo - Top Left of primary image */}
           {logoImage && (
             <div className="absolute top-4 left-4 z-20">
               <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white bg-white shadow-lg sm:h-11 sm:w-11 md:h-12 md:w-12">
@@ -191,7 +205,6 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
             </div>
           )}
 
-          {/* Ellipsis Menu - Top Right */}
           <div className="absolute top-4 right-4 z-20">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -201,9 +214,7 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleViewDetails}>View Details</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setBookingModalOpen(true)}>
-                  Book Appointment
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleBookingClick}>Book Appointment</DropdownMenuItem>
                 {primaryAddress?.city && (
                   <DropdownMenuItem
                     onClick={() => {
@@ -223,12 +234,8 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
             </DropdownMenu>
           </div>
 
-          {/* Frosted Glass Overlay with Content - Bottom 55% */}
           <div className="absolute right-0 bottom-0 left-0 z-10 h-[55%] overflow-hidden">
-            {/* Solid white background layer extending slightly beyond to cover rounded corners */}
             <div className="absolute top-0 -right-1 -bottom-1 -left-1 rounded-b-2xl bg-white sm:rounded-b-3xl"></div>
-
-            {/* Frosted Glass Background with gradient overlay */}
             <div
               className="relative h-full rounded-b-2xl sm:rounded-b-3xl"
               style={{
@@ -238,18 +245,14 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
                 WebkitBackdropFilter: 'blur(20px) saturate(180%)',
               }}
             >
-              {/* Content on Frosted Glass */}
               <div className="relative z-20 flex h-full flex-col justify-between px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4">
-                {/* Top Section - Hospital name */}
                 <div className="flex min-h-[3em] min-w-0 flex-1 flex-col justify-center">
                   <h3 className="line-clamp-2 text-base leading-snug font-bold break-words text-gray-900 sm:text-lg">
                     {name}
                   </h3>
                 </div>
 
-                {/* Bottom Section - Location, Button, and Badges */}
                 <div className="flex-shrink-0 space-y-1.5 pt-1.5 sm:space-y-2">
-                  {/* Location Row */}
                   {primaryAddress && (primaryAddress.city || primaryAddress.state) && (
                     <div className="flex min-w-0 items-center gap-1.5 text-xs text-gray-700 sm:text-sm">
                       <MapPin
@@ -262,14 +265,11 @@ const HospitalCard = ({ hospital }: HospitalCardProps): JSX.Element => {
                     </div>
                   )}
 
-                  {/* Bottom Row - Organization Type Button and Feature Badges */}
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    {/* Organization Type Tag */}
                     <span className="flex-shrink-0 rounded-xl border-2 border-green-300 bg-green-50 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap text-green-700 shadow-sm sm:px-3 sm:py-2 sm:text-xs">
                       {getOrganizationTypeLabel(organizationType)}
                     </span>
 
-                    {/* Feature Badges */}
                     {(hasEmergency || telemedicine || bedCount) && (
                       <div className="flex flex-1 flex-wrap items-center justify-end gap-1 overflow-visible sm:gap-1.5">
                         {hasEmergency && (

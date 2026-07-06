@@ -1,5 +1,5 @@
-import React, { JSX } from 'react';
-import HospitalDetail from './_components/hospitalDetail';
+import React, { JSX, Suspense } from 'react';
+import HospitalDetailView from '@/components/hospital/HospitalDetailView';
 
 interface HospitalDetailPageProps {
   params: Promise<{
@@ -18,7 +18,11 @@ const HospitalDetailPage = async ({ params }: HospitalDetailPageProps): Promise<
     );
   }
 
-  return <HospitalDetail slug={slug} />;
+  return (
+    <Suspense fallback={null}>
+      <HospitalDetailView slug={slug} mode="dashboard" />
+    </Suspense>
+  );
 };
 
 export default HospitalDetailPage;

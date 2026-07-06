@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { getHospitalBySlug } from '@/lib/features/hospitals/hospitalThunk';
 import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
-import { useAppDispatch } from '@/lib/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/hooks';
+import { selectUser } from '@/lib/features/auth/authSelector';
+import { LocalStorageManager } from '@/lib/localStorage';
 import { showErrorToast } from '@/lib/utils';
 import { IHospitalDetail } from '@/types/hospital.interface';
 import {
@@ -26,16 +28,20 @@ import Image from 'next/image';
 import SkeletonDoctorPatientCard from '@/components/skeleton/skeletonDoctorPatientCard';
 import HospitalAppointmentModal, {
   HospitalAppointmentFormData,
-} from '@/app/dashboard/(patient)/find-hospitals/_components/hospitalAppointmentModal';
-import ReviewSection from './reviewSection';
+} from '@/components/hospital/HospitalAppointmentModal';
+import ReviewSection from '@/components/hospital/ReviewSection';
+import { PublicHospitalShell } from '@/components/hospital/PublicHospitalShell';
+import { getHospitalListPath, HospitalViewMode } from '@/components/hospital/hospitalPaths';
 
-interface HospitalDetailProps {
+interface HospitalDetailViewProps {
   slug: string;
+  mode: HospitalViewMode;
 }
 
-const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
+const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Element => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const user = useAppSelector(selectUser);
   const [hospital, setHospital] = useState<IHospitalDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
@@ -57,6 +63,25 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
 
     void fetchHospital();
   }, [slug, dispatch]);
+
+  const handleBookingClick = (): void => {
+    if (mode === 'public' && !user) {
+      LocalStorageManager.saveRedirectUrl(
+        globalThis.location.pathname + globalThis.location.search,
+      );
+      router.push('/login');
+      return;
+    }
+    setBookingModalOpen(true);
+  };
+
+  const handleBack = (): void => {
+    if (mode === 'public') {
+      router.push(getHospitalListPath('public'));
+      return;
+    }
+    router.back();
+  };
 
   const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
     if (!hospital) {
@@ -86,22 +111,30 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
   };
 
   if (isLoading) {
-    return (
+    const loadingContent = (
       <div className="flex flex-col gap-6">
         <SkeletonDoctorPatientCard />
         <SkeletonDoctorPatientCard />
         <SkeletonDoctorPatientCard />
       </div>
     );
+    if (mode === 'public') {
+      return <PublicHospitalShell>{loadingContent}</PublicHospitalShell>;
+    }
+    return loadingContent;
   }
 
   if (!hospital) {
-    return (
+    const notFoundContent = (
       <div className="flex flex-col items-center justify-center py-12">
         <p className="text-lg text-gray-600">Hospital not found</p>
-        <Button onClick={() => router.back()} child="Go Back" className="mt-4" />
+        <Button onClick={handleBack} child="Go Back" className="mt-4" />
       </div>
     );
+    if (mode === 'public') {
+      return <PublicHospitalShell>{notFoundContent}</PublicHospitalShell>;
+    }
+    return notFoundContent;
   }
 
   const {
@@ -212,7 +245,7 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
     'medical council': '/images/insurance/medicalcouncil.jpeg',
   };
 
-  return (
+  const detailContent = (
     <div className="flex flex-col gap-6 pb-8">
       <HospitalAppointmentModal
         open={bookingModalOpen}
@@ -222,10 +255,9 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
         isLoading={isBookingLoading}
       />
 
-      {/* Top row: Back button + Book Appointment button */}
       <div className="mb-2 flex items-center justify-between">
         <Button
-          onClick={() => router.back()}
+          onClick={handleBack}
           variant="ghost"
           child={
             <>
@@ -236,7 +268,7 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
           className="w-fit text-gray-600 hover:text-gray-900"
         />
         <Button
-          onClick={() => setBookingModalOpen(true)}
+          onClick={handleBookingClick}
           child={
             <>
               <CalendarCheck size={16} />
@@ -689,6 +721,12 @@ const HospitalDetail = ({ slug }: HospitalDetailProps): JSX.Element => {
       <ReviewSection hospitalName={name} />
     </div>
   );
+
+  if (mode === 'public') {
+    return <PublicHospitalShell>{detailContent}</PublicHospitalShell>;
+  }
+
+  return detailContent;
 };
 
-export default HospitalDetail;
+export default HospitalDetailView;

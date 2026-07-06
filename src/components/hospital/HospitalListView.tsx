@@ -1,3 +1,5 @@
+'use client';
+
 import { NotFound } from '@/assets/images';
 import SkeletonDoctorPatientCard from '@/components/skeleton/skeletonDoctorPatientCard';
 import { Button } from '@/components/ui/button';
@@ -15,12 +17,19 @@ import { ChevronUp, Search, SendHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import React, { FormEvent, JSX, useCallback, useEffect, useRef, useState } from 'react';
-import HospitalCard from '@/app/dashboard/(patient)/_components/hospitalCardNew';
+import HospitalCard from '@/components/hospital/HospitalCard';
+import HospitalFilters from '@/components/hospital/HospitalFilters';
+import { PublicHospitalShell } from '@/components/hospital/PublicHospitalShell';
+import { HospitalViewMode } from '@/components/hospital/hospitalPaths';
 import { useQueryParam } from '@/hooks/useQueryParam';
-import { Suggested } from '@/app/dashboard/_components/patientHome/_component/suggested';
-import HospitalFilters from './hospitalFilters';
 
-const Hospitals = (): JSX.Element => {
+const HOSPITAL_GRID_CLASS = 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3';
+
+interface HospitalListViewProps {
+  mode: HospitalViewMode;
+}
+
+const HospitalListView = ({ mode }: HospitalListViewProps): JSX.Element => {
   const dispatch = useAppDispatch();
   const { searchTerm, handleSearch } = useSearch(handleSubmit);
   const [isLoading, setIsLoading] = useState(true);
@@ -216,13 +225,20 @@ const Hospitals = (): JSX.Element => {
     }));
   };
 
-  return (
+  const stickyBarClass =
+    mode === 'dashboard'
+      ? 'bg-grayscale-100 sticky top-0 z-40 -mx-4 mb-4 px-4 pt-2 pb-2 sm:mb-6 2xl:-mx-6 2xl:px-6'
+      : 'sticky top-0 z-40 mb-4';
+
+  const listContent = (
     <>
-      {/* Search and Filter Bar - Sticky at top like title */}
-      <div className="bg-grayscale-100 sticky top-0 z-40 -mx-4 mb-4 px-4 pt-2 pb-2 sm:mb-6 2xl:-mx-6 2xl:px-6">
+      <section className="mb-4">
+        <p className="text-2xl font-bold md:text-[32px]">Find Hospitals</p>
+      </section>
+
+      <div className={stickyBarClass}>
         <div className="flex w-full flex-col gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm sm:gap-4 sm:p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Search Bar */}
             <form className="flex flex-1 gap-2" onSubmit={handleSubmit}>
               <Input
                 error=""
@@ -236,7 +252,6 @@ const Hospitals = (): JSX.Element => {
               {searchTerm && <Button type="submit" variant="default" child={<SendHorizontal />} />}
             </form>
 
-            {/* Filter Button */}
             <div className="flex items-center gap-2">
               <HospitalFilters
                 queryParameters={queryParameters}
@@ -248,24 +263,25 @@ const Hospitals = (): JSX.Element => {
           </div>
         </div>
       </div>
+
       {((): JSX.Element | null => {
         if (isLoading) {
           const skeletonKeys = ['sk1', 'sk2', 'sk3', 'sk4', 'sk5', 'sk6', 'sk7', 'sk8'];
           return (
-            <div className="mt-2 flex flex-wrap gap-6">
+            <div className={HOSPITAL_GRID_CLASS}>
               {skeletonKeys.map((key) => (
-                <SkeletonDoctorPatientCard key={key} />
+                <SkeletonDoctorPatientCard key={key} className="w-full" />
               ))}
             </div>
           );
         }
         if (hospitals.length > 0) {
           return (
-            <Suggested title={''} showViewAll={false}>
+            <div className={HOSPITAL_GRID_CLASS}>
               {hospitals.map((hospital) => (
-                <HospitalCard key={hospital.id} hospital={hospital} />
+                <HospitalCard key={hospital.id} hospital={hospital} mode={mode} />
               ))}
-            </Suggested>
+            </div>
           );
         }
         return (
@@ -281,6 +297,7 @@ const Hospitals = (): JSX.Element => {
           </section>
         );
       })()}
+
       <button
         onClick={scrollToTop}
         className={`bg-primary fixed right-6 bottom-6 z-50 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-opacity ${
@@ -292,6 +309,12 @@ const Hospitals = (): JSX.Element => {
       <div ref={observerRef} className="h-10" />
     </>
   );
+
+  if (mode === 'public') {
+    return <PublicHospitalShell>{listContent}</PublicHospitalShell>;
+  }
+
+  return <div>{listContent}</div>;
 };
 
-export default Hospitals;
+export default HospitalListView;

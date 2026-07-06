@@ -1,7 +1,17 @@
 import { JSX } from 'react';
+import { cn } from '@/lib/utils';
 
-const SkeletonDoctorPatientCard = (): JSX.Element => (
-  <div className="group flex h-full w-62.5 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md">
+const SkeletonDoctorPatientCard = ({
+  className,
+}: {
+  className?: string;
+}): JSX.Element => (
+  <div
+    className={cn(
+      'group flex h-full w-62.5 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md',
+      className,
+    )}
+  >
     {/* Dominant image skeleton */}
     <div className="relative h-72 w-full animate-pulse bg-gray-300">
       {/* Availability pill placeholder */}
