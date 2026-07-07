@@ -49,7 +49,7 @@ Route groups use `_components/` directories for co-located, segment-specific com
 - Always use typed hooks from `src/lib/hooks.ts`: `useAppDispatch`, `useAppSelector`, `useAppStore`.
 
 ### Roles
-Four roles in `Role` enum: `patient`, `doctor`, `admin`, `superadmin`. Each role has its own sidebar config in `src/constants/sidebar.constant.ts`. Use selectors like `selectIsPatient`, `selectIsDoctor`, `selectIsAnAdmin` from `src/lib/features/auth/authSelector.ts` for role checks.
+Roles in `Role` enum: `patient`, `doctor`, `hospital`, `superadmin`. Each role has its own sidebar config in `src/constants/sidebar.constant.ts`. Use selectors like `selectIsPatient`, `selectIsDoctor`, `selectIsSuperAdmin` from `src/lib/features/auth/authSelector.ts` for role checks.
 
 ### HTTP & API
 Three Axios instances in `src/lib/axios.ts`:

@@ -19,6 +19,10 @@ const AdminHome = dynamic(() => import('@/app/dashboard/_components/adminHome/ho
   loading: () => <DashboardFallback />,
   ssr: false,
 });
+const HospitalHome = dynamic(() => import('@/app/dashboard/_components/hospitalHome/home'), {
+  loading: () => <DashboardFallback />,
+  ssr: false,
+});
 
 const DashboardFallback = (): JSX.Element => (
   <div className="flex min-h-screen items-center justify-center">
@@ -29,14 +33,14 @@ const DashboardFallback = (): JSX.Element => (
 const Dashboard = (): JSX.Element => {
   const role = useAppSelector(selectUserRole);
 
-  const home: Record<Role, JSX.Element> = {
+  const home: Partial<Record<Role, JSX.Element>> = {
     [Role.Doctor]: <DoctorHome />,
     [Role.Patient]: <PatientHome />,
-    [Role.Admin]: <AdminHome />,
     [Role.SuperAdmin]: <AdminHome />,
+    [Role.Hospital]: <HospitalHome />,
   };
 
-  return home[role!];
+  return (role && home[role]) ?? <DashboardFallback />;
 };
 
 export default Dashboard;

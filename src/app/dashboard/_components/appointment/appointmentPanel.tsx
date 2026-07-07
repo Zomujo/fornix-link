@@ -13,6 +13,7 @@ import { selectUser } from '@/lib/features/auth/authSelector';
 import { IAppointment } from '@/types/appointment.interface';
 import { toast } from '@/hooks/use-toast';
 import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
+import { getHospitalAppointments } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import LoadingOverlay from '@/components/loadingOverlay/loadingOverlay';
 import { AppointmentDate, useQueryParam } from '@/hooks/useQueryParam';
 import { INotification, NotificationEvent } from '@/types/notification.interface';
@@ -42,6 +43,7 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     selectedDateParam ? new Date(selectedDateParam) : new Date(),
   );
   const [now, setNow] = useState(moment());
+  const isHospital = user?.role === Role.Hospital;
   const [queryParams, setQueryParams] = useState<IQueryParams<AppointmentStatus | ''>>({
     orderDirection: OrderDirection.Ascending,
     doctorId: user?.role === Role.Doctor ? user?.id : undefined,
@@ -51,6 +53,14 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     pageSize: 100,
   });
   const [upcomingAppointment, setUpcomingAppointment] = useState<IAppointment[]>([]);
+
+  useEffect(() => {
+    setQueryParams((prev) => ({
+      ...prev,
+      doctorId: user?.role === Role.Doctor ? user?.id : undefined,
+      patientId: user?.role === Role.Patient ? user?.id : undefined,
+    }));
+  }, [user?.role, user?.id]);
 
   on(NotificationEvent.NewRequest, (data: unknown) => {
     const notification = data as INotification;
@@ -63,7 +73,9 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
   useEffect(() => {
     async function getUpcomingAppointments(): Promise<void> {
       setLoading(true);
-      const { payload } = await dispatch(getAppointments(queryParams));
+      const { payload } = isHospital
+        ? await dispatch(getHospitalAppointments(queryParams))
+        : await dispatch(getAppointments(queryParams));
       setLoading(false);
 
       if (payload && showErrorToast(payload)) {
@@ -72,12 +84,11 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
       }
 
       const { rows } = payload as IPagination<IAppointment>;
-
       setUpcomingAppointment(rows);
     }
 
     void getUpcomingAppointments();
-  }, [queryParams]);
+  }, [queryParams, isHospital]);
 
   useEffect(() => {
     const selectedMoment = moment(selectedDate);
@@ -120,11 +131,13 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
             onIncrement={() => setSelectedDate(moment(selectedDate).add(1, 'day').toDate())}
             date={selectedDate}
           />
-          {user?.role === Role.Doctor && (
-            <Badge variant={'brown'}>
-              {todayAppointments.length} <span className="ml-1 hidden sm:block">appointments</span>
-            </Badge>
-          )}
+          {user?.role === Role.Doctor ||
+            (user?.role === Role.Hospital && (
+              <Badge variant={'brown'}>
+                {todayAppointments.length}{' '}
+                <span className="ml-1 hidden sm:block">appointments</span>
+              </Badge>
+            ))}
           <div className="flex h-8 items-center justify-center rounded-lg border bg-white px-3 text-center text-sm">
             Week
           </div>

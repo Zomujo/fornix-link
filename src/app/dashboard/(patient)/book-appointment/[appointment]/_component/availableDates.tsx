@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { AvailabilityProps } from '@/types/booking.interface';
 import { extractGMTTime } from '@/lib/date';
+import { getHospitalAppointmentSelectableDates } from '@/lib/utils/bookingUtils';
 import {
   getAppointmentSlotsByDate,
   getAppointmentSlotsDates,
@@ -22,8 +23,9 @@ const AvailableDates = ({
   setValue,
   watch,
   doctorId,
+  isHospitalAppointment,
   onNoSlotsFound,
-}: AvailabilityProps): JSX.Element => {
+}: AvailabilityProps & { isHospitalAppointment?: boolean }): JSX.Element => {
   const date = watch('date');
   const selectedTime = watch('time');
   const dispatch = useAppDispatch();
@@ -39,7 +41,12 @@ const AvailableDates = ({
   const timeSlotsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    async function slotsAvailable(): Promise<void> {
+    if (isHospitalAppointment) {
+      setCanBookDates(getHospitalAppointmentSelectableDates());
+      return;
+    }
+
+    async function loadDoctorBookableDates(): Promise<void> {
       setIsLoadingAppointmentDates(true);
       const lastDateOfTheMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
       const { payload } = await dispatch(
@@ -69,11 +76,15 @@ const AvailableDates = ({
       setIsLoadingAppointmentDates(false);
     }
 
-    void slotsAvailable();
-  }, [currentDate]);
+    void loadDoctorBookableDates();
+  }, [currentDate, isHospitalAppointment]);
 
   useEffect(() => {
-    async function slotsAvailable(): Promise<void> {
+    if (isHospitalAppointment) {
+      return;
+    }
+
+    async function loadDoctorTimeSlotsForSelectedDate(): Promise<void> {
       setAvailableTimeSlots([]);
       setIsAvailableSlotLoading(true);
       const { payload } = await dispatch(
@@ -102,8 +113,8 @@ const AvailableDates = ({
       setIsAvailableSlotLoading(false);
     }
 
-    void slotsAvailable();
-  }, [date]);
+    void loadDoctorTimeSlotsForSelectedDate();
+  }, [date, isHospitalAppointment]);
 
   // Scroll to time slots when they're loaded after date selection
   useEffect(() => {
@@ -167,39 +178,41 @@ const AvailableDates = ({
             />
           </div>
 
-          <div ref={timeSlotsRef}>
-            <p className="mt-5 mb-2 font-medium">Available time (Africa/Accra - GMT (+00:00))</p>
-            {!!availableTimeSlots.length && (
-              <small className="m-auto text-center text-red-500">
-                *Each session is 45 minutes{' '}
-              </small>
-            )}
-            <div className="flex flex-wrap gap-3">
-              {!!availableTimeSlots.length &&
-                availableTimeSlots.map(({ startTime, id }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={cn(
-                      'w-max cursor-pointer rounded-sm border p-1 font-medium text-gray-500',
-                      selectedTime === startTime && 'border-primary text-primary',
-                    )}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleSlotSelection(startTime, id);
-                    }}
-                  >
-                    {startTime}
-                  </button>
-                ))}
-              {!availableTimeSlots.length && !isAvailableSlotLoading && (
-                <div className="text-red-500">
-                  {' '}
-                  Sorry, no available slot for the selected date 😕{' '}
-                </div>
+          {!isHospitalAppointment && (
+            <div ref={timeSlotsRef}>
+              <p className="mt-5 mb-2 font-medium">Available time (Africa/Accra - GMT (+00:00))</p>
+              {!!availableTimeSlots.length && (
+                <small className="m-auto text-center text-red-500">
+                  *Each session is 45 minutes{' '}
+                </small>
               )}
+              <div className="flex flex-wrap gap-3">
+                {!!availableTimeSlots.length &&
+                  availableTimeSlots.map(({ startTime, id }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={cn(
+                        'w-max cursor-pointer rounded-sm border p-1 font-medium text-gray-500',
+                        selectedTime === startTime && 'border-primary text-primary',
+                      )}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleSlotSelection(startTime, id);
+                      }}
+                    >
+                      {startTime}
+                    </button>
+                  ))}
+                {!availableTimeSlots.length && !isAvailableSlotLoading && (
+                  <div className="text-red-500">
+                    {' '}
+                    Sorry, no available slot for the selected date 😕{' '}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {isAvailableSlotLoading && (
             <div className="flex gap-2">
