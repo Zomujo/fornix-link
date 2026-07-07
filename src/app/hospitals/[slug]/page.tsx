@@ -38,7 +38,10 @@ export async function generateMetadata({ params }: HospitalPageProps): Promise<M
   }
 
   const title = hospital.name;
-  const serviceNames = hospital.services?.map((s) => s.service.name).slice(0, 5).join(', ');
+  const serviceNames = hospital.services
+    ?.map((s) => s.service.name)
+    .slice(0, 5)
+    .join(', ');
   const description =
     hospital.description ||
     `View ${hospital.name}${serviceNames ? ` — services include ${serviceNames}` : ''} on ${BRANDING.APP_NAME}.`;

@@ -1,11 +1,7 @@
 import { JSX } from 'react';
 import { cn } from '@/lib/utils';
 
-const SkeletonDoctorPatientCard = ({
-  className,
-}: {
-  className?: string;
-}): JSX.Element => (
+const SkeletonDoctorPatientCard = ({ className }: { className?: string }): JSX.Element => (
   <div
     className={cn(
       'group flex h-full w-62.5 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md',
