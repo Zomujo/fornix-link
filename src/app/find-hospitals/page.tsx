@@ -20,11 +20,5 @@ export const metadata: Metadata = {
 };
 
 export default function FindHospitalsPage(): JSX.Element {
-  return (
-    <PublicDiscoveryPage
-      title="Find Hospitals"
-      description={description}
-      type="hospitals"
-    />
-  );
+  return <PublicDiscoveryPage title="Find Hospitals" description={description} type="hospitals" />;
 }
