@@ -1,12 +1,17 @@
 import { requiredStringSchema } from '@/schemas/zod.schemas';
 import { z } from 'zod';
 
-export const bookingSchema = z.object({
+const bookingFormBaseSchema = z.object({
   date: requiredStringSchema(),
-  time: requiredStringSchema(),
-  slotId: requiredStringSchema(),
   reason: requiredStringSchema(),
   appointmentType: requiredStringSchema(),
   additionalInfo: requiredStringSchema(false),
   isFollowUp: z.boolean(),
+});
+
+export const hospitalBookingSchema = bookingFormBaseSchema;
+
+export const bookingSchema = bookingFormBaseSchema.extend({
+  time: requiredStringSchema(),
+  slotId: requiredStringSchema(),
 });

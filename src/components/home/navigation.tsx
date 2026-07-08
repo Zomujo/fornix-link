@@ -26,9 +26,18 @@ export const Navigation = (): JSX.Element => {
     router.refresh();
   };
 
-  if (user) {
-    return (
-      <nav>
+  return (
+    <nav className="flex items-center gap-3">
+      <Link
+        href="/hospitals"
+        className={cn(
+          hasSearchParams ? 'text-primary' : 'text-white hover:bg-gray-100',
+          'cursor-pointer rounded-md px-4 py-2',
+        )}
+      >
+        Hospitals
+      </Link>
+      {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="h-10 w-10 overflow-hidden rounded-full">
@@ -48,27 +57,25 @@ export const Navigation = (): JSX.Element => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </nav>
-    );
-  }
-
-  return (
-    <nav>
-      <Link href="/login">
-        <span
-          className={cn(
-            hasSearchParams ? 'text-primary' : 'text-white hover:bg-gray-100',
-            'mr-2 cursor-pointer rounded-md px-4 py-2',
-          )}
-        >
-          Login
-        </span>
-      </Link>
-      <Link href="/sign-up">
-        <span className="bg-primary rounded-md px-4 py-2 text-white hover:bg-gray-500">
-          Sign Up
-        </span>
-      </Link>
+      ) : (
+        <>
+          <Link href="/login">
+            <span
+              className={cn(
+                hasSearchParams ? 'text-primary' : 'text-white hover:bg-gray-100',
+                'mr-2 cursor-pointer rounded-md px-4 py-2',
+              )}
+            >
+              Login
+            </span>
+          </Link>
+          <Link href="/sign-up">
+            <span className="bg-primary rounded-md px-4 py-2 text-white hover:bg-gray-500">
+              Sign Up
+            </span>
+          </Link>
+        </>
+      )}
     </nav>
   );
 };

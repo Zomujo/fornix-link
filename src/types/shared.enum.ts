@@ -38,10 +38,10 @@ export enum AcceptDeclineStatus {
 }
 
 export enum Role {
-  Admin = 'admin',
   SuperAdmin = 'superadmin',
   Doctor = 'doctor',
   Patient = 'patient',
+  Hospital = 'hospital',
 }
 
 export enum CalendarType {

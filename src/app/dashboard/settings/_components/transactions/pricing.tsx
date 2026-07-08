@@ -5,12 +5,11 @@ import { Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { setPaymentRate, updateOrganizationsDetails } from '@/lib/features/payments/paymentsThunk';
+import { setPaymentRate } from '@/lib/features/payments/paymentsThunk';
 import { Toast, toast } from '@/hooks/use-toast';
-import { selectExtra, selectIsOrganizationAdmin } from '@/lib/features/auth/authSelector';
+import { selectExtra } from '@/lib/features/auth/authSelector';
 import { IRate } from '@/types/payment.interface';
 import { IDoctor } from '@/types/doctor.interface';
-import { AsyncThunkAction } from '@reduxjs/toolkit';
 import { useRouter } from 'next/navigation';
 import { dataCompletionToast, ghcToPesewas, pesewasToGhc, sliderPosition } from '@/lib/utils';
 import { PaymentTab } from '@/hooks/useQueryParam';
@@ -27,15 +26,10 @@ const Pricing = (): JSX.Element => {
   const [currentAmount, setCurrentAmount] = useState(MIN_AMOUNT);
   const [currentSessionLength, setCurrentSessionLength] = useState(MIN_SESSION);
   const dispatch = useAppDispatch();
-  const isAdmin = useAppSelector(selectIsOrganizationAdmin);
   const [isLoading, setIsLoading] = useState(false);
   async function updateRate(rate: IRate): Promise<void> {
     setIsLoading(true);
-    const action = isAdmin
-      ? updateOrganizationsDetails(rate.amount)
-      : (setPaymentRate(rate) as AsyncThunkAction<Toast, unknown, object>);
-
-    const { payload } = await dispatch(action);
+    const { payload } = await dispatch(setPaymentRate(rate));
 
     if (payload) {
       const toastData = payload as Toast;
