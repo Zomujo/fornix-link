@@ -67,6 +67,7 @@ import { IBookingForm } from '@/types/booking.interface';
 import { AppointmentType } from '@/types/slots.interface';
 import { bookingSchema } from '@/schemas/booking.schema';
 import PatientDetailsDrawer from './PatientDetailsDrawer';
+import { canJoinMeeting, getAppointmentType } from '@/lib/utils/appointmentUtils';
 
 type SelectedAppointment = {
   date: Date;
@@ -83,15 +84,6 @@ type RescheduleAppointment = {
   noOfConsultations?: number;
   consultationCount?: number;
 };
-
-function getAppointmentType(
-  original: IAppointment | IHospitalAppointment,
-): AppointmentType | undefined {
-  if ('type' in original && original.type) {
-    return original.type;
-  }
-  return original.slot?.type;
-}
 
 const AppointmentRequests = (): JSX.Element => {
   const { on } = useWebSocket();
@@ -349,8 +341,6 @@ const AppointmentRequests = (): JSX.Element => {
         const isDone = status === AppointmentStatus.Completed;
         const isCancelled = status === AppointmentStatus.Cancelled;
         const isInProgress = status === AppointmentStatus.Progress;
-        const apptType = getAppointmentType(original);
-        const isVirtual = apptType === AppointmentType.Virtual;
         const getName = (): string => {
           if (user?.role === Role.Patient) {
             return `${doctor?.firstName ?? ''} ${doctor?.lastName ?? ''}`.trim();
@@ -464,7 +454,7 @@ const AppointmentRequests = (): JSX.Element => {
                     void handleJoinMeeting(id);
                   }
                 },
-                visible: !isDone && !isCancelled && isVirtual,
+                visible: canJoinMeeting(original),
               },
               {
                 title: (
