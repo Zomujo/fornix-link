@@ -37,7 +37,12 @@ const HospitalBookingLoginDialog = ({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} child="Stay" />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onOpenChange(false)}
+            child="Stay"
+          />
           <Button type="button" onClick={onProceed} child="Log In" />
         </DialogFooter>
       </DialogContent>

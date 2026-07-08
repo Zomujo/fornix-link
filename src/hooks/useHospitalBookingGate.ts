@@ -29,9 +29,7 @@ export function useHospitalBookingGate(): {
   }, [user, isPatient]);
 
   const proceedToLogin = useCallback((): void => {
-    LocalStorageManager.saveRedirectUrl(
-      globalThis.location.pathname + globalThis.location.search,
-    );
+    LocalStorageManager.saveRedirectUrl(globalThis.location.pathname + globalThis.location.search);
     setLoginPromptOpen(false);
     router.push('/login');
   }, [router]);
