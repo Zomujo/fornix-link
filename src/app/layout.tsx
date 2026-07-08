@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(BRANDING.APP_URL),
   title: {
-    default: `${BRANDING.APP_NAME} – ${BRANDING.SLOGAN}`,
+    default: `${BRANDING.APP_NAME} | ${BRANDING.SEO_TITLE}`,
     template: `%s | ${BRANDING.APP_NAME}`,
   },
   description: BRANDING.OG_DESCRIPTION,
@@ -38,8 +38,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: buildCanonicalUrl('/'),
   },
-  openGraph: buildOpenGraph(),
-  twitter: buildTwitterCard(),
+  openGraph: buildOpenGraph({
+    title: `${BRANDING.APP_NAME} | ${BRANDING.SEO_TITLE}`,
+    description: BRANDING.OG_DESCRIPTION,
+  }),
+  twitter: buildTwitterCard({
+    title: `${BRANDING.APP_NAME} | ${BRANDING.SEO_TITLE}`,
+    description: BRANDING.OG_DESCRIPTION,
+  }),
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
