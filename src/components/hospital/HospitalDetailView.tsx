@@ -4,9 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { getHospitalBySlug } from '@/lib/features/hospitals/hospitalThunk';
 import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
-import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { selectUser } from '@/lib/features/auth/authSelector';
-import { LocalStorageManager } from '@/lib/localStorage';
+import { useAppDispatch } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
 import { IHospitalDetail } from '@/types/hospital.interface';
 import {
@@ -29,7 +27,9 @@ import SkeletonDoctorPatientCard from '@/components/skeleton/skeletonDoctorPatie
 import HospitalAppointmentModal, {
   HospitalAppointmentFormData,
 } from '@/components/hospital/HospitalAppointmentModal';
+import HospitalBookingLoginDialog from '@/components/hospital/HospitalBookingLoginDialog';
 import ReviewSection from '@/components/hospital/ReviewSection';
+import { useHospitalBookingGate } from '@/hooks/useHospitalBookingGate';
 import { PublicHospitalShell } from '@/components/hospital/PublicHospitalShell';
 import { getHospitalListPath, HospitalViewMode } from '@/components/hospital/hospitalPaths';
 
@@ -41,11 +41,17 @@ interface HospitalDetailViewProps {
 const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Element => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const user = useAppSelector(selectUser);
   const [hospital, setHospital] = useState<IHospitalDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const {
+    loginPromptOpen,
+    setLoginPromptOpen,
+    bookingModalOpen,
+    setBookingModalOpen,
+    requestBooking,
+    proceedToLogin,
+  } = useHospitalBookingGate();
 
   useEffect(() => {
     async function fetchHospital(): Promise<void> {
@@ -63,17 +69,6 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
 
     void fetchHospital();
   }, [slug, dispatch]);
-
-  const handleBookingClick = (): void => {
-    if (mode === 'public' && !user) {
-      LocalStorageManager.saveRedirectUrl(
-        globalThis.location.pathname + globalThis.location.search,
-      );
-      router.push('/login');
-      return;
-    }
-    setBookingModalOpen(true);
-  };
 
   const handleBack = (): void => {
     if (mode === 'public') {
@@ -247,6 +242,11 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
 
   const detailContent = (
     <div className="flex flex-col gap-6 pb-8">
+      <HospitalBookingLoginDialog
+        open={loginPromptOpen}
+        onOpenChange={setLoginPromptOpen}
+        onProceed={proceedToLogin}
+      />
       <HospitalAppointmentModal
         open={bookingModalOpen}
         setOpen={setBookingModalOpen}
@@ -268,7 +268,7 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
           className="w-fit text-gray-600 hover:text-gray-900"
         />
         <Button
-          onClick={handleBookingClick}
+          onClick={requestBooking}
           child={
             <>
               <CalendarCheck size={16} />

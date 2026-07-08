@@ -12,16 +12,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/assets/images';
-import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { selectUser } from '@/lib/features/auth/authSelector';
+import { useAppDispatch } from '@/lib/hooks';
 import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { showErrorToast } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { LocalStorageManager } from '@/lib/localStorage';
 import HospitalAppointmentModal, {
   HospitalAppointmentFormData,
 } from '@/components/hospital/HospitalAppointmentModal';
+import HospitalBookingLoginDialog from '@/components/hospital/HospitalBookingLoginDialog';
 import { getHospitalDetailPath, HospitalViewMode } from '@/components/hospital/hospitalPaths';
+import { useHospitalBookingGate } from '@/hooks/useHospitalBookingGate';
 
 interface HospitalCardProps {
   hospital: IHospitalListItem;
@@ -30,11 +30,17 @@ interface HospitalCardProps {
 
 const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
   const [showPreview, setShowPreview] = useState(false);
-  const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const user = useAppSelector(selectUser);
+  const {
+    loginPromptOpen,
+    setLoginPromptOpen,
+    bookingModalOpen,
+    setBookingModalOpen,
+    requestBooking,
+    proceedToLogin,
+  } = useHospitalBookingGate();
   const {
     id,
     name,
@@ -61,17 +67,6 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
       return;
     }
     router.push(getHospitalDetailPath(slug, mode));
-  };
-
-  const handleBookingClick = (): void => {
-    if (mode === 'public' && !user) {
-      LocalStorageManager.saveRedirectUrl(
-        globalThis.location.pathname + globalThis.location.search,
-      );
-      router.push('/login');
-      return;
-    }
-    setBookingModalOpen(true);
   };
 
   const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
@@ -115,6 +110,11 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
 
   return (
     <>
+      <HospitalBookingLoginDialog
+        open={loginPromptOpen}
+        onOpenChange={setLoginPromptOpen}
+        onProceed={proceedToLogin}
+      />
       <HospitalAppointmentModal
         open={bookingModalOpen}
         setOpen={setBookingModalOpen}
@@ -214,7 +214,7 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleViewDetails}>View Details</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBookingClick}>Book Appointment</DropdownMenuItem>
+                <DropdownMenuItem onClick={requestBooking}>Book Appointment</DropdownMenuItem>
                 {primaryAddress?.city && (
                   <DropdownMenuItem
                     onClick={() => {
