@@ -11,6 +11,8 @@ import { IPagination, IQueryParams } from '@/types/shared.interface';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { IAppointment } from '@/types/appointment.interface';
+import type { IHospitalAppointment } from '@/types/hospital-appointment.interface';
+import { isAppointmentOnSameDay } from '@/lib/utils/appointmentUtils';
 import { toast } from '@/hooks/use-toast';
 import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
 import { getHospitalAppointments } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
@@ -52,7 +54,9 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     endDate: endOfWeek.toDate(),
     pageSize: 100,
   });
-  const [upcomingAppointment, setUpcomingAppointment] = useState<IAppointment[]>([]);
+  const [upcomingAppointment, setUpcomingAppointment] = useState<
+    (IAppointment | IHospitalAppointment)[]
+  >([]);
 
   useEffect(() => {
     setQueryParams((prev) => ({
@@ -83,7 +87,7 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
         return;
       }
 
-      const { rows } = payload as IPagination<IAppointment>;
+      const { rows } = payload as IPagination<IAppointment | IHospitalAppointment>;
       setUpcomingAppointment(rows);
     }
 
@@ -108,10 +112,9 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     }
   }, [selectedDate]);
 
-  const todayAppointments = upcomingAppointment.filter((appointment) => {
-    const appointmentDate = moment(appointment.slot.date);
-    return appointmentDate.isSame(selectedDate, 'day');
-  });
+  const todayAppointments = upcomingAppointment.filter((appointment) =>
+    isAppointmentOnSameDay(appointment, selectedDate),
+  );
 
   return (
     <div
