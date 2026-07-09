@@ -2,6 +2,7 @@ import { JSX } from 'react';
 import type { Metadata } from 'next';
 import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
+import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
 
 const title = 'Find Hospitals in Ghana';
 const description =
