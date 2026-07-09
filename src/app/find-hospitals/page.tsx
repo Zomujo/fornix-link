@@ -1,10 +1,7 @@
 import { JSX } from 'react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import Footer from '@/components/home/footer';
-import { BRANDING } from '@/constants/branding.constant';
+import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
-import { IPagination, IResponse } from '@/types/shared.interface';
 import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
 
 const title = 'Find Hospitals in Ghana';
