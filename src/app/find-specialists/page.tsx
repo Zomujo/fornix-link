@@ -1,10 +1,9 @@
 import { JSX } from 'react';
 import type { Metadata } from 'next';
 import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
-import { BRANDING } from '@/constants/branding.constant';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
 
-const title = `Find Healthcare Specialists in Ghana | ${BRANDING.APP_NAME}`;
+const title = 'Find Healthcare Specialists in Ghana';
 const description =
   'Search healthcare specialists in Ghana for online consultations, appointments, and specialist care.';
 const url = buildCanonicalUrl('/find-specialists');
