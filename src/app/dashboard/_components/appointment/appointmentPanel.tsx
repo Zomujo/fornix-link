@@ -11,8 +11,11 @@ import { IPagination, IQueryParams } from '@/types/shared.interface';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { IAppointment } from '@/types/appointment.interface';
+import type { IHospitalAppointment } from '@/types/hospital-appointment.interface';
+import { isAppointmentOnSameDay } from '@/lib/utils/appointmentUtils';
 import { toast } from '@/hooks/use-toast';
 import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
+import { getHospitalAppointments } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import LoadingOverlay from '@/components/loadingOverlay/loadingOverlay';
 import { AppointmentDate, useQueryParam } from '@/hooks/useQueryParam';
 import { INotification, NotificationEvent } from '@/types/notification.interface';
@@ -42,6 +45,7 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     selectedDateParam ? new Date(selectedDateParam) : new Date(),
   );
   const [now, setNow] = useState(moment());
+  const isHospital = user?.role === Role.Hospital;
   const [queryParams, setQueryParams] = useState<IQueryParams<AppointmentStatus | ''>>({
     orderDirection: OrderDirection.Ascending,
     doctorId: user?.role === Role.Doctor ? user?.id : undefined,
@@ -50,7 +54,17 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     endDate: endOfWeek.toDate(),
     pageSize: 100,
   });
-  const [upcomingAppointment, setUpcomingAppointment] = useState<IAppointment[]>([]);
+  const [upcomingAppointment, setUpcomingAppointment] = useState<
+    (IAppointment | IHospitalAppointment)[]
+  >([]);
+
+  useEffect(() => {
+    setQueryParams((prev) => ({
+      ...prev,
+      doctorId: user?.role === Role.Doctor ? user?.id : undefined,
+      patientId: user?.role === Role.Patient ? user?.id : undefined,
+    }));
+  }, [user?.role, user?.id]);
 
   on(NotificationEvent.NewRequest, (data: unknown) => {
     const notification = data as INotification;
@@ -63,7 +77,9 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
   useEffect(() => {
     async function getUpcomingAppointments(): Promise<void> {
       setLoading(true);
-      const { payload } = await dispatch(getAppointments(queryParams));
+      const { payload } = isHospital
+        ? await dispatch(getHospitalAppointments(queryParams))
+        : await dispatch(getAppointments(queryParams));
       setLoading(false);
 
       if (payload && showErrorToast(payload)) {
@@ -71,13 +87,12 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
         return;
       }
 
-      const { rows } = payload as IPagination<IAppointment>;
-
+      const { rows } = payload as IPagination<IAppointment | IHospitalAppointment>;
       setUpcomingAppointment(rows);
     }
 
     void getUpcomingAppointments();
-  }, [queryParams]);
+  }, [queryParams, isHospital]);
 
   useEffect(() => {
     const selectedMoment = moment(selectedDate);
@@ -97,10 +112,9 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     }
   }, [selectedDate]);
 
-  const todayAppointments = upcomingAppointment.filter((appointment) => {
-    const appointmentDate = moment(appointment.slot.date);
-    return appointmentDate.isSame(selectedDate, 'day');
-  });
+  const todayAppointments = upcomingAppointment.filter((appointment) =>
+    isAppointmentOnSameDay(appointment, selectedDate),
+  );
 
   return (
     <div
@@ -120,11 +134,13 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
             onIncrement={() => setSelectedDate(moment(selectedDate).add(1, 'day').toDate())}
             date={selectedDate}
           />
-          {user?.role === Role.Doctor && (
-            <Badge variant={'brown'}>
-              {todayAppointments.length} <span className="ml-1 hidden sm:block">appointments</span>
-            </Badge>
-          )}
+          {user?.role === Role.Doctor ||
+            (user?.role === Role.Hospital && (
+              <Badge variant={'brown'}>
+                {todayAppointments.length}{' '}
+                <span className="ml-1 hidden sm:block">appointments</span>
+              </Badge>
+            ))}
           <div className="flex h-8 items-center justify-center rounded-lg border bg-white px-3 text-center text-sm">
             Week
           </div>

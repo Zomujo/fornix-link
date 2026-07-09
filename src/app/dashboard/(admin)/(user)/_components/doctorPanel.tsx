@@ -39,7 +39,7 @@ import { downloadFileWithUrl, showErrorToast, capitalize } from '@/lib/utils';
 import { useSearch } from '@/hooks/useSearch';
 import { useDropdownAction } from '@/hooks/useDropdownAction';
 import { activateUser, deactivateUser } from '@/lib/features/auth/authThunk';
-import { selectIsOrganizationAdmin, selectOrganizationId } from '@/lib/features/auth/authSelector';
+import { selectIsSuperAdmin, selectOrganizationId } from '@/lib/features/auth/authSelector';
 import InviteUser from '@/app/dashboard/_components/inviteUser';
 import InvitationPreview from '@/app/dashboard/(admin)/(user)/_components/invitationPreview';
 import { useCSVReader } from '@/hooks/useCSVReader';
@@ -81,7 +81,7 @@ const DoctorPanel = (): JSX.Element => {
     open: false,
   });
   const { searchTerm, handleSearch } = useSearch(handleSubmit);
-  const isOrganizationAdmin = useAppSelector(selectIsOrganizationAdmin);
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const orgId = useAppSelector(selectOrganizationId);
   const { isLoading, setQueryParameters, paginationData, queryParameters, tableData, updatePage } =
     useFetchPaginatedData<IDoctor>(getAllDoctors);
@@ -351,7 +351,7 @@ const DoctorPanel = (): JSX.Element => {
                 className="h-10 cursor-pointer bg-gray-50 sm:flex"
               />
             </div>
-            {isOrganizationAdmin && (
+            {isSuperAdmin && (
               <div className="space-x-4">
                 <Button
                   onClick={() => setOpenInviteModal(true)}

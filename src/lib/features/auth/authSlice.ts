@@ -6,6 +6,7 @@ import {
   login,
   requestOrganization,
   resetPassword,
+  hospitalSignUp,
   signUp,
   verifyEmail,
 } from '@/lib/features/auth/authThunk';
@@ -115,6 +116,14 @@ const authSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(signUp.fulfilled || signUp.rejected, (state) => {
+        state.isLoading = false;
+      });
+    builder
+      .addCase(hospitalSignUp.pending, (state) => {
+        state.errorMessage = '';
+        state.isLoading = true;
+      })
+      .addCase(hospitalSignUp.fulfilled || hospitalSignUp.rejected, (state) => {
         state.isLoading = false;
       });
     builder
