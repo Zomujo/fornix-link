@@ -6,11 +6,12 @@ import { DAYS_IN_WEEK, DAYS_OF_WEEK, TWELVE_HOUR_SYSTEM } from '@/constants/cons
 import TimeIndicator from './timeIndicator';
 import { AnimatePresence } from 'framer-motion';
 import { IAppointment } from '@/types/appointment.interface';
+import type { IHospitalAppointment } from '@/types/hospital-appointment.interface';
 import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 
 type AppointmentCalendarProps = {
   className?: string;
-  appointments: IAppointment[];
+  appointments: (IAppointment | IHospitalAppointment)[];
   selectedDate: Date;
   calendarRef: CalendarRef;
 };

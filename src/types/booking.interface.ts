@@ -8,11 +8,20 @@ export interface IInitializeAppointment {
   isFollowUp: boolean;
 }
 
-export interface IBookingForm extends IInitializeAppointment {
+export interface IBookingFormBase {
   date: string;
-  time: string;
+  reason: string;
   appointmentType: string;
+  additionalInfo: string;
+  isFollowUp: boolean;
 }
+
+export interface IBookingForm extends IBookingFormBase {
+  time: string;
+  slotId: string;
+}
+
+export type IHospitalBookingForm = IBookingFormBase;
 
 export type IBookingSlotId = Pick<IBookingForm, 'slotId'>;
 

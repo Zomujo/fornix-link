@@ -43,6 +43,10 @@ const PostInvestigationScheduler = ({
       reason: 'Post investigation follow-up',
       appointmentType: 'doctor',
       additionalInfo: '',
+      isFollowUp: false,
+      date: '',
+      time: '',
+      slotId: '',
     },
   });
 
