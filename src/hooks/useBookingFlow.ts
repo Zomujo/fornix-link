@@ -55,7 +55,7 @@ export const useBookingFlow = ({
   const { register, setValue, getValues, watch } = useForm<IBookingForm>({
     resolver: zodResolver(bookingSchema),
     mode: MODE.ON_TOUCH,
-    defaultValues: { isFollowUp: false },
+    defaultValues: { isFollowUp: false, time: '', slotId: '' },
   });
 
   const handleContinueBooking = (): void => {

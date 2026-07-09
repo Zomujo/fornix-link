@@ -13,15 +13,27 @@ export function DashboardProvider({ children }: Readonly<{ children: ReactNode }
 
   useEffect(() => {
     if (!user) {
-      // If the user is accessing a doctor profile page without being logged in,
-      // redirect them to the public profile page instead of the login page.
       const doctorProfileMatch = /^\/dashboard\/doctor\/([^/]+)$/.exec(pathname);
       if (doctorProfileMatch) {
         const doctorId = doctorProfileMatch[1];
         router.replace(`/doctor/${doctorId}`);
-      } else {
-        router.push('/login');
+        return;
       }
+
+      const hospitalListMatch = /^\/dashboard\/find-hospitals\/?$/.exec(pathname);
+      if (hospitalListMatch) {
+        router.replace('/hospitals');
+        return;
+      }
+
+      const hospitalDetailMatch = /^\/dashboard\/find-hospitals\/([^/]+)$/.exec(pathname);
+      if (hospitalDetailMatch) {
+        const slug = hospitalDetailMatch[1];
+        router.replace(`/hospitals/${slug}`);
+        return;
+      }
+
+      router.push('/login');
     }
     if (mustCompleteOnboarding) {
       router.push('/onboarding');
