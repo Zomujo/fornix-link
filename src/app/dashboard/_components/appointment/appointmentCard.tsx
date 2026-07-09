@@ -5,14 +5,20 @@ import {
   SECONDS_IN_MINUTE,
 } from '@/constants/constants';
 import { cn, showErrorToast } from '@/lib/utils';
-import { House, Video } from 'lucide-react';
+import { House, Phone, Video } from 'lucide-react';
 import React, { JSX, useEffect, useRef, useState, RefObject } from 'react';
 import moment from 'moment';
 import { Role } from '@/types/shared.enum';
 import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 import { IAppointment } from '@/types/appointment.interface';
+import type { IHospitalAppointment } from '@/types/hospital-appointment.interface';
 import { AppointmentType } from '@/types/slots.interface';
 import { mergeDateAndTime } from '@/lib/date';
+import {
+  canJoinMeeting,
+  getAppointmentContact,
+  getAppointmentDateValue,
+} from '@/lib/utils/appointmentUtils';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { Button } from '@/components/ui/button';
@@ -24,7 +30,7 @@ export type CalendarRef = RefObject<HTMLDivElement | null>;
 
 export type IAppointmentCardProps = {
   className?: string;
-  appointment: IAppointment;
+  appointment: IAppointment | IHospitalAppointment;
   handleSelectedCard: () => void;
   showDetails: boolean;
   handleCloseDetails: () => void;
@@ -39,9 +45,25 @@ const AppointmentCard = ({
   calendarRef,
 }: IAppointmentCardProps): JSX.Element => {
   const { role } = useAppSelector(selectUser)!;
-  const { status, slot, type, patient, doctor } = appointment;
-  const startDate = mergeDateAndTime(slot.date, slot.startTime);
-  const endDate = mergeDateAndTime(slot.date, slot.endTime);
+  const { status, slot, patient, doctor } = appointment;
+  const type =
+    'type' in appointment && appointment.type
+      ? appointment.type
+      : (slot?.type ?? AppointmentType.Visit);
+
+  const appointmentDateValue = getAppointmentDateValue(appointment);
+  const startDate =
+    slot?.date && slot.startTime
+      ? mergeDateAndTime(slot.date, slot.startTime)
+      : moment(appointmentDateValue).hour(9).minute(0).second(0).millisecond(0).toDate();
+  const endDate =
+    slot?.date && slot.endTime
+      ? mergeDateAndTime(slot.date, slot.endTime)
+      : moment(appointmentDateValue).hour(10).minute(0).second(0).millisecond(0).toDate();
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return <></>;
+  }
   const day = (startDate.getDay() + (DAYS_IN_WEEK - 1)) % DAYS_IN_WEEK;
 
   const hour = startDate.getHours() + startDate.getMinutes() / MINUTES_IN_HOUR;
@@ -55,7 +77,13 @@ const AppointmentCard = ({
 
   const getName = (): string => {
     if (role === Role.Patient) {
-      return `${doctor.firstName} ${doctor.lastName}`;
+      if (doctor) {
+        return `${doctor.firstName} ${doctor.lastName}`;
+      }
+      if ('hospital' in appointment && appointment.hospital) {
+        return appointment.hospital.name;
+      }
+      return '—';
     }
     return patient ? `${patient.firstName} ${patient.lastName}` : '—';
   };
@@ -109,7 +137,11 @@ const AppointmentCard = ({
       </button>
       {showDetails && (
         <AppointmentDetails
-          {...{ ...appointment, day, hour, handleClose: handleCloseDetails, calendarRef }}
+          appointment={appointment}
+          day={day}
+          hour={hour}
+          handleClose={handleCloseDetails}
+          calendarRef={calendarRef}
         />
       )}
     </>
@@ -118,22 +150,22 @@ const AppointmentCard = ({
 
 export default AppointmentCard;
 
-type AppointmentDetails = IAppointment & {
+type AppointmentDetailsProps = {
+  appointment: IAppointment | IHospitalAppointment;
   day: number;
   hour: number;
   handleClose: () => void;
   calendarRef: CalendarRef;
 };
 const AppointmentDetails = ({
+  appointment,
   day,
   hour,
-  status,
-  patient,
-  id,
-  slot: { date },
   handleClose,
   calendarRef,
-}: AppointmentDetails): JSX.Element => {
+}: AppointmentDetailsProps): JSX.Element => {
+  const { status, patient, id } = appointment;
+  const date = getAppointmentDateValue(appointment);
   const firstName = patient?.firstName;
   const patientId = patient?.id;
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -157,6 +189,8 @@ const AppointmentDetails = ({
   const isDoctor = user?.role === Role.Doctor;
   const isPatient = user?.role === Role.Patient;
   const router = useRouter();
+  const showJoinMeeting = canJoinMeeting(appointment);
+  const contact = !showJoinMeeting ? getAppointmentContact(appointment) : undefined;
 
   // Calculate optimal position based on viewport space
   useEffect(() => {
@@ -294,13 +328,23 @@ const AppointmentDetails = ({
     >
       <p className="mb-2 text-lg font-semibold">Meeting with {firstName}</p>
 
-      <Button
-        child="Join Meeting"
-        onClick={handleJoinMeeting}
-        isLoading={isJoining}
-        disabled={isJoining}
-        className={`rounded-full border border-black bg-black px-4 py-2 text-white transition duration-300 hover:bg-green-600 hover:text-white`}
-      />
+      {showJoinMeeting && (
+        <Button
+          child="Join Meeting"
+          onClick={handleJoinMeeting}
+          isLoading={isJoining}
+          disabled={isJoining}
+          className={`rounded-full border border-black bg-black px-4 py-2 text-white transition duration-300 hover:bg-green-600 hover:text-white`}
+        />
+      )}
+      {contact && (
+        <div className="mb-2 flex items-center gap-2">
+          <Phone className="h-4 w-4 shrink-0" />
+          <a href={`tel:${contact}`} className="text-sm font-medium hover:underline">
+            {contact}
+          </a>
+        </div>
+      )}
       <div className="my-4 border-t border-b border-current"></div>
       <div className="flex items-center space-x-2">
         <span className="text-sm font-semibold">Date:</span>

@@ -12,19 +12,17 @@ export const selectIsPatient = createSelector(selectUserRole, (role) => role ===
 
 export const selectIsDoctor = createSelector(selectUserRole, (role) => role === Role.Doctor);
 
-export const selectIsAnAdmin = createSelector(
+export const selectIsSuperAdmin = createSelector(
   selectUserRole,
-  (role) => role === Role.Admin || role === Role.SuperAdmin,
+  (role) => role === Role.SuperAdmin,
 );
 
-export const selectIsOrganizationAdmin = createSelector(
-  selectUserRole,
-  (role) => role === Role.Admin,
-);
+/** @deprecated Use {@link selectIsSuperAdmin} */
+export const selectIsAnAdmin = selectIsSuperAdmin;
 
 export const selectOrganizationId = createSelector(
   selectAuthentication,
-  ({ extra }) => extra?.orgId ?? '', //extra is not undefined for logged-in users except for super admin where it will not be used anyway
+  ({ extra }) => extra?.orgId ?? '',
 );
 
 export const selectErrorMessage = createSelector(
@@ -66,6 +64,12 @@ export const selectUserName = createSelector(
   selectExtra,
   selectUser,
   (extra, user) => `${extra?.firstName ?? user?.firstName} ${extra?.lastName ?? user?.lastName}`,
+);
+
+export const selectUserContact = createSelector(
+  selectExtra,
+  selectUser,
+  (extra, user) => extra?.contact ?? user?.contact ?? '',
 );
 
 export const selectUserId = createSelector(selectAuthentication, ({ user }) => user?.id);
