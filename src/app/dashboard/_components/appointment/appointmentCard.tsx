@@ -5,7 +5,7 @@ import {
   SECONDS_IN_MINUTE,
 } from '@/constants/constants';
 import { cn, showErrorToast } from '@/lib/utils';
-import { House, Video } from 'lucide-react';
+import { House, Phone, Video } from 'lucide-react';
 import React, { JSX, useEffect, useRef, useState, RefObject } from 'react';
 import moment from 'moment';
 import { Role } from '@/types/shared.enum';
@@ -14,7 +14,11 @@ import { IAppointment } from '@/types/appointment.interface';
 import type { IHospitalAppointment } from '@/types/hospital-appointment.interface';
 import { AppointmentType } from '@/types/slots.interface';
 import { mergeDateAndTime } from '@/lib/date';
-import { getAppointmentDateValue } from '@/lib/utils/appointmentUtils';
+import {
+  canJoinMeeting,
+  getAppointmentContact,
+  getAppointmentDateValue,
+} from '@/lib/utils/appointmentUtils';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { Button } from '@/components/ui/button';
@@ -185,6 +189,8 @@ const AppointmentDetails = ({
   const isDoctor = user?.role === Role.Doctor;
   const isPatient = user?.role === Role.Patient;
   const router = useRouter();
+  const showJoinMeeting = canJoinMeeting(appointment);
+  const contact = !showJoinMeeting ? getAppointmentContact(appointment) : undefined;
 
   // Calculate optimal position based on viewport space
   useEffect(() => {
@@ -322,13 +328,23 @@ const AppointmentDetails = ({
     >
       <p className="mb-2 text-lg font-semibold">Meeting with {firstName}</p>
 
-      <Button
-        child="Join Meeting"
-        onClick={handleJoinMeeting}
-        isLoading={isJoining}
-        disabled={isJoining}
-        className={`rounded-full border border-black bg-black px-4 py-2 text-white transition duration-300 hover:bg-green-600 hover:text-white`}
-      />
+      {showJoinMeeting && (
+        <Button
+          child="Join Meeting"
+          onClick={handleJoinMeeting}
+          isLoading={isJoining}
+          disabled={isJoining}
+          className={`rounded-full border border-black bg-black px-4 py-2 text-white transition duration-300 hover:bg-green-600 hover:text-white`}
+        />
+      )}
+      {contact && (
+        <div className="mb-2 flex items-center gap-2">
+          <Phone className="h-4 w-4 shrink-0" />
+          <a href={`tel:${contact}`} className="text-sm font-medium hover:underline">
+            {contact}
+          </a>
+        </div>
+      )}
       <div className="my-4 border-t border-b border-current"></div>
       <div className="flex items-center space-x-2">
         <span className="text-sm font-semibold">Date:</span>
