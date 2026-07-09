@@ -29,6 +29,7 @@ const CookieConsentBanner = (): JSX.Element | null => {
       {/* ── Banner ── */}
       <section
         aria-label="Cookie consent"
+        data-nosnippet
         className={cn(
           'fixed right-0 bottom-0 left-0 z-100 border-t bg-white shadow-2xl',
           'animate-in slide-in-from-bottom-4 duration-300',

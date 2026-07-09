@@ -1,10 +1,9 @@
 import { JSX } from 'react';
 import type { Metadata } from 'next';
 import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
-import { BRANDING } from '@/constants/branding.constant';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
 
-const title = `Find Hospitals in Ghana | ${BRANDING.APP_NAME}`;
+const title = 'Find Hospitals in Ghana';
 const description =
   'Search hospitals and healthcare facilities in Ghana by location, specialty, and supported insurance.';
 const url = buildCanonicalUrl('/find-hospitals');
