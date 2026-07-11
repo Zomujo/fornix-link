@@ -5,17 +5,17 @@ import { BRANDING } from '@/constants/branding.constant';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Find Hospitals',
-  description: `Browse hospitals and healthcare services on ${BRANDING.APP_NAME}.`,
+  title: 'Book Hospitals',
+  description: `Book hospitals and browse healthcare services on ${BRANDING.APP_NAME}.`,
   alternates: { canonical: buildCanonicalUrl('/hospitals') },
   openGraph: buildOpenGraph({
-    title: 'Find Hospitals',
-    description: `Browse hospitals and healthcare services on ${BRANDING.APP_NAME}.`,
+    title: 'Book Hospitals',
+    description: `Book hospitals and browse healthcare services on ${BRANDING.APP_NAME}.`,
     url: buildCanonicalUrl('/hospitals'),
   }),
   twitter: buildTwitterCard({
-    title: 'Find Hospitals',
-    description: `Browse hospitals and healthcare services on ${BRANDING.APP_NAME}.`,
+    title: 'Book Hospitals',
+    description: `Book hospitals and browse healthcare services on ${BRANDING.APP_NAME}.`,
   }),
 };
 

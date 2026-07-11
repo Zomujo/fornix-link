@@ -7,9 +7,9 @@ import { BRANDING } from '@/constants/branding.constant';
 import { IHospitalListItem } from '@/types/hospital.interface';
 import { IPagination, IResponse } from '@/types/shared.interface';
 
-const title = 'Find Hospitals in Ghana';
+const title = 'Book Hospitals in Ghana';
 const description =
-  'Search hospitals and healthcare facilities in Ghana by location, specialty, and supported insurance.';
+  'Book hospital appointments and discover healthcare facilities in Ghana by location, specialty, and supported insurance.';
 const url = buildCanonicalUrl('/find-hospitals');
 
 export const metadata: Metadata = {
@@ -71,7 +71,7 @@ export default async function FindHospitalsPage(): Promise<JSX.Element> {
       </header>
       <main className="mx-4 py-8 md:mx-10">
         <section className="mb-6">
-          <h1 className="text-2xl font-bold md:text-[32px]">Find Hospitals</h1>
+          <h1 className="text-2xl font-bold md:text-[32px]">Book Hospitals</h1>
           <p className="mt-2 max-w-3xl text-gray-500">{description}</p>
         </section>
 
@@ -130,7 +130,7 @@ export default async function FindHospitalsPage(): Promise<JSX.Element> {
           <section className="rounded-lg border bg-white p-6">
             <h2 className="text-lg font-semibold">Hospitals in Ghana</h2>
             <p className="mt-2 max-w-3xl text-gray-500">
-              Fornix Link helps patients discover hospitals and healthcare facilities in Ghana.
+              Fornix Link helps patients book hospitals and discover healthcare facilities in Ghana.
               Hospital listings are being updated.
             </p>
           </section>

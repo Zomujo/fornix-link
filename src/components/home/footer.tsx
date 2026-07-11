@@ -8,9 +8,9 @@ const Footer = (): JSX.Element => {
     {
       title: 'Product',
       links: [
-        { label: 'Find Doctors', href: '/find-doctors' },
-        { label: 'Find Hospitals', href: '/find-hospitals' },
-        { label: 'Find Specialists', href: '/find-specialists' },
+        { label: 'Book a Doctor', href: '/find-doctors' },
+        { label: 'Book Hospitals', href: '/find-hospitals' },
+        { label: 'Book Specialists', href: '/find-specialists' },
         { label: 'Features', href: '#features' },
         { label: 'Pricing', href: '#pricing' },
       ],
