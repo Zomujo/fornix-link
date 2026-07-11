@@ -76,10 +76,10 @@ const Hero = (): JSX.Element => {
       <div className="relative z-10 flex min-h-[calc(100vh-65px)] flex-col items-center justify-center px-4 pb-16">
         <div className="w-full max-w-3xl text-center">
           <h1 className="mb-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
-            Your health deserves
+            Connect with the right
             <br />
             <span className="relative inline-block">
-              the best care
+              specialist for your needs
               {/* Playful underline scribble */}
               <svg
                 viewBox="0 0 300 12"
@@ -98,15 +98,14 @@ const Hero = (): JSX.Element => {
           </h1>
 
           {/* Animated specialty — in a fun colored chip */}
-          <div className="mb-8 flex items-center justify-center gap-2 text-lg text-white/70">
-            Looking for
+          <div className="mb-8 flex flex-col items-center justify-center gap-3 text-lg text-white/80">
             <span
               key={current}
-              className="animate-fadeSpeciality inline-block rounded-full bg-white/15 px-4 py-1 text-sm font-semibold text-white backdrop-blur-sm"
+              className="animate-fadeSpeciality inline-block rounded-full bg-white/20 px-5 py-1.5 text-base font-bold text-white shadow-sm backdrop-blur-md"
             >
               {specialties[current].label}
             </span>
-            ?
+            <p>Quality care made simple — book the right expert for you.</p>
           </div>
 
           {/* Search card */}
@@ -171,7 +170,7 @@ const Hero = (): JSX.Element => {
                   child={
                     <>
                       <Search className="mr-2 h-4 w-4" />
-                      Find my doctor
+                      Book a doctor
                     </>
                   }
                 />
