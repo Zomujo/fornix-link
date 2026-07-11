@@ -40,7 +40,7 @@ const Pricing = dynamic(() => import('./pricing'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const InterestedProvider = dynamic(() => import('./interestedProviders'), {
+const DiscoverHospitals = dynamic(() => import('./discoverHospitals'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
@@ -91,7 +91,7 @@ export default function Home(): JSX.Element {
           <HowItWorks />
           <SolutionsOffered />
           <Pricing />
-          <InterestedProvider />
+          <DiscoverHospitals />
           <Faq />
         </>
       )}

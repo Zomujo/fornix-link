@@ -45,7 +45,7 @@ const Pricing = (): JSX.Element => (
       <div className="mb-20 text-center">
 
         <h2 className="mb-6 text-4xl font-extrabold text-slate-900 sm:text-5xl md:text-6xl tracking-tight">
-          Simple, playful pricing.
+          Simple pricing.
         </h2>
         <p className="mx-auto max-w-2xl text-xl text-slate-600 font-medium">
           No subscriptions. No hidden fees. <br className="hidden sm:block" />
@@ -111,7 +111,7 @@ const Pricing = (): JSX.Element => (
 
               <Link href="/sign-up?role=patient" className="mt-auto">
                 <Button
-                  className="w-full rounded-2xl bg-slate-900 py-7 text-lg font-extrabold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-slate-800"
+                  className="w-full rounded-2xl bg-teal-600 py-7 text-lg font-extrabold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-teal-700"
                   child="Create Free Account"
                 />
               </Link>
