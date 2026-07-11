@@ -113,7 +113,7 @@ const Statistics = (): JSX.Element => {
   });
 
   return (
-    <section ref={ref} className="bg-white py-16 pt-40">
+    <section ref={ref} className="bg-white py-16">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="text-foreground mb-4 text-4xl font-bold">

@@ -15,3 +15,7 @@ export { default as UnderConstruction } from './under-construction.svg';
 export { default as ContentProfile } from './Content.png';
 export { default as ProviderDashboard } from './provider-dashboard.png';
 export { default as DocPatient } from './doc-patient.jpg';
+export { default as GhanaPatientHero } from './ghana-patient-hero.png';
+export { default as HeroLandscape } from './hero-landscape.png';
+export { default as GhanaProviderHero } from './ghana-provider-hero.png';
+export { default as GhanaAiAmbient } from './ghana-ai-ambient.png';

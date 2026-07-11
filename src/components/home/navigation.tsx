@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import { JSX } from 'react';
 import { useQueryParam } from '@/hooks/useQueryParam';
@@ -27,28 +28,31 @@ export const Navigation = (): JSX.Element => {
   };
 
   return (
-    <nav className="flex items-center gap-3">
+    <nav className="flex items-center gap-1">
       <Link
-        href="/hospitals"
+        href="/for-providers"
         className={cn(
-          hasSearchParams ? 'text-primary' : 'text-white hover:bg-gray-100',
-          'cursor-pointer rounded-md px-4 py-2',
+          'rounded-md px-4 py-2 text-sm font-medium transition-colors',
+          hasSearchParams
+            ? 'text-slate-600 hover:text-slate-900'
+            : 'text-slate-600 hover:text-slate-900',
         )}
       >
-        Hospitals
+        For Providers
       </Link>
+
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="h-10 w-10 overflow-hidden rounded-full">
+            <button className="ml-2 h-9 w-9 overflow-hidden rounded-full">
               <AvatarComp
                 imageSrc={profileImage}
                 name={`${user.firstName} ${user.lastName}`}
-                className="h-10 w-10 text-black"
+                className="h-9 w-9 text-sm"
               />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push('/dashboard')}>
               <span>Dashboard</span>
             </DropdownMenuItem>
@@ -59,20 +63,17 @@ export const Navigation = (): JSX.Element => {
         </DropdownMenu>
       ) : (
         <>
-          <Link href="/login">
-            <span
-              className={cn(
-                hasSearchParams ? 'text-primary' : 'text-white hover:bg-gray-100',
-                'mr-2 cursor-pointer rounded-md px-4 py-2',
-              )}
-            >
-              Login
-            </span>
+          <Link
+            href="/login"
+            className="rounded-md px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+          >
+            Log in
           </Link>
-          <Link href="/sign-up">
-            <span className="bg-primary rounded-md px-4 py-2 text-white hover:bg-gray-500">
-              Sign Up
-            </span>
+          <Link
+            href="/sign-up"
+            className="bg-primary ml-1 rounded-md px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Sign up
           </Link>
         </>
       )}

@@ -6,7 +6,7 @@ import { useQueryParam } from '@/hooks/useQueryParam';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Navigation } from '@/components/home/navigation';
+import Header from '@/components/home/header';
 
 const Doctors = dynamic(() => import('@/app/dashboard/(patient)/find-doctor/_components/doctors'), {
   loading: () => <SectionFallback />,
@@ -67,9 +67,10 @@ export default function Home(): JSX.Element {
 
   return (
     <div>
+      <Header />
       {hasSearchParams ? (
-        <div className="mx-4 md:mx-10">
-          <div className="mt-4 mb-4 flex items-center justify-between">
+        <div className="mx-4 pt-[65px] md:mx-10">
+          <div className="mt-4 mb-4 flex items-center">
             <Button
               onClick={handleBackClick}
               child={
@@ -79,7 +80,6 @@ export default function Home(): JSX.Element {
                 </>
               }
             />
-            <Navigation />
           </div>
           <Doctors />
         </div>
@@ -88,9 +88,9 @@ export default function Home(): JSX.Element {
           <Hero />
           <Statistics />
           <AvailableFeatures />
-          <Pricing />
-          <SolutionsOffered />
           <HowItWorks />
+          <SolutionsOffered />
+          <Pricing />
           <InterestedProvider />
           <Faq />
         </>

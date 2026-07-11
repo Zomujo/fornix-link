@@ -6,13 +6,21 @@ import { Shield, FileText } from 'lucide-react';
 const Footer = (): JSX.Element => {
   const footerSections = [
     {
-      title: 'Product',
+      title: 'For Patients',
       links: [
         { label: 'Find Doctors', href: '/find-doctors' },
-        { label: 'Find Hospitals', href: '/find-hospitals' },
         { label: 'Find Specialists', href: '/find-specialists' },
         { label: 'Features', href: '#features' },
         { label: 'Pricing', href: '#pricing' },
+      ],
+    },
+    {
+      title: 'For Providers',
+      links: [
+        { label: 'Provider Solutions', href: '/for-providers' },
+        { label: 'For Hospitals', href: '/for-providers#hospitals' },
+        { label: 'Find Hospitals', href: '/find-hospitals' },
+        { label: 'Doctor Sign Up', href: '/sign-up?role=doctor' },
       ],
     },
     {
@@ -25,25 +33,29 @@ const Footer = (): JSX.Element => {
   ];
 
   return (
-    <footer className="border-border border-t bg-white py-12">
+    <footer className="border-t border-white/10 bg-slate-900 py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-start justify-between space-y-8 md:flex-row md:space-y-0">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-primary text-xl font-bold tracking-tight">{BRANDING.APP_NAME}</h3>
-            <p className="text-muted-foreground text-sm font-medium">{BRANDING.SLOGAN}</p>
-            <p className="text-muted-foreground text-xs italic">{BRANDING.APP_TAGLINE}</p>
+          <div className="flex flex-col gap-2">
+            <h3 className="bg-gradient-to-r from-teal-300 to-emerald-400 bg-clip-text text-xl font-black tracking-tight text-transparent">
+              {BRANDING.APP_NAME}
+            </h3>
+            <p className="text-sm font-medium text-slate-400">{BRANDING.SLOGAN}</p>
+            <p className="text-xs italic text-slate-500">{BRANDING.APP_TAGLINE}</p>
           </div>
 
-          <div className="flex flex-col space-y-8 md:flex-row md:space-y-0 md:space-x-16">
+          <div className="flex flex-col space-y-8 md:flex-row md:space-x-16 md:space-y-0">
             {footerSections.map(({ links, title }) => (
               <div key={title}>
-                <h4 className="text-foreground mb-4 font-semibold">{title}</h4>
+                <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-300">
+                  {title}
+                </h4>
                 <ul className="space-y-2">
                   {links.map((link) => (
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-slate-500 transition-colors hover:text-teal-400"
                       >
                         {link.label}
                       </Link>
@@ -55,23 +67,23 @@ const Footer = (): JSX.Element => {
           </div>
         </div>
 
-        <div className="border-border mt-12 border-t pt-8">
+        <div className="mt-12 border-t border-white/10 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-slate-600">
               &copy; {new Date().getFullYear()} {BRANDING.COPYRIGHT_HOLDER}. All rights reserved.
             </p>
             <div className="flex items-center gap-4 text-sm">
               <Link
                 href="/privacy-policy"
-                className="text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors"
+                className="flex items-center gap-1.5 text-slate-600 transition-colors hover:text-teal-400"
               >
                 <Shield className="h-3.5 w-3.5" />
                 Privacy Policy
               </Link>
-              <span className="text-muted-foreground">·</span>
+              <span className="text-slate-700">·</span>
               <Link
                 href="/terms-conditions"
-                className="text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors"
+                className="flex items-center gap-1.5 text-slate-600 transition-colors hover:text-teal-400"
               >
                 <FileText className="h-3.5 w-3.5" />
                 Terms & Conditions
