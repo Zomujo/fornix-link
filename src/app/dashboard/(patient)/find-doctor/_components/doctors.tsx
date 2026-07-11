@@ -385,17 +385,19 @@ const Doctors = (): JSX.Element => {
           </div>
         )}
       </div>
-      <Suggested className="" childrenWrapperClassName="justify-center" showViewAll={false}>
-        {doctors.map((doctor) => (
-          <div className="cursor-pointer" key={doctor.id}>
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          </div>
-        ))}
-        {isLoading &&
-          Array.from({ length: queryParameters.page === 1 ? 8 : 4 }).map((value, index) => (
-            <SkeletonDoctorPatientCard key={`${index}-${value}`} />
+      <div data-nosnippet>
+        <Suggested className="" childrenWrapperClassName="justify-center" showViewAll={false}>
+          {doctors.map((doctor) => (
+            <div className="cursor-pointer" key={doctor.id}>
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            </div>
           ))}
-      </Suggested>
+          {isLoading &&
+            Array.from({ length: queryParameters.page === 1 ? 8 : 4 }).map((value, index) => (
+              <SkeletonDoctorPatientCard key={`${index}-${value}`} />
+            ))}
+        </Suggested>
+      </div>
       {!isLoading && doctors.length === 0 && (
         <section>
           {
