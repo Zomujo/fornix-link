@@ -56,6 +56,7 @@ export async function generateMetadata({ params }: DoctorPageProps): Promise<Met
   return {
     title,
     description,
+    robots: { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: buildOpenGraph({ title, description, url, images: ogImages }),
     twitter: buildTwitterCard({
