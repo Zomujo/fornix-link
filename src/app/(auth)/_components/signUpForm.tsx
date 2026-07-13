@@ -56,6 +56,7 @@ const parseOptionalCoordinate = (
   return num;
 };
 
+
 const hospitalSignUpSchema = z
   .object({
     email: emailSchema,
