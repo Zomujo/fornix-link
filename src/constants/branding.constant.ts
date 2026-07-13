@@ -13,18 +13,19 @@ export const BRANDING = {
   CONTACT_ADDRESS: 'Ghana, Accra',
   COPYRIGHT_HOLDER: 'Fornix Link',
   SLOGAN: 'Quality Care. Made Simple.',
-  SEO_TITLE: 'Find Doctors, Hospitals & Healthcare Across Ghana',
+  SEO_TITLE: 'Book Doctors, Hospitals & Healthcare Across Ghana',
   /** Canonical base URL – override with NEXT_PUBLIC_APP_URL env var in production */
   APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? 'https://fornixlink.com',
   OG_DESCRIPTION:
-    'Find verified doctors, hospitals, and healthcare specialists across Ghana for appointment booking, teleconsultations, and medical records management.',
+    'Book verified doctors, hospitals, and healthcare specialists across Ghana for appointments, teleconsultations, and medical records management.',
   TWITTER_HANDLE: '@fornixlink',
   KEYWORDS: [
     'healthcare platform',
     'online doctor consultation',
     'book doctor appointment',
-    'find doctors Ghana',
-    'find hospitals Ghana',
+    'book doctors Ghana',
+    'book hospitals Ghana',
+    'book specialists Ghana',
     'healthcare specialists Ghana',
     'telemedicine Ghana',
     'medical records',

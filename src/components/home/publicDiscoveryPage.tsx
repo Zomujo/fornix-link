@@ -50,7 +50,7 @@ const PublicDiscoveryPage = ({
         <h1 className="text-2xl font-bold md:text-[32px]">{title}</h1>
         <p className="mt-2 max-w-3xl text-gray-500">{description}</p>
       </section>
-      {type === 'hospitals' ? <Hospitals title="Find Hospitals" /> : <Doctors />}
+      {type === 'hospitals' ? <Hospitals title="Book Hospitals" /> : <Doctors />}
     </main>
     <Footer />
   </div>

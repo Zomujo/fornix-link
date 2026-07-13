@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { MODE } from '@/constants/constants';
-import { emailSchema, nameSchema, requiredStringSchema } from '@/schemas/zod.schemas';
+import { emailSchema, hospitalNameSchema, requiredStringSchema } from '@/schemas/zod.schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { ChangeEvent, JSX, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -19,7 +19,6 @@ import { ISelected } from '@/components/ui/dropdown-menu';
 import UserSignUp, { UserSignUpMethods } from '@/app/(auth)/_components/userSignUp';
 import GoogleOAuthButton from '@/components/ui/googleOAuthButton';
 import { useSearchParams } from 'next/navigation';
-import { capitalize } from '@/lib/utils';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
 
 const roleOptions: ISelected[] = [
@@ -62,7 +61,7 @@ const hospitalSignUpSchema = z
     email: emailSchema,
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
-    hospitalName: nameSchema,
+    hospitalName: hospitalNameSchema,
     location: requiredStringSchema(),
     lat: z.string().optional(),
     long: z.string().optional(),
@@ -146,7 +145,7 @@ const SignUpForm = ({ hasBookingInfo, slotId, doctorId }: SignUpFormProps): JSX.
     const parsedLong = parseOptionalCoordinate(long, -180, 180, 'Longitude');
     const formattedCredentials: IHospitalSignUp = {
       ...rest,
-      hospitalName: capitalize(hospitalCredentials.hospitalName.trim()),
+      hospitalName: hospitalCredentials.hospitalName.trim(),
       ...(parsedLat != null && parsedLong != null ? { lat: parsedLat, long: parsedLong } : {}),
     };
     const payload = await dispatch(hospitalSignUp(formattedCredentials)).unwrap();

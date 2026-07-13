@@ -28,6 +28,17 @@ export const nameSchema = z
   .min(2, 'Input should be more than 2 characters')
   .regex(/^[A-Za-z\s-]+$/, 'Field should only contain alphabets');
 
+/** Hospital / facility names: letters, numbers, spaces, and common punctuation (e.g. St. Michael's). */
+export const hospitalNameSchema = z
+  .string()
+  .nonempty('Field is required')
+  .min(2, 'Name should be at least 2 characters')
+  .max(200, 'Name is too long')
+  .regex(
+    /^[\p{L}\p{N}\s.'’&\-(),/]+$/u,
+    "Hospital name can include letters, numbers, spaces, and punctuation such as . ' - & ( )",
+  );
+
 export const nameArraySchema = z.array(nameSchema).min(1, 'Must have at least one entry');
 export const mdcNumberSchema = requiredStringSchema()
   .trim()

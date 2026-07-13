@@ -32,8 +32,8 @@ const AvailableFeatures = (): JSX.Element => {
     },
     {
       icon: Search,
-      title: 'Find Healthcare Providers',
-      description: 'Easily search and connect with healthcare providers in your area',
+      title: 'Book Healthcare Providers',
+      description: 'Easily book and connect with healthcare providers in your area',
     },
   ];
 
