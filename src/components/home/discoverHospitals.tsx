@@ -2,16 +2,25 @@
 import { JSX } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Building2, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { 
+  HospitalKorleBu, 
+  HospitalKomfoAnokye, 
+  Hospital37Military, 
+  HospitalRidge, 
+  HospitalTema, 
+  HospitalNyaho 
+} from '@/assets/images';
 
 const MOCK_HOSPITALS = [
-  { name: 'Korle-Bu Teaching Hospital', location: 'Accra', color: 'bg-teal-50', iconColor: 'text-teal-600' },
-  { name: 'Komfo Anokye Teaching Hospital', location: 'Kumasi', color: 'bg-blue-50', iconColor: 'text-blue-600' },
-  { name: '37 Military Hospital', location: 'Accra', color: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-  { name: 'Ridge Regional Hospital', location: 'Accra', color: 'bg-indigo-50', iconColor: 'text-indigo-600' },
-  { name: 'Tema General Hospital', location: 'Tema', color: 'bg-amber-50', iconColor: 'text-amber-600' },
-  { name: 'Nyaho Medical Centre', location: 'Accra', color: 'bg-rose-50', iconColor: 'text-rose-600' },
+  { name: 'Korle-Bu Teaching Hospital', location: 'Accra', image: HospitalKorleBu },
+  { name: 'Komfo Anokye Teaching Hospital', location: 'Kumasi', image: HospitalKomfoAnokye },
+  { name: '37 Military Hospital', location: 'Accra', image: Hospital37Military },
+  { name: 'Ridge Regional Hospital', location: 'Accra', image: HospitalRidge },
+  { name: 'Tema General Hospital', location: 'Tema', image: HospitalTema },
+  { name: 'Nyaho Medical Centre', location: 'Accra', image: HospitalNyaho },
 ];
 
 const DiscoverHospitals = (): JSX.Element => (
@@ -62,20 +71,25 @@ const DiscoverHospitals = (): JSX.Element => (
         {[...MOCK_HOSPITALS, ...MOCK_HOSPITALS, ...MOCK_HOSPITALS].map((hospital, index) => (
           <div
             key={index}
-            className="flex w-[320px] shrink-0 flex-col justify-between rounded-[2rem] border border-slate-100 bg-white p-8 shadow-xl shadow-slate-200/40 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/60"
+            className="group flex w-[320px] shrink-0 flex-col rounded-[2rem] border border-slate-100 bg-white p-4 shadow-xl shadow-slate-200/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/60"
           >
-            <div className="mb-6">
-              <div className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl ${hospital.color}`}>
-                <Building2 className={`h-8 w-8 ${hospital.iconColor}`} />
-              </div>
-              <h3 className="mb-2 text-xl font-extrabold text-slate-900 leading-tight">
+            <div className="relative h-48 w-full mb-4 overflow-hidden rounded-2xl bg-slate-100">
+              <Image 
+                src={hospital.image} 
+                alt={hospital.name} 
+                fill 
+                className="object-cover transition-transform duration-500 group-hover:scale-110" 
+              />
+            </div>
+            <div className="px-2 flex flex-col flex-1 pb-2">
+              <h3 className="mb-4 text-xl font-extrabold text-slate-900 leading-tight">
                 {hospital.name}
               </h3>
-            </div>
-            
-            <div className="mt-auto flex items-center gap-2 text-slate-500 font-medium bg-slate-50 rounded-xl px-4 py-2 w-max">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm">{hospital.location}</span>
+              
+              <div className="mt-auto flex items-center gap-2 text-slate-500 font-medium bg-slate-50 rounded-xl px-4 py-2 w-max">
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm">{hospital.location}</span>
+              </div>
             </div>
           </div>
         ))}
