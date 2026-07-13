@@ -4,10 +4,10 @@ import Image from 'next/image';
 import {
   FeatureSpecialistWhimsical,
   FeatureCalendarWhimsical,
-  FeatureTelehealth,
-  FeaturePayment,
-  FeatureRecords,
-  FeaturePrescription,
+  FeatureTelehealthWhimsical,
+  FeaturePaymentWhimsical,
+  FeatureRecordsWhimsical,
+  FeaturePrescriptionWhimsical,
 } from '@/assets/images';
 
 const AvailableFeatures = (): JSX.Element => (
@@ -70,7 +70,7 @@ const AvailableFeatures = (): JSX.Element => (
         {/* 3. Telehealth (Standard Square) */}
         <div className="group relative flex flex-col items-center text-center overflow-hidden rounded-3xl bg-cyan-50/70 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-cyan-100/50">
           <div className="relative h-24 w-24 mb-6">
-            <Image src={FeatureTelehealth} alt="Telehealth" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
+            <Image src={FeatureTelehealthWhimsical} alt="Telehealth" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
           </div>
           <h3 className="mb-2 text-xl font-bold text-slate-900">Telehealth</h3>
           <p className="text-sm text-slate-600">HD video consultations anytime, anywhere.</p>
@@ -79,7 +79,7 @@ const AvailableFeatures = (): JSX.Element => (
         {/* 4. Payments (Standard Square) */}
         <div className="group relative flex flex-col items-center text-center overflow-hidden rounded-3xl bg-slate-50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-slate-200/60">
           <div className="relative h-24 w-24 mb-6">
-            <Image src={FeaturePayment} alt="Payments" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
+            <Image src={FeaturePaymentWhimsical} alt="Payments" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
           </div>
           <h3 className="mb-2 text-xl font-bold text-slate-900">Secure Payments</h3>
           <p className="text-sm text-slate-600">Mobile Money, card, or bank transfer.</p>
@@ -88,7 +88,7 @@ const AvailableFeatures = (): JSX.Element => (
         {/* 5. Records (Standard Square) */}
         <div className="group relative flex flex-col items-center text-center overflow-hidden rounded-3xl bg-purple-50/70 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-purple-100/50">
           <div className="relative h-24 w-24 mb-6">
-            <Image src={FeatureRecords} alt="Records" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
+            <Image src={FeatureRecordsWhimsical} alt="Records" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
           </div>
           <h3 className="mb-2 text-xl font-bold text-slate-900">Your Records</h3>
           <p className="text-sm text-slate-600">Securely store your entire medical history.</p>
@@ -97,7 +97,7 @@ const AvailableFeatures = (): JSX.Element => (
         {/* 6. Prescriptions (Wide Banner - col-span-3) */}
         <div className="group relative flex flex-col md:flex-row items-center overflow-hidden rounded-3xl bg-blue-50/50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:col-span-3 border border-blue-100/50">
           <div className="relative h-32 w-32 md:mr-10 mb-6 md:mb-0">
-            <Image src={FeaturePrescription} alt="Prescriptions" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
+            <Image src={FeaturePrescriptionWhimsical} alt="Prescriptions" fill className="object-contain transition-transform duration-300 group-hover:scale-110" />
           </div>
           <div className="flex-1 text-center md:text-left">
             <h3 className="mb-2 text-2xl font-bold text-slate-900">Digital Prescriptions</h3>

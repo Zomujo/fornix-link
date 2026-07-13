@@ -27,3 +27,7 @@ export { default as FeatureRecords } from './feature-records.png';
 export { default as FeaturePrescription } from './feature-prescription.png';
 export { default as FeatureSpecialistWhimsical } from './feature-specialist-whimsical.png';
 export { default as FeatureCalendarWhimsical } from './feature-calendar-whimsical.png';
+export { default as FeatureTelehealthWhimsical } from './feature-telehealth-whimsical.png';
+export { default as FeaturePaymentWhimsical } from './feature-payment-whimsical.png';
+export { default as FeatureRecordsWhimsical } from './feature-records-whimsical.png';
+export { default as FeaturePrescriptionWhimsical } from './feature-prescription-whimsical.png';
