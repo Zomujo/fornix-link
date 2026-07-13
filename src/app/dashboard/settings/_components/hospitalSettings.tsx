@@ -11,7 +11,7 @@ import {
 } from '@/constants/constants';
 import { toast } from '@/hooks/use-toast';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { positiveNumberSchema } from '@/schemas/zod.schemas';
+import { positiveNumberSchema, hospitalNameSchema } from '@/schemas/zod.schemas';
 import { GripVertical, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import React, { JSX, useState, useRef, useEffect } from 'react';
@@ -32,12 +32,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TooltipComp } from '@/components/ui/tooltip';
 const IMAGE_ITEM_TYPE = 'hospital-image';
 const MAX_GALLERY_IMAGES = 10;
-
-/** Hospital name: 2–200 characters, any content. */
-const hospitalNameSchema = z
-  .string()
-  .min(2, 'Name should be at least 2 characters')
-  .max(200, 'Name is too long');
 
 /** Optional email: null, undefined, empty string, or valid email. */
 const optionalEmailSchema = z.union([
