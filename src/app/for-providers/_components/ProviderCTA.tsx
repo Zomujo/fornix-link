@@ -1,78 +1,47 @@
 'use client';
 import Link from 'next/link';
 import { JSX } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Stethoscope, Building2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ArrowRight } from 'lucide-react';
 
-const ProviderCTA = (): JSX.Element => {
-  const router = useRouter();
+const ProviderCTA = (): JSX.Element => (
+  <section className="bg-slate-50 py-24 md:py-32">
+    <div className="container mx-auto px-4 md:px-8 max-w-4xl text-center">
+      <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl mb-6">
+        Ready to get started?
+      </h2>
+      <p className="text-xl text-slate-500 leading-relaxed max-w-2xl mx-auto mb-12">
+        Join 150+ doctors and 20+ hospitals already using Fornix Link to deliver better care,
+        faster — across Ghana.
+      </p>
 
-  return (
-    <section className="relative overflow-hidden py-24">
-      {/* Deep gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-800" />
-
-      {/* Decorative mesh blobs */}
-      <div className="pointer-events-none absolute top-0 left-0 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-5 blur-3xl" />
-      <div className="pointer-events-none absolute right-0 bottom-0 h-96 w-96 translate-x-1/2 translate-y-1/2 rounded-full bg-white opacity-5 blur-3xl" />
-
-      {/* Kente-inspired decorative stripe */}
-      <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-yellow-400 via-red-500 to-yellow-400 opacity-60" />
-
-      <div className="container relative z-10 mx-auto px-4 text-center">
-        <div className="mx-auto max-w-3xl">
-          <span className="mb-4 inline-block rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold text-white">
-            Join the Movement
-          </span>
-          <h2 className="mb-6 text-4xl font-black text-white md:text-5xl lg:text-6xl">
-            Ready to transform how you deliver care?
-          </h2>
-          <p className="mb-10 text-xl text-white/80">
-            Join 150+ doctors and 20+ hospitals already using Fornix Link to deliver better care,
-            faster — across Ghana.
-          </p>
-
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              onClick={() => router.push('/sign-up?role=doctor')}
-              className="flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-teal-700 shadow-xl transition-all hover:shadow-2xl hover:brightness-105"
-              child={
-                <>
-                  <Stethoscope className="h-5 w-5" />
-                  Join as a Doctor — Free
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              }
-            />
-            <Link href="/sign-up?role=hospital">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 rounded-full border-white/40 px-8 py-4 text-base font-semibold text-white hover:bg-white/15"
-                child={
-                  <>
-                    <Building2 className="h-5 w-5" />
-                    Register Your Hospital
-                  </>
-                }
-              />
-            </Link>
-          </div>
-
-          <p className="mt-8 text-sm text-white/60">
-            Questions?{' '}
-            <Link
-              href={`mailto:admin@fornixlink.com`}
-              className="underline hover:text-white transition-colors"
-            >
-              Contact our team
-            </Link>{' '}
-            — we typically respond within 2 hours.
-          </p>
-        </div>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+        <Link
+          href="/sign-up?role=doctor"
+          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-4 text-lg font-bold text-white shadow-md transition-all hover:bg-teal-500 hover:-translate-y-0.5"
+        >
+          Join as a Doctor
+          <ArrowRight className="h-5 w-5" />
+        </Link>
+        <Link
+          href="/sign-up?role=hospital"
+          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 py-4 text-lg font-bold text-white shadow-md transition-all hover:bg-slate-800 hover:-translate-y-0.5"
+        >
+          Register a Hospital
+        </Link>
       </div>
-    </section>
-  );
-};
+
+      <p className="text-sm text-slate-400">
+        Questions?{' '}
+        <Link
+          href="mailto:admin@fornixlink.com"
+          className="text-teal-600 hover:text-teal-700 transition-colors"
+        >
+          Contact our team
+        </Link>
+        {' '}— we typically respond within 2 hours.
+      </p>
+    </div>
+  </section>
+);
 
 export default ProviderCTA;
