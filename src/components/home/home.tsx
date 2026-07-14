@@ -48,6 +48,10 @@ const HighlyRated = dynamic(() => import('./highlyRated'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
+const WhyBookWithUs = dynamic(() => import('./whyBookWithUs'), {
+  loading: () => <SectionFallback />,
+  ssr: false,
+});
 
 const SectionFallback = (): JSX.Element => (
   <div className="flex items-center justify-center py-20">
@@ -95,6 +99,7 @@ export default function Home(): JSX.Element {
           <PopularSearches />
           <HowItWorks />
           <HighlyRated />
+          <WhyBookWithUs />
           <Pricing />
           
           <Faq />
