@@ -104,7 +104,7 @@ const HighlyRated = (): JSX.Element => {
         }),
       );
 
-      if (!payload || !('rows' in payload)) {
+      if (!payload || typeof payload !== 'object' || !('rows' in payload)) {
         setIsLoading(false);
         return;
       }
