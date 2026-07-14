@@ -59,6 +59,7 @@ export interface IQueryParams<T = undefined> {
   experienceMax?: string;
   gender?: string;
   specialty?: string;
+  location?: string;
   rateMin?: string;
   rateMax?: string;
   booking?: boolean;

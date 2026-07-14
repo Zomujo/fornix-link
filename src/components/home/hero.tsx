@@ -1,20 +1,33 @@
 'use client';
-import { Search } from 'lucide-react';
+import { Search, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState, JSX } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './home.module.css';
 import { Button } from '@/components/ui/button';
-import { MAX_AMOUNT, MIN_AMOUNT, specialties } from '@/constants/constants';
-import { IQueryParams } from '@/types/shared.interface';
-import { AcceptDeclineStatus } from '@/types/shared.enum';
-import { useQueryParam } from '@/hooks/useQueryParam';
+import { specialties } from '@/constants/constants';
 import { Combobox } from '@/components/ui/select';
 import { Input } from '../ui/input';
-import { Slider } from '../ui/slider';
+
+type SearchMode = 'doctors' | 'hospitals';
+
+const LOCATIONS = [
+  { value: 'accra', label: 'Accra' },
+  { value: 'kumasi', label: 'Kumasi' },
+  { value: 'tamale', label: 'Tamale' },
+  { value: 'takoradi', label: 'Takoradi' },
+  { value: 'cape-coast', label: 'Cape Coast' },
+  { value: 'tema', label: 'Tema' },
+];
+
+const getSpecialtyLabel = (value: string): string =>
+  specialties.find((specialty) => specialty.value === value)?.label ?? value;
 
 const Hero = (): JSX.Element => {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
-  const [queryParameters, setQueryParameters] = useState<IQueryParams<AcceptDeclineStatus>>();
-  const { updateQueries } = useQueryParam();
+  const [searchMode, setSearchMode] = useState<SearchMode>('doctors');
+  const [doctorQuery, setDoctorQuery] = useState({ search: '', specialty: '' });
+  const [hospitalQuery, setHospitalQuery] = useState({ search: '', city: '' });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,7 +37,30 @@ const Hero = (): JSX.Element => {
   }, []);
 
   const handleSearch = (): void => {
-    updateQueries({ ...queryParameters, q: 'true' });
+    const query = new URLSearchParams();
+
+    if (searchMode === 'doctors') {
+      if (doctorQuery.search.trim()) {
+        query.set('search', doctorQuery.search.trim());
+      }
+
+      if (doctorQuery.specialty) {
+        query.set('specialty', getSpecialtyLabel(doctorQuery.specialty));
+      }
+
+      router.push(`/find-doctors${query.size ? `?${query.toString()}` : ''}`);
+      return;
+    }
+
+    if (hospitalQuery.search.trim()) {
+      query.set('search', hospitalQuery.search.trim());
+    }
+
+    if (hospitalQuery.city) {
+      query.set('city', hospitalQuery.city);
+    }
+
+    router.push(`/hospitals${query.size ? `?${query.toString()}` : ''}`);
   };
 
   return (
@@ -74,12 +110,12 @@ const Hero = (): JSX.Element => {
 
       {/* Content */}
       <div className="relative z-10 flex min-h-[calc(100vh-65px)] flex-col items-center justify-center px-4 pb-16">
-        <div className="w-full max-w-3xl text-center">
+        <div className="w-full max-w-4xl text-center">
           <h1 className="mb-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
-            Connect with the right
+            Find care. Book instantly.
             <br />
             <span className="relative inline-block">
-              specialist for your needs
+              Get seen today.
               {/* Playful underline scribble */}
               <svg
                 viewBox="0 0 300 12"
@@ -103,84 +139,135 @@ const Hero = (): JSX.Element => {
               key={current}
               className="animate-fadeSpeciality inline-block rounded-full bg-white/20 px-5 py-1.5 text-base font-bold text-white shadow-sm backdrop-blur-md"
             >
-              {specialties[current].label}
+              {specialties[current]?.label || 'General Checkup'}
             </span>
-            <p>Quality care made simple — book the right expert for you.</p>
+            <p>Doctors and hospitals across Ghana, on any device, no download required.</p>
           </div>
 
           {/* Search card */}
-          <div className="relative mx-auto w-full max-w-2xl">
+          <div className="relative mx-auto w-full max-w-4xl">
             {/* Fun colored shadow behind the card */}
             <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-teal-400 via-emerald-400 to-amber-300 opacity-40 blur-lg" />
 
-            <div className="relative rounded-2xl bg-white p-5 shadow-xl">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Combobox
-                    onChange={(value) =>
-                      setQueryParameters((prev) => ({ ...prev, specialty: value }))
-                    }
-                    label="Specialty"
-                    options={specialties}
-                    value={queryParameters?.specialty ?? ''}
-                    className="px-3 py-4"
-                    placeholder="What do you need?"
-                    searchPlaceholder="Search specialty..."
-                    defaultMaxWidth={false}
-                    wrapperClassName="text-left text-[#111] flex-1"
-                    showAllOption
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Any specific doctor?"
-                    className="py-4 text-sm text-slate-800 placeholder:text-slate-400 sm:flex-1"
-                    labelName="Doctor"
-                    labelClassName="text-left text-sm text-slate-700"
-                    value={queryParameters?.search}
-                    onChange={(e) =>
-                      setQueryParameters((prev) => ({ ...prev, search: e.target.value }))
-                    }
-                    defaultMaxWidth={false}
-                  />
-                </div>
-
-                <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="text-sm font-medium text-slate-600">Budget</p>
-                    <span className="text-primary text-sm font-semibold">
-                      {queryParameters?.priceMax
-                        ? `GHS ${Number(queryParameters.priceMax).toLocaleString()}`
-                        : 'Any'}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[Number(queryParameters?.priceMax)]}
-                    onValueChange={(value) =>
-                      setQueryParameters((prev) => ({ ...prev, priceMax: String(value[0]) }))
-                    }
-                    min={MIN_AMOUNT}
-                    max={MAX_AMOUNT}
-                    step={10}
-                  />
-                </div>
-
+            <div className="relative rounded-2xl bg-white p-3 shadow-xl">
+              <div className="mb-4 flex flex-wrap gap-2">
                 <Button
-                  onClick={handleSearch}
-                  className="bg-primary hover:bg-primary/90 w-full rounded-xl py-5 text-sm font-semibold text-white"
-                  child={
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      Book a doctor
-                    </>
+                  type="button"
+                  variant={searchMode === 'doctors' ? 'default' : 'outline'}
+                  className={searchMode === 'doctors' ? 'rounded-full px-5' : 'rounded-full px-5 text-slate-700'}
+                  onClick={() => setSearchMode('doctors')}
+                  child="Doctors"
+                />
+                <Button
+                  type="button"
+                  variant={searchMode === 'hospitals' ? 'default' : 'outline'}
+                  className={
+                    searchMode === 'hospitals'
+                      ? 'rounded-full px-5'
+                      : 'rounded-full px-5 text-slate-700'
                   }
+                  onClick={() => setSearchMode('hospitals')}
+                  child="Hospitals"
                 />
               </div>
+
+              {searchMode === 'doctors' ? (
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <div className="md:min-w-0 md:flex-[1.25]">
+                    <Combobox
+                      onChange={(value) =>
+                        setDoctorQuery((prev) => ({ ...prev, specialty: value }))
+                      }
+                      options={specialties}
+                      value={doctorQuery.specialty}
+                      placeholder="What specialty do you need?"
+                      searchPlaceholder="Search specialty..."
+                      className="h-14 rounded-xl border-none bg-slate-50 text-left text-slate-900 shadow-none"
+                      wrapperClassName="w-full"
+                      showAllOption
+                    />
+                  </div>
+
+                  <div className="hidden md:block h-10 w-px bg-slate-200"></div>
+
+                  <div className="relative md:min-w-0 md:flex-1">
+                    <Input
+                      type="text"
+                      placeholder="Optional doctor name"
+                      className="h-14 rounded-xl border-none bg-slate-50 py-4 pl-10 text-base text-slate-900 shadow-none focus-visible:ring-0"
+                      value={doctorQuery.search}
+                      onChange={(event) =>
+                        setDoctorQuery((prev) => ({ ...prev, search: event.target.value }))
+                      }
+                      defaultMaxWidth={false}
+                    />
+                    <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  </div>
+
+                  <Button
+                    onClick={handleSearch}
+                    className="bg-primary hover:bg-primary/90 h-14 shrink-0 rounded-xl px-8 text-base font-semibold text-white"
+                    child="Search"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <div className="relative flex-1">
+                    <Input
+                      type="text"
+                      placeholder="Hospital name, service, or location"
+                      className="h-14 rounded-xl border-none bg-slate-50 py-4 pl-10 text-base text-slate-900 shadow-none focus-visible:ring-0"
+                      value={hospitalQuery.search}
+                      onChange={(event) =>
+                        setHospitalQuery((prev) => ({ ...prev, search: event.target.value }))
+                      }
+                      defaultMaxWidth={false}
+                    />
+                    <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  </div>
+
+                  <div className="hidden md:block h-10 w-px bg-slate-200"></div>
+
+                  <div className="md:w-52">
+                    <Combobox
+                      onChange={(value) =>
+                        setHospitalQuery((prev) => ({ ...prev, city: value }))
+                      }
+                      options={LOCATIONS}
+                      value={hospitalQuery.city}
+                      placeholder="Any city"
+                      searchPlaceholder="Search city..."
+                      className="h-14 rounded-xl border-none bg-slate-50 text-slate-900 shadow-none"
+                      wrapperClassName="w-full"
+                      showAllOption
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSearch}
+                    className="bg-primary hover:bg-primary/90 h-14 shrink-0 rounded-xl px-8 text-base font-semibold text-white"
+                    child="Search"
+                  />
+                </div>
+              )}
+
+              <p className="mt-3 text-left text-sm text-slate-500">
+                {searchMode === 'doctors'
+                  ? 'Start with the specialty you need. Doctor name is optional.'
+                  : 'Hospital search supports name, city, and hospital-related services.'}
+              </p>
             </div>
           </div>
 
-          <p className="mt-6 text-sm text-white/40">
-            150+ verified doctors &nbsp;·&nbsp; Same-day booking &nbsp;·&nbsp; Across Ghana
-          </p>
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <p className="text-sm md:text-base text-white/90 font-medium flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-teal-400" /> Free to search. No account needed. Cancel most bookings free of charge.
+            </p>
+            
+            <p className="text-xs md:text-sm text-white/50 font-medium">
+              Ghana Medical and Dental Council verified providers &nbsp;·&nbsp; 500+ appointments booked &nbsp;·&nbsp; Real patient reviews
+            </p>
+          </div>
         </div>
       </div>
 

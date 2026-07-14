@@ -11,7 +11,7 @@ const Footer = (): JSX.Element => {
       title: 'For Patients',
       links: [
         { label: 'Find Doctors', href: '/find-doctors' },
-        { label: 'Find Hospitals', href: '/find-hospitals' },
+        { label: 'Find Hospitals', href: '/hospitals' },
         { label: 'Find Specialists', href: '/find-specialists' },
         { label: 'Pricing', href: '/#pricing' },
       ],

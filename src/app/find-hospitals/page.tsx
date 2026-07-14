@@ -1,7 +1,7 @@
-import { JSX } from 'react';
+import React, { JSX, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
-import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
+import HospitalListView from '@/components/hospital/HospitalListView';
 
 const title = 'Find Hospitals in Ghana';
 const description =
@@ -19,5 +19,15 @@ export const metadata: Metadata = {
 };
 
 export default function FindHospitalsPage(): JSX.Element {
-  return <PublicDiscoveryPage title="Find Hospitals" description={description} type="hospitals" />;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="border-t-primary h-10 w-10 animate-spin rounded-full border-4 border-gray-200" />
+        </div>
+      }
+    >
+      <HospitalListView mode="public" />
+    </Suspense>
+  );
 }
