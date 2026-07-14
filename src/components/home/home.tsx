@@ -40,10 +40,7 @@ const Faq = dynamic(() => import('./faq'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const Pricing = dynamic(() => import('./pricing'), {
-  loading: () => <SectionFallback />,
-  ssr: false,
-});
+
 const HighlyRated = dynamic(() => import('./highlyRated'), {
   loading: () => <SectionFallback />,
   ssr: false,
@@ -57,6 +54,10 @@ const PatientReviews = dynamic(() => import('./patientReviews'), {
   ssr: false,
 });
 const OngoingCare = dynamic(() => import('./ongoingCare'), {
+  loading: () => <SectionFallback />,
+  ssr: false,
+});
+const AppPromo = dynamic(() => import('./appPromo'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
@@ -110,9 +111,9 @@ export default function Home(): JSX.Element {
           <WhyBookWithUs />
           <PatientReviews />
           <OngoingCare />
-          <Pricing />
           
           <Faq />
+          <AppPromo />
         </>
       )}
       <Footer />
