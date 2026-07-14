@@ -56,6 +56,10 @@ const PatientReviews = dynamic(() => import('./patientReviews'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
+const OngoingCare = dynamic(() => import('./ongoingCare'), {
+  loading: () => <SectionFallback />,
+  ssr: false,
+});
 
 const SectionFallback = (): JSX.Element => (
   <div className="flex items-center justify-center py-20">
@@ -105,6 +109,7 @@ export default function Home(): JSX.Element {
           <HighlyRated />
           <WhyBookWithUs />
           <PatientReviews />
+          <OngoingCare />
           <Pricing />
           
           <Faq />
