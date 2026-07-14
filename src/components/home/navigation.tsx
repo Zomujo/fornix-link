@@ -34,7 +34,7 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
       <Link
         href="/for-providers"
         className={cn(
-          'group relative px-4 py-2 text-sm font-semibold transition-colors duration-300',
+          'group relative hidden sm:inline-block px-3 py-2 sm:px-4 sm:py-2 text-sm font-semibold transition-colors duration-300 whitespace-nowrap',
           isSolid ? 'text-slate-600 hover:text-teal-700' : 'text-white/90 hover:text-white',
         )}
       >
@@ -77,7 +77,7 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
           <Link
             href="/login"
             className={cn(
-              'group relative px-5 py-2.5 text-sm font-semibold transition-colors duration-300',
+              'group relative px-2 py-2 sm:px-5 sm:py-2.5 text-sm font-semibold transition-colors duration-300 whitespace-nowrap',
               isSolid ? 'text-slate-600 hover:text-teal-700' : 'text-white/90 hover:text-white',
             )}
           >
@@ -92,7 +92,7 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
           <Link
             href="/sign-up"
             className={cn(
-              'relative ml-1 overflow-hidden rounded-full px-6 py-2.5 text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg',
+              'relative ml-1 overflow-hidden rounded-full px-4 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap',
               isSolid
                 ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:shadow-teal-500/25'
                 : 'bg-white text-teal-800 hover:bg-white hover:shadow-white/30 hover:ring-2 hover:ring-white/50 hover:ring-offset-1 hover:ring-offset-transparent',

@@ -24,14 +24,14 @@ const Header = (): JSX.Element => {
 
   return (
     <header
-      className={`fixed top-0 right-0 left-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 md:px-10 ${
+      className={`fixed top-0 right-0 left-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-6 md:px-10 ${
         isSolid ? 'bg-white shadow-sm' : 'bg-transparent'
       }`}
     >
-      <Link href="/" className="flex items-center gap-2.5">
-        <Image src={Logo} alt="Fornix Link logo" width={36} height={36} />
+      <Link href="/" className="flex items-center gap-2">
+        <Image src={Logo} alt="Fornix Link logo" width={32} height={32} className="sm:w-[36px] sm:h-[36px]" />
         <span
-          className={`text-[17px] font-bold tracking-tight transition-colors duration-300 ${
+          className={`text-[15px] sm:text-[17px] font-bold tracking-tight whitespace-nowrap transition-colors duration-300 ${
             isSolid ? 'text-slate-900' : 'text-white'
           }`}
         >
