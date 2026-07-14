@@ -20,7 +20,7 @@ const Statistics = dynamic(() => import('./statistics'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const AvailableFeatures = dynamic(() => import('./availableFeatures'), {
+const BrowseByCategory = dynamic(() => import('./browseByCategory'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
@@ -87,7 +87,7 @@ export default function Home(): JSX.Element {
         <>
           <Hero />
           <Statistics />
-          <AvailableFeatures />
+          <BrowseByCategory />
           <HowItWorks />
           <SolutionsOffered />
           <Pricing />

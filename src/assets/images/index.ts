@@ -31,6 +31,11 @@ export { default as FeatureTelehealthWhimsical } from './feature-telehealth-whim
 export { default as FeaturePaymentWhimsical } from './feature-payment-whimsical.png';
 export { default as FeatureRecordsWhimsical } from './feature-records-whimsical.png';
 export { default as FeaturePrescriptionWhimsical } from './feature-prescription-whimsical.png';
+
+export { default as CategoryDoctorsWhimsical } from './category-doctors-whimsical.png';
+export { default as CategoryHospitalsWhimsical } from './category-hospitals-whimsical.png';
+export { default as CategoryLabTestsWhimsical } from './category-lab-tests-whimsical.png';
+export { default as CategoryPharmaciesWhimsical } from './category-pharmacies-whimsical.png';
 export { default as HospitalKorleBu } from './hospital-korle-bu-real.jpg';
 export { default as HospitalKomfoAnokye } from './hospital-komfo-anokye-real.jpg';
 export { default as Hospital37Military } from './hospital-37-military-real.jpg';
