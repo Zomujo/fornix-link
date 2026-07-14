@@ -65,38 +65,44 @@ const PopularSearches = (): JSX.Element => (
         </div>
 
         {/* Right — item list */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full">
-            <tbody>
-              {popularItems.map((item, index) => (
-                <tr
-                  key={index}
-                  className={`${index !== popularItems.length - 1 ? 'border-b border-slate-100' : ''}`}
-                >
-                  <td className="w-16 px-6 py-5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                  </td>
-                  <td className="py-5 pr-6 text-base font-semibold text-slate-900">
-                    {item.title}
-                  </td>
-                  <td className="w-28 py-5 pr-6">
-                    <div className="flex items-center gap-1.5 text-sm text-slate-500">
-                      <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
-                      <span>{item.location}</span>
-                    </div>
-                  </td>
-                  <td className="w-48 py-5 pr-6">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${item.tag}`}>
-                      <Clock className="h-3.5 w-3.5 shrink-0" />
-                      <span className="whitespace-nowrap">{item.availability}</span>
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col">
+          {popularItems.map((item, index) => (
+            <div
+              key={index}
+              className={`flex flex-col sm:flex-row sm:items-center p-5 sm:px-6 gap-3 sm:gap-6 ${
+                index !== popularItems.length - 1 ? 'border-b border-slate-100' : ''
+              }`}
+            >
+              {/* Mobile top row: Number + Title */}
+              <div className="flex items-center gap-4 sm:w-16 sm:shrink-0">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="text-base font-semibold text-slate-900 sm:hidden">
+                  {item.title}
+                </span>
+              </div>
+
+              {/* Desktop Title */}
+              <div className="hidden sm:block flex-1 text-base font-semibold text-slate-900">
+                {item.title}
+              </div>
+
+              {/* Metadata (Location & Tag) */}
+              <div className="flex flex-wrap items-center gap-3 ml-[52px] sm:ml-0 sm:shrink-0">
+                <div className="flex items-center gap-1.5 text-sm text-slate-500 sm:w-24">
+                  <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span>{item.location}</span>
+                </div>
+                <div className="sm:w-48 sm:text-right">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${item.tag}`}>
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">{item.availability}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
