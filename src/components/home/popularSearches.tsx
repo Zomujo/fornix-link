@@ -1,0 +1,106 @@
+'use client';
+import { JSX } from 'react';
+import Link from 'next/link';
+import { ArrowRight, MapPin, Clock } from 'lucide-react';
+
+const popularItems = [
+  {
+    title: 'General checkup',
+    location: 'Accra',
+    availability: 'Next available today',
+    tag: 'bg-teal-100 text-teal-700',
+  },
+  {
+    title: 'Blood work panel',
+    location: 'Kumasi',
+    availability: 'Results in 24 hours',
+    tag: 'bg-purple-100 text-purple-700',
+  },
+  {
+    title: 'Pediatrician visit',
+    location: 'Accra',
+    availability: 'Same day slots open',
+    tag: 'bg-blue-100 text-blue-700',
+  },
+  {
+    title: 'Dental cleaning',
+    location: 'Tema',
+    availability: 'Book this week',
+    tag: 'bg-amber-100 text-amber-700',
+  },
+  {
+    title: 'Antenatal checkup',
+    location: 'Kumasi',
+    availability: 'Next available tomorrow',
+    tag: 'bg-emerald-100 text-emerald-700',
+  },
+];
+
+const PopularSearches = (): JSX.Element => (
+  <section className="bg-slate-50 py-20 md:py-28">
+    <div className="container mx-auto px-4 md:px-8 max-w-7xl">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-12 items-start">
+
+        {/* Left — sticky headline */}
+        <div className="lg:sticky lg:top-24">
+          <span className="mb-4 inline-block rounded-full bg-teal-50 px-4 py-1.5 text-sm font-bold tracking-wide text-teal-700">
+            Popular Right Now
+          </span>
+          <h2 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">
+            People are<br />booking<br />
+            <span className="bg-gradient-to-r from-teal-500 to-emerald-500 bg-clip-text text-transparent">
+              these today
+            </span>
+          </h2>
+          <p className="mt-6 text-slate-500 text-lg leading-relaxed max-w-sm">
+            Real-time availability across Ghana. See what's open right now in your city.
+          </p>
+          <Link
+            href="/hospitals"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-7 py-4 text-base font-bold text-white shadow-md shadow-teal-200 transition-all hover:bg-teal-500 hover:-translate-y-0.5"
+          >
+            See what's available near you
+            <ArrowRight className="h-5 w-5" />
+          </Link>
+        </div>
+
+        {/* Right — item list */}
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <table className="w-full">
+            <tbody>
+              {popularItems.map((item, index) => (
+                <tr
+                  key={index}
+                  className={`${index !== popularItems.length - 1 ? 'border-b border-slate-100' : ''}`}
+                >
+                  <td className="w-16 px-6 py-5">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </td>
+                  <td className="py-5 pr-6 text-base font-semibold text-slate-900">
+                    {item.title}
+                  </td>
+                  <td className="w-28 py-5 pr-6">
+                    <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                      <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+                      <span>{item.location}</span>
+                    </div>
+                  </td>
+                  <td className="w-48 py-5 pr-6">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${item.tag}`}>
+                      <Clock className="h-3.5 w-3.5 shrink-0" />
+                      <span className="whitespace-nowrap">{item.availability}</span>
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+export default PopularSearches;
