@@ -3,12 +3,14 @@
 import { JSX, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Star, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import DiscoverHospitals from './discoverHospitals';
 import { useAppDispatch } from '@/lib/hooks';
 import { getAllDoctors } from '@/lib/features/doctors/doctorsThunk';
 import { AcceptDeclineStatus, OrderDirection } from '@/types/shared.enum';
 import { IDoctor } from '@/types/doctor.interface';
 import { IPagination } from '@/types/shared.interface';
+import { AvatarComp } from '@/components/ui/avatar';
 
 type ProviderCard = {
   id: string;
@@ -21,6 +23,7 @@ type ProviderCard = {
   accentColor: string;
   badge: string;
   badgeColor: string;
+  imageSrc?: string;
 };
 
 const CARD_STYLES = [
@@ -82,6 +85,7 @@ const mapDoctorToCard = (doctor: IDoctor, index: number): ProviderCard => {
     accentColor: cardStyle.accentColor,
     badge: 'Doctor',
     badgeColor: cardStyle.badgeColor,
+    imageSrc: doctor.profilePicture,
   };
 };
 
@@ -96,9 +100,9 @@ const HighlyRated = (): JSX.Element => {
       const { payload } = await dispatch(
         getAllDoctors({
           page: 1,
-          pageSize: 3,
+          pageSize: 15, // Increased to fetch enough doctors for the marquee
           status: AcceptDeclineStatus.Accepted,
-          booking: true,
+          booking: true, // Only doctors with available slots
           orderBy: 'rate',
           orderDirection: OrderDirection.Descending,
         }),
@@ -117,92 +121,131 @@ const HighlyRated = (): JSX.Element => {
     void fetchHighlyRatedDoctors();
   }, [dispatch]);
 
+  // For the infinite marquee to work smoothly, we duplicate the array
+  const duplicatedProviders = [...providers, ...providers, ...providers];
+
   return (
     <>
-      <section className="bg-slate-50 py-20 md:py-28">
+      <section className="bg-slate-50 py-20 md:py-28 overflow-hidden">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-12">
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-              Highly rated, ready to see you
-            </h2>
-            <p className="mt-4 max-w-xl text-lg text-slate-500">
-              Top-rated providers with real availability — book directly, no waiting.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {isLoading
-              ? Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={`provider-skeleton-${index}`}
-                    className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-                  >
-                    <div className="mb-5">
-                      <div className="mb-3 h-6 w-20 animate-pulse rounded-full bg-slate-200" />
-                      <div className="h-6 w-40 animate-pulse rounded bg-slate-200" />
-                      <div className="mt-2 h-4 w-28 animate-pulse rounded bg-slate-100" />
-                    </div>
-                    <div className="mb-4 h-5 w-24 animate-pulse rounded bg-slate-100" />
-                    <div className="mb-3 h-5 w-20 animate-pulse rounded bg-slate-100" />
-                    <div className="mb-6 h-5 w-40 animate-pulse rounded bg-slate-100" />
-                    <div className="mt-auto h-12 animate-pulse rounded-xl bg-slate-100" />
-                  </div>
-                ))
-              : providers.map((provider) => (
-              <div
-                key={provider.id}
-                className={`flex flex-col rounded-3xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${provider.accentColor}`}
-              >
-                <div className="mb-5 flex items-start justify-between">
-                  <div>
-                    <span
-                      className={`mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold ${provider.badgeColor}`}
-                    >
-                      {provider.badge}
-                    </span>
-                    <h3 className="text-xl font-extrabold text-slate-900">{provider.name}</h3>
-                    <p className="mt-1 text-sm text-slate-500">{provider.type}</p>
-                  </div>
-                </div>
-
-                <div className="mb-4 flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(provider.rating)
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'fill-slate-200 text-slate-200'
-                      }`}
-                    />
-                  ))}
-                  <span className="ml-2 text-sm font-semibold text-slate-700">
-                    {provider.rating.toFixed(1)}
-                  </span>
-                </div>
-
-                <div className="mb-3 flex items-center gap-1.5 text-sm text-slate-500">
-                  <MapPin className="h-4 w-4 text-slate-400" />
-                  <span>{provider.location}</span>
-                </div>
-
-                <div className="mb-6 flex items-center gap-1.5 text-sm font-medium text-teal-600">
-                  <Clock className="h-4 w-4" />
-                  <span>{provider.availability}</span>
-                </div>
-
-                <div className="mt-auto">
-                  <Link
-                    href={provider.href}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition-all hover:text-teal-700 hover:ring-teal-400"
-                  >
-                    Book Now <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-                ))}
+          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <span className="mb-4 inline-block rounded-full bg-teal-50 px-4 py-1.5 text-sm font-bold tracking-wide text-teal-700">
+                Top Rated Specialists
+              </span>
+              <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+                Highly rated, ready to see you
+              </h2>
+              <p className="mt-4 text-lg text-slate-500">
+                Top-rated providers with real availability — book directly, no waiting.
+              </p>
+            </div>
           </div>
         </div>
+
+        {isLoading ? (
+          <div className="container mx-auto max-w-7xl px-4 md:px-8">
+            <div className="flex gap-6 overflow-hidden">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`provider-skeleton-${index}`}
+                  className="flex w-[320px] shrink-0 flex-col rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
+                >
+                  <div className="mb-5">
+                    <div className="mb-3 h-6 w-20 animate-pulse rounded-full bg-slate-200" />
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="h-16 w-16 animate-pulse rounded-full bg-slate-200" />
+                      <div>
+                        <div className="mb-2 h-5 w-32 animate-pulse rounded bg-slate-200" />
+                        <div className="h-4 w-24 animate-pulse rounded bg-slate-100" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-4 h-5 w-24 animate-pulse rounded bg-slate-100" />
+                  <div className="mb-3 h-5 w-32 animate-pulse rounded bg-slate-100" />
+                  <div className="mb-6 h-5 w-48 animate-pulse rounded bg-slate-100" />
+                  <div className="mt-auto h-12 animate-pulse rounded-xl bg-slate-100" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : providers.length > 0 ? (
+          <div className="relative flex overflow-hidden group pb-8">
+            {/* Fade edges */}
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-r from-slate-50 to-transparent md:w-64"></div>
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-l from-slate-50 to-transparent md:w-64"></div>
+
+            <motion.div
+              animate={{ x: [-1920, 0] }}
+              transition={{
+                x: {
+                  repeat: Infinity,
+                  repeatType: 'loop',
+                  duration: 60,
+                  ease: 'linear',
+                },
+              }}
+              className="flex gap-6 w-max px-6 cursor-grab active:cursor-grabbing"
+            >
+              {duplicatedProviders.map((provider, index) => (
+                <div
+                  key={`${provider.id}-${index}`}
+                  className={`flex w-[320px] sm:w-[360px] shrink-0 flex-col items-center text-center rounded-[2rem] border p-6 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${provider.accentColor}`}
+                >
+                  <div className="mb-4 mt-2">
+                    <AvatarComp 
+                      name={provider.name} 
+                      imageSrc={provider.imageSrc} 
+                      className="h-28 w-28 mx-auto border-4 border-white shadow-md"
+                    />
+                  </div>
+                  
+                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-1">{provider.name}</h3>
+                  <p className="text-sm font-medium text-slate-600 mb-4">{provider.type}</p>
+
+                  <div className="mb-4 flex items-center justify-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < Math.floor(provider.rating)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'fill-slate-200 text-slate-200'
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-2 text-sm font-semibold text-slate-700">
+                      {provider.rating.toFixed(1)}
+                    </span>
+                  </div>
+
+                  <div className="mb-3 flex items-center justify-center gap-2 text-sm text-slate-600 font-medium w-full">
+                    <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+                    <span className="truncate">{provider.location}</span>
+                  </div>
+
+                  <div className="mb-6 flex items-center justify-center gap-2 text-sm font-bold text-teal-600 bg-white/60 p-2.5 rounded-xl w-full">
+                    <Clock className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{provider.availability}</span>
+                  </div>
+
+                  <div className="mt-auto w-full">
+                    <Link
+                      href={provider.href}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition-all hover:text-teal-700 hover:ring-teal-400 hover:shadow"
+                    >
+                      Book Now <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        ) : (
+          <div className="container mx-auto px-4 py-10 text-center">
+            <p className="text-lg text-slate-500">No available doctors found at the moment.</p>
+          </div>
+        )}
       </section>
 
       <DiscoverHospitals />

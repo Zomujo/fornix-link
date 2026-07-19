@@ -32,7 +32,7 @@ const WhyBookWithUs = (): JSX.Element => (
   <section className="bg-white py-24 md:py-32 border-y border-slate-100">
     <div className="container mx-auto px-4 md:px-8 max-w-7xl">
       <div className="mb-20 text-center max-w-3xl mx-auto">
-        <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl leading-tight">
+        <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl leading-tight">
           Why book with <span className="text-teal-600">Fornix Link</span>
         </h2>
         <p className="mt-6 text-xl text-slate-500 leading-relaxed">

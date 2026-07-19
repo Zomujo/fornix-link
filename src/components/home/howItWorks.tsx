@@ -13,7 +13,7 @@ const STEPS = [
   },
   {
     step: '2',
-    title: 'Find Doctor',
+    title: 'Find Doctor/Hospital',
     description: 'Browse verified specialists by specialty or location. Read real reviews.',
     color: 'from-violet-400 to-purple-500',
     shadow: 'shadow-violet-200',
@@ -151,15 +151,20 @@ const HowItWorks = (): JSX.Element => {
     <section className="relative overflow-hidden bg-white py-16 md:py-20">
       <div className="container relative z-10 mx-auto px-4 max-w-5xl text-center">
         
-        <h2 className="mb-12 text-3xl font-extrabold text-slate-900 sm:text-4xl md:text-5xl">
-          From search to care in{' '}
-          <span className="relative inline-block">
-            5 simple steps
-            <svg viewBox="0 0 300 12" className="absolute -bottom-2 left-0 w-full" preserveAspectRatio="none">
-              <path d="M2 8 Q75 2 150 8 Q225 14 298 6" fill="none" stroke="#14b8a6" strokeWidth="3" strokeLinecap="round" />
-            </svg>
+        <div className="mb-12">
+          <span className="mb-4 inline-block rounded-full bg-teal-50 px-4 py-1.5 text-sm font-bold tracking-wide text-teal-700">
+            How It Works
           </span>
-        </h2>
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+            From search to care in{' '}
+            <span className="relative inline-block">
+              5 simple steps
+              <svg viewBox="0 0 300 12" className="absolute -bottom-2 left-0 w-full" preserveAspectRatio="none">
+                <path d="M2 8 Q75 2 150 8 Q225 14 298 6" fill="none" stroke="#14b8a6" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+            </span>
+          </h2>
+        </div>
 
         {/* Playful Horizontal Nav */}
         <div className="mb-12 flex flex-wrap justify-center gap-3 md:gap-4">

@@ -24,10 +24,10 @@ const BrowseByCategory = dynamic(() => import('./browseByCategory'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const PopularSearches = dynamic(() => import('./popularSearches'), {
-  loading: () => <SectionFallback />,
-  ssr: false,
-});
+// const PopularSearches = dynamic(() => import('./popularSearches'), {
+//   loading: () => <SectionFallback />,
+//   ssr: false,
+// });
 const SolutionsOffered = dynamic(() => import('./solutionsOffered'), {
   loading: () => <SectionFallback />,
   ssr: false,
@@ -105,7 +105,7 @@ export default function Home(): JSX.Element {
           <Hero />
           <Statistics />
           <BrowseByCategory />
-          <PopularSearches />
+          {/* <PopularSearches /> */}
           <HowItWorks />
           <HighlyRated />
           <WhyBookWithUs />

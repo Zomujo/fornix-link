@@ -193,7 +193,7 @@ const Hero = (): JSX.Element => {
                   <div className="relative md:min-w-0 md:flex-1">
                     <Input
                       type="text"
-                      placeholder="Optional doctor name"
+                      placeholder="Optional: Doctor's name"
                       className="h-14 rounded-xl border-none bg-slate-50 py-4 pl-10 text-base text-slate-900 shadow-none focus-visible:ring-0"
                       value={doctorQuery.search}
                       onChange={(event) =>
