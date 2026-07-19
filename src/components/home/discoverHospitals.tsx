@@ -56,6 +56,9 @@ const DiscoverHospitals = (): JSX.Element => (
       <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-l from-white to-transparent md:w-64"></div>
 
       <motion.div
+        drag="x"
+        dragConstraints={{ left: -2000, right: 0 }}
+        whileDrag={{ cursor: 'grabbing' }}
         animate={{ x: [0, -1920] }}
         transition={{
           x: {
@@ -71,9 +74,9 @@ const DiscoverHospitals = (): JSX.Element => (
         {[...MOCK_HOSPITALS, ...MOCK_HOSPITALS, ...MOCK_HOSPITALS].map((hospital, index) => (
           <div
             key={index}
-            className="group flex w-[320px] shrink-0 flex-col rounded-[2rem] border border-slate-100 bg-white p-4 shadow-xl shadow-slate-200/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/60"
+            className="group flex w-[260px] sm:w-[320px] shrink-0 flex-col rounded-[2rem] border border-slate-100 bg-white p-3 sm:p-4 shadow-xl shadow-slate-200/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/60"
           >
-            <div className="relative h-48 w-full mb-4 overflow-hidden rounded-2xl bg-slate-100">
+            <div className="relative h-36 sm:h-48 w-full mb-3 sm:mb-4 overflow-hidden rounded-2xl bg-slate-100">
               <Image 
                 src={hospital.image} 
                 alt={hospital.name} 
@@ -82,7 +85,7 @@ const DiscoverHospitals = (): JSX.Element => (
               />
             </div>
             <div className="px-2 flex flex-col flex-1 pb-2">
-              <h3 className="mb-4 text-xl font-extrabold text-slate-900 leading-tight">
+              <h3 className="mb-2 sm:mb-4 text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
                 {hospital.name}
               </h3>
               

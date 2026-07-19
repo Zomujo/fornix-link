@@ -176,6 +176,9 @@ const HighlyRated = (): JSX.Element => {
             <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-l from-slate-50 to-transparent md:w-64"></div>
 
             <motion.div
+              drag="x"
+              dragConstraints={{ left: -2000, right: 0 }}
+              whileDrag={{ cursor: 'grabbing' }}
               animate={{ x: [-1920, 0] }}
               transition={{
                 x: {
@@ -190,18 +193,18 @@ const HighlyRated = (): JSX.Element => {
               {duplicatedProviders.map((provider, index) => (
                 <div
                   key={`${provider.id}-${index}`}
-                  className={`flex w-[320px] sm:w-[360px] shrink-0 flex-col items-center text-center rounded-[2rem] border p-6 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${provider.accentColor}`}
+                  className={`flex w-[260px] sm:w-[360px] shrink-0 flex-col items-center text-center rounded-[2rem] border p-4 sm:p-6 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${provider.accentColor}`}
                 >
                   <div className="mb-4 mt-2">
                     <AvatarComp 
                       name={provider.name} 
                       imageSrc={provider.imageSrc} 
-                      className="h-28 w-28 mx-auto border-4 border-white shadow-md"
+                      className="h-20 w-20 sm:h-28 sm:w-28 mx-auto border-4 border-white shadow-md"
                     />
                   </div>
                   
-                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-1">{provider.name}</h3>
-                  <p className="text-sm font-medium text-slate-600 mb-4">{provider.type}</p>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight mb-1">{provider.name}</h3>
+                  <p className="text-xs sm:text-sm font-medium text-slate-600 mb-4">{provider.type}</p>
 
                   <div className="mb-4 flex items-center justify-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
