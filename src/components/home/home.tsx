@@ -6,7 +6,7 @@ import { useQueryParam } from '@/hooks/useQueryParam';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Navigation } from '@/components/home/navigation';
+import Header from '@/components/home/header';
 
 const Doctors = dynamic(() => import('@/app/dashboard/(patient)/find-doctor/_components/doctors'), {
   loading: () => <SectionFallback />,
@@ -20,14 +20,14 @@ const Statistics = dynamic(() => import('./statistics'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const AvailableFeatures = dynamic(() => import('./availableFeatures'), {
+const BrowseByCategory = dynamic(() => import('./browseByCategory'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const SolutionsOffered = dynamic(() => import('./solutionsOffered'), {
-  loading: () => <SectionFallback />,
-  ssr: false,
-});
+// const PopularSearches = dynamic(() => import('./popularSearches'), {
+//   loading: () => <SectionFallback />,
+//   ssr: false,
+// });
 const HowItWorks = dynamic(() => import('./howItWorks'), {
   loading: () => <SectionFallback />,
   ssr: false,
@@ -36,11 +36,24 @@ const Faq = dynamic(() => import('./faq'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const Pricing = dynamic(() => import('./pricing'), {
+
+const HighlyRated = dynamic(() => import('./highlyRated'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
-const InterestedProvider = dynamic(() => import('./interestedProviders'), {
+const WhyBookWithUs = dynamic(() => import('./whyBookWithUs'), {
+  loading: () => <SectionFallback />,
+  ssr: false,
+});
+const PatientReviews = dynamic(() => import('./patientReviews'), {
+  loading: () => <SectionFallback />,
+  ssr: false,
+});
+const OngoingCare = dynamic(() => import('./ongoingCare'), {
+  loading: () => <SectionFallback />,
+  ssr: false,
+});
+const AppPromo = dynamic(() => import('./appPromo'), {
   loading: () => <SectionFallback />,
   ssr: false,
 });
@@ -67,9 +80,10 @@ export default function Home(): JSX.Element {
 
   return (
     <div>
+      <Header />
       {hasSearchParams ? (
-        <div className="mx-4 md:mx-10">
-          <div className="mt-4 mb-4 flex items-center justify-between">
+        <div className="mx-4 pt-[65px] md:mx-10">
+          <div className="mt-4 mb-4 flex items-center">
             <Button
               onClick={handleBackClick}
               child={
@@ -79,7 +93,6 @@ export default function Home(): JSX.Element {
                 </>
               }
             />
-            <Navigation />
           </div>
           <Doctors />
         </div>
@@ -87,12 +100,16 @@ export default function Home(): JSX.Element {
         <>
           <Hero />
           <Statistics />
-          <AvailableFeatures />
-          <Pricing />
-          <SolutionsOffered />
+          <BrowseByCategory />
+          {/* <PopularSearches /> */}
           <HowItWorks />
-          <InterestedProvider />
+          <HighlyRated />
+          <WhyBookWithUs />
+          <PatientReviews />
+          <OngoingCare />
+          
           <Faq />
+          <AppPromo />
         </>
       )}
       <Footer />

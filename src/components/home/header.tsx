@@ -1,20 +1,46 @@
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { JSX } from 'react';
+import { JSX, useEffect, useState } from 'react';
 import { Logo } from '@/assets/images';
 import { Navigation } from '@/components/home/navigation';
 import { BRANDING } from '@/constants/branding.constant';
+import { useQueryParam } from '@/hooks/useQueryParam';
 
-const Header = (): JSX.Element => (
-  <header className="header-bg-transparent flex items-center justify-between p-4 transition-colors duration-500">
-    <Link href="/">
-      <div className="flex items-center space-x-2">
-        <Image src={Logo} alt="Logo" width={40} height={40} />
-        <span className="text-xl font-bold text-white">{BRANDING.APP_NAME}</span>
-      </div>
-    </Link>
-    <Navigation />
-  </header>
-);
+const Header = (): JSX.Element => {
+  const [scrolled, setScrolled] = useState(false);
+  const { hasSearchParams } = useQueryParam();
+
+  useEffect(() => {
+    const onScroll = (): void => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Check initial scroll position
+    setScrolled(window.scrollY > 10);
+    return (): void => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // When viewing search results, we always want a solid header
+  const isSolid = scrolled || hasSearchParams;
+
+  return (
+    <header
+      className={`fixed top-0 right-0 left-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-6 md:px-10 ${
+        isSolid ? 'bg-white shadow-sm' : 'bg-transparent'
+      }`}
+    >
+      <Link href="/" className="flex items-center gap-2">
+        <Image src={Logo} alt="Fornix Link logo" width={32} height={32} className="sm:w-[36px] sm:h-[36px]" />
+        <span
+          className={`text-[15px] sm:text-[17px] font-bold tracking-tight whitespace-nowrap transition-colors duration-300 ${
+            isSolid ? 'text-slate-900' : 'text-white'
+          }`}
+        >
+          {BRANDING.APP_NAME}
+        </span>
+      </Link>
+      <Navigation isSolid={isSolid} />
+    </header>
+  );
+};
 
 export default Header;
