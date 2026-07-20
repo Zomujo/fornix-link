@@ -1,7 +1,7 @@
 'use client';
 import { JSX, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Video, FileText, User, CreditCard, CheckCircle2, Phone, MicOff, VideoOff, ChevronRight } from 'lucide-react';
+import { Search, FileText, Phone, MicOff } from 'lucide-react';
 
 const STEPS = [
   {
@@ -42,7 +42,7 @@ const STEPS = [
 ];
 
 // Mockup components for the phone screen
-const MockupSignup = () => (
+const MockupSignup = (): JSX.Element => (
   <div className="flex h-full w-full flex-col p-6 bg-white">
     <div className="mb-6 flex justify-center pt-8">
       <div className="h-10 w-10 rounded-2xl bg-pink-400"></div>
@@ -55,7 +55,7 @@ const MockupSignup = () => (
   </div>
 );
 
-const MockupSearch = () => (
+const MockupSearch = (): JSX.Element => (
   <div className="flex h-full w-full flex-col bg-slate-50 p-4 pt-8">
     <div className="mb-4 h-12 w-full shrink-0 rounded-full bg-white shadow-sm flex items-center px-4 gap-3">
       <Search className="h-5 w-5 text-slate-300" />
@@ -75,7 +75,7 @@ const MockupSearch = () => (
   </div>
 );
 
-const MockupBook = () => (
+const MockupBook = (): JSX.Element => (
   <div className="flex h-full w-full flex-col bg-white p-5 pt-8">
     <div className="mb-6 flex shrink-0 items-center gap-4 border-b border-slate-100 pb-4">
       <div className="h-14 w-14 rounded-full bg-teal-100"></div>
@@ -93,7 +93,7 @@ const MockupBook = () => (
   </div>
 );
 
-const MockupVideo = () => (
+const MockupVideo = (): JSX.Element => (
   <div className="relative flex h-full w-full flex-col bg-slate-900 overflow-hidden">
     <div className="absolute inset-0 bg-slate-800">
        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-64 bg-slate-700 rounded-t-[4rem]"></div>
@@ -110,7 +110,7 @@ const MockupVideo = () => (
   </div>
 );
 
-const MockupRecords = () => (
+const MockupRecords = (): JSX.Element => (
   <div className="flex h-full w-full flex-col bg-slate-50 p-5 pt-8">
     <div className="space-y-3">
       {[
@@ -141,7 +141,7 @@ const HowItWorks = (): JSX.Element => {
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % STEPS.length);
     }, 4000);
-    return () => clearInterval(timer);
+    return (): void => clearInterval(timer);
   }, []);
 
   const ActiveMockup = MOCKUPS[active] || MOCKUPS[0];

@@ -53,13 +53,13 @@ const PopularSearches = (): JSX.Element => (
             </span>
           </h2>
           <p className="mt-6 text-slate-500 text-lg leading-relaxed max-w-sm">
-            Real-time availability across Ghana. See what's open right now in your city.
+            Real-time availability across Ghana. See what&apos;s open right now in your city.
           </p>
           <Link
             href="/hospitals"
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-7 py-4 text-base font-bold text-white shadow-md shadow-teal-200 transition-all hover:bg-teal-500 hover:-translate-y-0.5"
           >
-            See what's available near you
+            See what&apos;s available near you
             <ArrowRight className="h-5 w-5" />
           </Link>
         </div>

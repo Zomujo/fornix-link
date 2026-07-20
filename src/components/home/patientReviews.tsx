@@ -40,7 +40,7 @@ const PatientReviews = (): JSX.Element => (
             </div>
             
             <p className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed mb-8 flex-1">
-              "{review.quote}"
+              &ldquo;{review.quote}&rdquo;
             </p>
             
             <div className="flex items-center gap-4">

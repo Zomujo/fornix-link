@@ -249,7 +249,10 @@ const SolutionsOffered = (): JSX.Element => {
                       transition={{ duration: 0.4 }}
                     >
                       <blockquote className="mx-auto mb-10 max-w-4xl text-3xl font-extrabold leading-snug text-slate-800 md:text-5xl">
-                        "{currentReview.comment || 'An incredible platform that makes healthcare so much easier.'}"
+                        &ldquo;
+                        {currentReview.comment ||
+                          'An incredible platform that makes healthcare so much easier.'}
+                        &rdquo;
                       </blockquote>
                       
                       <div className="flex flex-col items-center justify-center gap-4">

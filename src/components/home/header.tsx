@@ -16,7 +16,7 @@ const Header = (): JSX.Element => {
     window.addEventListener('scroll', onScroll, { passive: true });
     // Check initial scroll position
     setScrolled(window.scrollY > 10);
-    return () => window.removeEventListener('scroll', onScroll);
+    return (): void => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // When viewing search results, we always want a solid header

@@ -28,10 +28,6 @@ const BrowseByCategory = dynamic(() => import('./browseByCategory'), {
 //   loading: () => <SectionFallback />,
 //   ssr: false,
 // });
-const SolutionsOffered = dynamic(() => import('./solutionsOffered'), {
-  loading: () => <SectionFallback />,
-  ssr: false,
-});
 const HowItWorks = dynamic(() => import('./howItWorks'), {
   loading: () => <SectionFallback />,
   ssr: false,

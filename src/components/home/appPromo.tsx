@@ -21,7 +21,8 @@ const AppPromo = (): JSX.Element => (
       </h2>
       
       <p className="text-xl text-slate-500 leading-relaxed max-w-2xl mx-auto mb-12">
-        No heavy apps to download. Just add Fornix Link to your home screen or bookmark us, and you're always one tap away from care.
+        No heavy apps to download. Just add Fornix Link to your home screen or bookmark us, and
+        you&apos;re always one tap away from care.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
