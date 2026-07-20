@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
 
-const title = 'Find Healthcare Specialists in Ghana';
+const title = 'Book Healthcare Specialists in Ghana';
 const description =
-  'Search healthcare specialists in Ghana for online consultations, appointments, and specialist care.';
+  'Book healthcare specialists in Ghana for online consultations, appointments, and specialist care.';
 const url = buildCanonicalUrl('/find-specialists');
 
 export const metadata: Metadata = {
@@ -20,6 +20,6 @@ export const metadata: Metadata = {
 
 export default function FindSpecialistsPage(): JSX.Element {
   return (
-    <PublicDiscoveryPage title="Find Specialists" description={description} type="specialists" />
+    <PublicDiscoveryPage title="Book Specialists" description={description} type="specialists" />
   );
 }

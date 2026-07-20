@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import PublicDiscoveryPage from '@/components/home/publicDiscoveryPage';
 import { buildCanonicalUrl, buildOpenGraph, buildTwitterCard } from '@/lib/seo';
 
-const title = 'Find Doctors in Ghana';
+const title = 'Book a Doctor in Ghana';
 const description =
-  'Search verified doctors in Ghana by name, specialty, consultation fee, and availability.';
+  'Book appointments with verified doctors in Ghana by name, specialty, consultation fee, and availability.';
 const url = buildCanonicalUrl('/find-doctors');
 
 export const metadata: Metadata = {
@@ -19,5 +19,5 @@ export const metadata: Metadata = {
 };
 
 export default function FindDoctorsPage(): JSX.Element {
-  return <PublicDiscoveryPage title="Find Doctors" description={description} type="doctors" />;
+  return <PublicDiscoveryPage title="Book a Doctor" description={description} type="doctors" />;
 }
