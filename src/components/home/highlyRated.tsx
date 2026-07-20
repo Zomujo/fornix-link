@@ -126,9 +126,9 @@ const HighlyRated = (): JSX.Element => {
 
   return (
     <>
-      <section className="bg-slate-50 py-20 md:py-28 overflow-hidden">
+      <section className="overflow-hidden bg-slate-50 py-20 md:py-28">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="mb-12 flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <span className="mb-4 inline-block rounded-full bg-teal-50 px-4 py-1.5 text-sm font-bold tracking-wide text-teal-700">
                 Top Rated Specialists
@@ -153,7 +153,7 @@ const HighlyRated = (): JSX.Element => {
                 >
                   <div className="mb-5">
                     <div className="mb-3 h-6 w-20 animate-pulse rounded-full bg-slate-200" />
-                    <div className="flex items-center gap-4 mb-4">
+                    <div className="mb-4 flex items-center gap-4">
                       <div className="h-16 w-16 animate-pulse rounded-full bg-slate-200" />
                       <div>
                         <div className="mb-2 h-5 w-32 animate-pulse rounded bg-slate-200" />
@@ -170,10 +170,10 @@ const HighlyRated = (): JSX.Element => {
             </div>
           </div>
         ) : providers.length > 0 ? (
-          <div className="relative flex overflow-hidden group pb-8">
+          <div className="group relative flex overflow-hidden pb-8">
             {/* Fade edges */}
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-r from-slate-50 to-transparent md:w-64"></div>
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-l from-slate-50 to-transparent md:w-64"></div>
+            <div className="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-24 bg-gradient-to-r from-slate-50 to-transparent md:w-64"></div>
+            <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-24 bg-gradient-to-l from-slate-50 to-transparent md:w-64"></div>
 
             <motion.div
               drag="x"
@@ -188,23 +188,27 @@ const HighlyRated = (): JSX.Element => {
                   ease: 'linear',
                 },
               }}
-              className="flex gap-6 w-max px-6 cursor-grab active:cursor-grabbing"
+              className="flex w-max cursor-grab gap-6 px-6 active:cursor-grabbing"
             >
               {duplicatedProviders.map((provider, index) => (
                 <div
                   key={`${provider.id}-${index}`}
-                  className={`flex w-[260px] sm:w-[360px] shrink-0 flex-col items-center text-center rounded-[2rem] border p-4 sm:p-6 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${provider.accentColor}`}
+                  className={`flex w-[260px] shrink-0 flex-col items-center rounded-[2rem] border p-4 text-center shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl sm:w-[360px] sm:p-6 ${provider.accentColor}`}
                 >
-                  <div className="mb-4 mt-2">
-                    <AvatarComp 
-                      name={provider.name} 
-                      imageSrc={provider.imageSrc} 
-                      className="h-20 w-20 sm:h-28 sm:w-28 mx-auto border-4 border-white shadow-md"
+                  <div className="mt-2 mb-4">
+                    <AvatarComp
+                      name={provider.name}
+                      imageSrc={provider.imageSrc}
+                      className="mx-auto h-20 w-20 border-4 border-white shadow-md sm:h-28 sm:w-28"
                     />
                   </div>
-                  
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight mb-1">{provider.name}</h3>
-                  <p className="text-xs sm:text-sm font-medium text-slate-600 mb-4">{provider.type}</p>
+
+                  <h3 className="mb-1 text-lg leading-tight font-extrabold text-slate-900 sm:text-xl">
+                    {provider.name}
+                  </h3>
+                  <p className="mb-4 text-xs font-medium text-slate-600 sm:text-sm">
+                    {provider.type}
+                  </p>
 
                   <div className="mb-4 flex items-center justify-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -222,12 +226,12 @@ const HighlyRated = (): JSX.Element => {
                     </span>
                   </div>
 
-                  <div className="mb-3 flex items-center justify-center gap-2 text-sm text-slate-600 font-medium w-full">
-                    <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+                  <div className="mb-3 flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-600">
+                    <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
                     <span className="truncate">{provider.location}</span>
                   </div>
 
-                  <div className="mb-6 flex items-center justify-center gap-2 text-sm font-bold text-teal-600 bg-white/60 p-2.5 rounded-xl w-full">
+                  <div className="mb-6 flex w-full items-center justify-center gap-2 rounded-xl bg-white/60 p-2.5 text-sm font-bold text-teal-600">
                     <Clock className="h-4 w-4 shrink-0" />
                     <span className="truncate">{provider.availability}</span>
                   </div>
@@ -235,7 +239,7 @@ const HighlyRated = (): JSX.Element => {
                   <div className="mt-auto w-full">
                     <Link
                       href={provider.href}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition-all hover:text-teal-700 hover:ring-teal-400 hover:shadow"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition-all hover:text-teal-700 hover:shadow hover:ring-teal-400"
                     >
                       Book Now <ArrowRight className="h-4 w-4" />
                     </Link>
