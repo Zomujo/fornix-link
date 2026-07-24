@@ -268,9 +268,7 @@ const HospitalListView = ({ mode }: HospitalListViewProps): JSX.Element => {
                 {paginationData.total} {paginationData.total === 1 ? 'Hospital' : 'Hospitals'}
               </span>
               <span>available</span>
-              {queryParameters.search && (
-                <span>matching &quot;{queryParameters.search}&quot;</span>
-              )}
+              {queryParameters.search && <span>matching &quot;{queryParameters.search}&quot;</span>}
             </div>
           )}
         </div>

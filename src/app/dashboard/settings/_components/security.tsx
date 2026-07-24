@@ -14,7 +14,11 @@ import { toast } from '@/hooks/use-toast';
 import { showErrorToast } from '@/lib/utils';
 import { Confirmation, ConfirmationProps, Modal } from '@/components/ui/dialog';
 import { BRANDING } from '@/constants/branding.constant';
-import { selectIsOAuthOnly, selectUserName, selectUserRole } from '@/lib/features/auth/authSelector';
+import {
+  selectIsOAuthOnly,
+  selectUserName,
+  selectUserRole,
+} from '@/lib/features/auth/authSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
 import { Role } from '@/types/shared.enum';

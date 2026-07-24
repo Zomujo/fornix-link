@@ -152,13 +152,13 @@ export const getAllHospitalsAdmin = createAsyncThunk(
     isActive?: boolean;
   }): Promise<IPagination<IHospitalListItem> | Toast> => {
     try {
-      let isActive = rest.isActive;
+      const { isActive: restIsActive, ...queryRest } = rest;
+      let isActive = restIsActive;
       if (status === AcceptDeclineStatus.Accepted) {
         isActive = true;
       } else if (status === AcceptDeclineStatus.Deactivated) {
         isActive = false;
       }
-      const { isActive: _ignored, ...queryRest } = rest;
       const params = new URLSearchParams(getValidQueryString(queryRest));
       params.set('pageSize', String(pageSize || 10));
       if (isActive !== undefined) {

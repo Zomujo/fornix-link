@@ -18,7 +18,11 @@ import React, { JSX, useState, useRef, useEffect } from 'react';
 import { useForm, Controller, type FieldErrors, type Resolver } from 'react-hook-form';
 import { z } from 'zod';
 import { MultiSelect } from '@/components/ui/multiSelect';
-import { updateHospitalDetails, getMyHospital, updateHospitalVisibility } from '@/lib/features/hospitals/hospitalThunk';
+import {
+  updateHospitalDetails,
+  getMyHospital,
+  updateHospitalVisibility,
+} from '@/lib/features/hospitals/hospitalThunk';
 import { selectExtra, selectUserRole } from '@/lib/features/auth/authSelector';
 import { cn, ghcToPesewas, pesewasToGhc, showErrorToast } from '@/lib/utils';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
@@ -545,10 +549,7 @@ const HospitalSettings = (): JSX.Element => {
    * to recompute against the loaded hospital logo.
    */
   const setLogoValue = (value: File | null): void => {
-    reset(
-      { ...getValues(), image: value },
-      { keepDefaultValues: true },
-    );
+    reset({ ...getValues(), image: value }, { keepDefaultValues: true });
   };
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -629,9 +630,7 @@ const HospitalSettings = (): JSX.Element => {
 
     // Keep imageOrder in sync with the remaining existing (already-uploaded) images so the
     // backend can treat it as the authoritative "keep" list and delete removed images.
-    const remainingExisting = updatedImages.filter(
-      (img): img is string => typeof img === 'string',
-    );
+    const remainingExisting = updatedImages.filter((img): img is string => typeof img === 'string');
     setValue('imageOrder', remainingExisting, SET_VALUE_OPTS);
   };
 

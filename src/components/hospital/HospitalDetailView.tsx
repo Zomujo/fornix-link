@@ -586,13 +586,7 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
           <div className="flex items-start gap-4">
             {logoImage && (
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white">
-                <Image
-                  src={logoImage.url}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                />
+                <Image src={logoImage.url} alt="" fill className="object-cover" sizes="64px" />
               </div>
             )}
             <div className="min-w-0 flex-1">
@@ -629,7 +623,7 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
             </div>
           )}
 
-          {(mainPhone || mainEmail || website) ? (
+          {mainPhone || mainEmail || website ? (
             <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                 {mainPhone && (
@@ -684,7 +678,7 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
           <div
             ref={photoScrollRef}
             onScroll={handlePhotoScroll}
-            className="overflow-x-auto overscroll-x-contain scroll-smooth touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="touch-pan-x overflow-x-auto overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label={`${name} photo gallery`}
           >
             <div className="relative flex w-max snap-x snap-mandatory gap-3 px-3 py-3">
@@ -895,13 +889,7 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
                   <li key={network.id} className="flex min-w-0 items-center gap-3">
                     {logoSrc && (
                       <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded border border-gray-100 bg-white p-0.5">
-                        <Image
-                          src={logoSrc}
-                          alt=""
-                          fill
-                          className="object-contain"
-                          sizes="36px"
-                        />
+                        <Image src={logoSrc} alt="" fill className="object-contain" sizes="36px" />
                       </div>
                     )}
                     <div className="min-w-0">
@@ -921,107 +909,99 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
       </div>
 
       <div className="flex flex-col gap-10 border-t border-gray-100 pt-8">
-          {services && services.length > 0 && (
-            <section>
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Services</h2>
-              <ul className="divide-y divide-gray-100 border-y border-gray-100">
-                {services.map((service) => (
-                  <li
-                    key={service.id}
-                    className="flex flex-col gap-1 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+        {services && services.length > 0 && (
+          <section>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Services</h2>
+            <ul className="divide-y divide-gray-100 border-y border-gray-100">
+              {services.map((service) => (
+                <li
+                  key={service.id}
+                  className="flex flex-col gap-1 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900">{service.service.name}</p>
+                    {service.service.description && (
+                      <p className="mt-0.5 text-sm leading-relaxed text-gray-500">
+                        {service.service.description}
+                      </p>
+                    )}
+                    {service.notes && <p className="mt-1 text-xs text-gray-500">{service.notes}</p>}
+                  </div>
+                  <span
+                    className={`mt-1 w-fit shrink-0 rounded-md px-2 py-0.5 text-xs font-medium capitalize ${getAvailabilityBadgeClass(
+                      service.availability,
+                    )}`}
                   >
-                    <div className="min-w-0">
-                      <p className="font-medium text-gray-900">{service.service.name}</p>
-                      {service.service.description && (
-                        <p className="mt-0.5 text-sm leading-relaxed text-gray-500">
-                          {service.service.description}
-                        </p>
+                    {service.availability.replace('_', ' ')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {amenities && amenities.length > 0 && (
+          <section>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Amenities</h2>
+            <ul className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2 md:grid-cols-3">
+              {amenities.map((amenity) => (
+                <li key={amenity.id} className="flex items-center gap-2.5 text-sm text-gray-700">
+                  <CheckCircle2 size={16} className="shrink-0 text-gray-400" />
+                  {amenity.name}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {accreditationsList.length > 0 && (
+          <section>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Accreditations</h2>
+            <ul className="flex flex-wrap gap-x-6 gap-y-3">
+              {accreditationsList.map((acc: unknown) => {
+                const accObj =
+                  typeof acc === 'object' && acc !== null ? (acc as Record<string, unknown>) : {};
+                const body =
+                  (accObj.body as string) ||
+                  (accObj.name as string) ||
+                  (accObj.title as string) ||
+                  (typeof acc === 'string' ? acc : 'Accreditation');
+                const date = (accObj.date ?? accObj.issuedDate ?? accObj.year) as
+                  | string
+                  | undefined;
+                const bodyKey = typeof body === 'string' ? body.toLowerCase() : '';
+                const logoSrc = accreditationLogoMap[bodyKey];
+                const itemKey = `accreditation-${body}-${String(date ?? '')}`;
+                return (
+                  <li key={itemKey} className="flex items-center gap-2.5 text-sm text-gray-700">
+                    {logoSrc ? (
+                      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-white">
+                        <Image src={logoSrc} alt="" fill className="object-contain" sizes="32px" />
+                      </div>
+                    ) : (
+                      <Building2 size={16} className="shrink-0 text-gray-400" />
+                    )}
+                    <span>
+                      {body}
+                      {date && (
+                        <span className="text-gray-400">
+                          {' '}
+                          ·{' '}
+                          {new Date(date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                          })}
+                        </span>
                       )}
-                      {service.notes && (
-                        <p className="mt-1 text-xs text-gray-500">{service.notes}</p>
-                      )}
-                    </div>
-                    <span
-                      className={`mt-1 w-fit shrink-0 rounded-md px-2 py-0.5 text-xs font-medium capitalize ${getAvailabilityBadgeClass(
-                        service.availability,
-                      )}`}
-                    >
-                      {service.availability.replace('_', ' ')}
                     </span>
                   </li>
-                ))}
-              </ul>
-            </section>
-          )}
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
-          {amenities && amenities.length > 0 && (
-            <section>
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Amenities</h2>
-              <ul className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2 md:grid-cols-3">
-                {amenities.map((amenity) => (
-                  <li key={amenity.id} className="flex items-center gap-2.5 text-sm text-gray-700">
-                    <CheckCircle2 size={16} className="shrink-0 text-gray-400" />
-                    {amenity.name}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {accreditationsList.length > 0 && (
-            <section>
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Accreditations</h2>
-              <ul className="flex flex-wrap gap-x-6 gap-y-3">
-                {accreditationsList.map((acc: unknown) => {
-                  const accObj =
-                    typeof acc === 'object' && acc !== null ? (acc as Record<string, unknown>) : {};
-                  const body =
-                    (accObj.body as string) ||
-                    (accObj.name as string) ||
-                    (accObj.title as string) ||
-                    (typeof acc === 'string' ? acc : 'Accreditation');
-                  const date = (accObj.date ?? accObj.issuedDate ?? accObj.year) as
-                    | string
-                    | undefined;
-                  const bodyKey = typeof body === 'string' ? body.toLowerCase() : '';
-                  const logoSrc = accreditationLogoMap[bodyKey];
-                  const itemKey = `accreditation-${body}-${String(date ?? '')}`;
-                  return (
-                    <li key={itemKey} className="flex items-center gap-2.5 text-sm text-gray-700">
-                      {logoSrc ? (
-                        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-white">
-                          <Image
-                            src={logoSrc}
-                            alt=""
-                            fill
-                            className="object-contain"
-                            sizes="32px"
-                          />
-                        </div>
-                      ) : (
-                        <Building2 size={16} className="shrink-0 text-gray-400" />
-                      )}
-                      <span>
-                        {body}
-                        {date && (
-                          <span className="text-gray-400">
-                            {' '}
-                            ·{' '}
-                            {new Date(date).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                            })}
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          )}
-
-          <ReviewSection hospitalName={name} />
+        <ReviewSection hospitalName={name} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:hidden">

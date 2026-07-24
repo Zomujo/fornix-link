@@ -62,11 +62,11 @@ const getOrganizationTypeLabel = (type?: string): string => {
   }
 };
 
-function isOwnerVerified(hospital: {
-  ownerUser?: { status?: string } | null;
-}): boolean {
+function isOwnerVerified(hospital: { ownerUser?: { status?: string } | null }): boolean {
   // Seed hospitals with no owner remain eligible for public listing.
-  if (!hospital.ownerUser) return true;
+  if (!hospital.ownerUser) {
+    return true;
+  }
   return hospital.ownerUser.status === 'verified';
 }
 
@@ -279,12 +279,10 @@ const HospitalPanel = (): JSX.Element => {
                 )}
                 <div className="grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
                   <p>
-                    <span className="font-medium">Email:</span>{' '}
-                    {selectedHospital.mainEmail || '—'}
+                    <span className="font-medium">Email:</span> {selectedHospital.mainEmail || '—'}
                   </p>
                   <p>
-                    <span className="font-medium">Phone:</span>{' '}
-                    {selectedHospital.mainPhone || '—'}
+                    <span className="font-medium">Phone:</span> {selectedHospital.mainPhone || '—'}
                   </p>
                   <p>
                     <span className="font-medium">Public status:</span>{' '}
@@ -295,8 +293,7 @@ const HospitalPanel = (): JSX.Element => {
                         : 'Hidden'}
                   </p>
                   <p>
-                    <span className="font-medium">Website:</span>{' '}
-                    {selectedHospital.website || '—'}
+                    <span className="font-medium">Website:</span> {selectedHospital.website || '—'}
                   </p>
                 </div>
               </div>
