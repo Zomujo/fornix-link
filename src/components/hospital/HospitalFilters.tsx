@@ -1,5 +1,5 @@
 'use client';
-import React, { JSX, useState, useEffect } from 'react';
+import React, { JSX, useState, useEffect, useRef } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -17,6 +17,12 @@ import { ListFilter, RotateCcw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useAppDispatch } from '@/lib/hooks';
+import { getAllHospitals } from '@/lib/features/hospitals/hospitalThunk';
+import { IPagination } from '@/types/shared.interface';
+import { IHospitalListItem } from '@/types/hospital.interface';
+import { OrderDirection } from '@/types/shared.enum';
+import { showErrorToast } from '@/lib/utils';
 
 interface HospitalFiltersProps {
   queryParameters: {
@@ -127,12 +133,49 @@ const HospitalFilters = ({
   onReset,
   totalResults,
 }: HospitalFiltersProps): JSX.Element => {
+  const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
   const [localFilters, setLocalFilters] = useState(queryParameters);
+  const [draftCount, setDraftCount] = useState<number | undefined>(totalResults);
+  const [isCounting, setIsCounting] = useState(false);
+  const countRequestId = useRef(0);
 
   useEffect(() => {
     setLocalFilters(queryParameters);
   }, [queryParameters]);
+
+  useEffect(() => {
+    if (!open) {
+      setDraftCount(totalResults);
+      return;
+    }
+
+    const requestId = ++countRequestId.current;
+    const timer = setTimeout(() => {
+      void (async (): Promise<void> => {
+        setIsCounting(true);
+        const { payload } = await dispatch(
+          getAllHospitals({
+            page: 1,
+            pageSize: 1,
+            orderBy: 'createdAt',
+            orderDirection: OrderDirection.Descending,
+            isActive: true,
+            ...localFilters,
+          }),
+        );
+        if (requestId !== countRequestId.current) {
+          return;
+        }
+        setIsCounting(false);
+        if (payload && !showErrorToast(payload) && 'total' in (payload as object)) {
+          setDraftCount((payload as IPagination<IHospitalListItem>).total);
+        }
+      })();
+    }, 350);
+
+    return (): void => clearTimeout(timer);
+  }, [localFilters, open, dispatch, totalResults]);
 
   const handleFilterChange = (key: string, value: unknown): void => {
     const updated = { ...localFilters, [key]: value };
@@ -239,12 +282,13 @@ const HospitalFilters = ({
           <SheetTitle className="text-2xl font-bold">Filter Hospitals</SheetTitle>
           <SheetDescription>
             Refine your search to find the perfect hospital for your needs
-            {totalResults !== undefined && (
-              <span className="text-primary ml-2 font-semibold">
-                ({totalResults} {totalResults === 1 ? 'hospital' : 'hospitals'} found)
-              </span>
-            )}
           </SheetDescription>
+          {(draftCount !== undefined || totalResults !== undefined) && (
+            <p className="text-primary text-sm font-semibold">
+              {isCounting ? '…' : (draftCount ?? totalResults)}{' '}
+              {(draftCount ?? totalResults) === 1 ? 'hospital' : 'hospitals'} found
+            </p>
+          )}
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
@@ -443,7 +487,15 @@ const HospitalFilters = ({
               </>
             }
           />
-          <Button onClick={handleApplyFilters} className="w-full sm:w-auto" child="Apply Filters" />
+          <Button
+            onClick={handleApplyFilters}
+            className="w-full sm:w-auto"
+            child={
+              draftCount !== undefined
+                ? `Show ${draftCount} ${draftCount === 1 ? 'hospital' : 'hospitals'}`
+                : 'Apply Filters'
+            }
+          />
         </SheetFooter>
       </SheetContent>
     </Sheet>
