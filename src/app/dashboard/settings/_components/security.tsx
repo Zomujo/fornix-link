@@ -14,9 +14,10 @@ import { toast } from '@/hooks/use-toast';
 import { showErrorToast } from '@/lib/utils';
 import { Confirmation, ConfirmationProps, Modal } from '@/components/ui/dialog';
 import { BRANDING } from '@/constants/branding.constant';
-import { selectIsOAuthOnly, selectUserName } from '@/lib/features/auth/authSelector';
+import { selectIsOAuthOnly, selectUserName, selectUserRole } from '@/lib/features/auth/authSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
+import { Role } from '@/types/shared.enum';
 
 const GoogleIcon = (): JSX.Element => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -66,6 +67,7 @@ const SecurityInfo = (): JSX.Element => {
   const [deleteNameInput, setDeleteNameInput] = useState('');
   const isOAuth = useAppSelector(selectIsOAuthOnly);
   const userName = useAppSelector(selectUserName);
+  const userRole = useAppSelector(selectUserRole);
 
   async function onSubmit(userCredentials: IUpdatePassword): Promise<void> {
     setIsLoading(true);
@@ -166,8 +168,9 @@ const SecurityInfo = (): JSX.Element => {
         <div>
           <h2 className="font-bold">Delete account</h2>
           <p className="text-xs text-gray-500 sm:max-w-74.25">
-            We&rsquo;ll delete your account and data permanently. Thanks for being part of{' '}
-            {BRANDING.APP_NAME}! You&rsquo;re always welcome back if you change your mind.
+            {userRole === Role.Hospital
+              ? `We'll permanently delete your hospital account and associated hospital data. Thanks for being part of ${BRANDING.APP_NAME}! You're always welcome back if you change your mind.`
+              : `We'll delete your account and data permanently. Thanks for being part of ${BRANDING.APP_NAME}! You're always welcome back if you change your mind.`}
           </p>
         </div>
         <div className="flex gap-2 pt-3 pb-28 sm:pt-0 sm:pb-0">

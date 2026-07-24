@@ -261,6 +261,18 @@ const HospitalListView = ({ mode }: HospitalListViewProps): JSX.Element => {
               />
             </div>
           </div>
+
+          {paginationData && paginationData.total >= 0 && !isLoading && (
+            <div className="mt-3 flex items-center gap-2 border-t border-gray-200 pt-3 text-sm text-gray-600">
+              <span className="text-primary font-semibold">
+                {paginationData.total} {paginationData.total === 1 ? 'Hospital' : 'Hospitals'}
+              </span>
+              <span>available</span>
+              {queryParameters.search && (
+                <span>matching &quot;{queryParameters.search}&quot;</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

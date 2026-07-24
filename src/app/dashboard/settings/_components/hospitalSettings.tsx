@@ -18,15 +18,16 @@ import React, { JSX, useState, useRef, useEffect } from 'react';
 import { useForm, Controller, type FieldErrors, type Resolver } from 'react-hook-form';
 import { z } from 'zod';
 import { MultiSelect } from '@/components/ui/multiSelect';
-import { updateHospitalDetails, getHospitalBySlug } from '@/lib/features/hospitals/hospitalThunk';
+import { updateHospitalDetails, getMyHospital, updateHospitalVisibility } from '@/lib/features/hospitals/hospitalThunk';
 import { selectExtra, selectUserRole } from '@/lib/features/auth/authSelector';
-import { cn, ghcToPesewas, pesewasToGhc } from '@/lib/utils';
+import { cn, ghcToPesewas, pesewasToGhc, showErrorToast } from '@/lib/utils';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
 import { IHospital, IHospitalDetail, IHospitalImage } from '@/types/hospital.interface';
 import { ApproveDeclineStatus, Role } from '@/types/shared.enum';
 import { Textarea } from '@/components/ui/textarea';
 import { SelectInput } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TooltipComp } from '@/components/ui/tooltip';
@@ -133,6 +134,18 @@ const hospitalSettingsSchema = z.object({
 
 type HospitalFormValues = z.infer<typeof hospitalSettingsSchema>;
 
+function isDirtyFieldValue(value: boolean | object | undefined): boolean {
+  if (value === true) {
+    return true;
+  }
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  return Object.values(value).some((nested) =>
+    isDirtyFieldValue(nested as boolean | object | undefined),
+  );
+}
+
 /**
  * Resolver that only validates fields that have been changed (dirty).
  * Unchanged fields are skipped so pre-loaded/invalid data does not block save.
@@ -148,8 +161,8 @@ function createDirtyOnlyResolver(
 } {
   return (values: HospitalFormValues) => {
     const dirty = dirtyFieldsRef.current;
-    const dirtyKeys = (Object.keys(dirty) as (keyof HospitalFormValues)[]).filter(
-      (k) => dirty[k] !== undefined && dirty[k] !== false,
+    const dirtyKeys = (Object.keys(dirty) as (keyof HospitalFormValues)[]).filter((k) =>
+      isDirtyFieldValue(dirty[k]),
     );
     if (dirtyKeys.length === 0) {
       return { values, errors: {} as FieldErrors<HospitalFormValues> };
@@ -353,7 +366,7 @@ function buildDirtyPayload(
   const payload: Record<string, unknown> = {};
   const keys = Object.keys(dirtyFields) as (keyof HospitalFormValues)[];
   for (const key of keys) {
-    if (!dirtyFields[key]) {
+    if (!isDirtyFieldValue(dirtyFields[key])) {
       continue;
     }
     applyDirtyKey(key, data[key], payload);
@@ -451,6 +464,8 @@ function DraggableImageCard({
 const HospitalSettings = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingHospital, setIsFetchingHospital] = useState(true);
+  const [isPubliclyListed, setIsPubliclyListed] = useState(true);
+  const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
   const selectRef = useRef<HTMLButtonElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
@@ -468,6 +483,7 @@ const HospitalSettings = (): JSX.Element => {
     handleSubmit,
     watch,
     setValue,
+    getValues,
     control,
     reset,
     formState: { errors, isDirty, dirtyFields },
@@ -481,18 +497,18 @@ const HospitalSettings = (): JSX.Element => {
   });
   dirtyFieldsRef.current = dirtyFields;
 
+  // Ensure RHF tracks the logo field even though the file input is uncontrolled.
+  useEffect(() => {
+    register('image');
+  }, [register]);
+
   const hospitalLogo = watch('image');
   const hospitalImages = watch('images') ?? [];
 
   useEffect(() => {
-    const slug = (extra as { slug?: string } | undefined)?.slug;
-    if (!slug) {
-      setIsFetchingHospital(false);
-      return;
-    }
     let cancelled = false;
     (async (): Promise<void> => {
-      const result = await dispatch(getHospitalBySlug(slug));
+      const result = await dispatch(getMyHospital());
       if (cancelled) {
         return;
       }
@@ -501,21 +517,51 @@ const HospitalSettings = (): JSX.Element => {
       if (payload && 'slug' in payload && 'images' in payload) {
         const orgSource = hospitalDetailToOrgSource(payload);
         reset(getInitialFormValues(orgSource));
+        setIsPubliclyListed(payload.isActive !== false);
       }
     })();
     return (): void => {
       cancelled = true;
     };
-  }, [dispatch, role, extra, reset]);
+  }, [dispatch, reset]);
+
+  const handleVisibilityChange = async (checked: boolean): Promise<void> => {
+    setIsUpdatingVisibility(true);
+    const previous = isPubliclyListed;
+    setIsPubliclyListed(checked);
+    const { payload } = await dispatch(updateHospitalVisibility({ isActive: checked }));
+    setIsUpdatingVisibility(false);
+    if (payload) {
+      toast(payload);
+    }
+    if (showErrorToast(payload)) {
+      setIsPubliclyListed(previous);
+    }
+  };
+
+  /**
+   * File → string (URL) dirty tracking is unreliable with setValue alone in RHF.
+   * Resetting values while keeping the original defaultValues forces isDirty/dirtyFields
+   * to recompute against the loaded hospital logo.
+   */
+  const setLogoValue = (value: File | null): void => {
+    reset(
+      { ...getValues(), image: value },
+      { keepDefaultValues: true },
+    );
+  };
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
-    setValue('image', file ?? null, SET_VALUE_OPTS);
     event.target.value = '';
+    if (!file) {
+      return;
+    }
+    setLogoValue(file);
   };
 
   const clearLogo = (): void => {
-    setValue('image', null, SET_VALUE_OPTS);
+    setLogoValue(null);
   };
 
   const [imageObjectUrls] = useState<Map<string, string>>(() => new Map());
@@ -580,6 +626,13 @@ const HospitalSettings = (): JSX.Element => {
     }
     const updatedImages = currentImages.filter((_, i) => i !== index);
     setValue('images', updatedImages, SET_VALUE_OPTS);
+
+    // Keep imageOrder in sync with the remaining existing (already-uploaded) images so the
+    // backend can treat it as the authoritative "keep" list and delete removed images.
+    const remainingExisting = updatedImages.filter(
+      (img): img is string => typeof img === 'string',
+    );
+    setValue('imageOrder', remainingExisting, SET_VALUE_OPTS);
   };
 
   const reorderImages = (fromIndex: number, toIndex: number): void => {
@@ -628,21 +681,65 @@ const HospitalSettings = (): JSX.Element => {
 
   const onSubmit = async (data: HospitalFormValues): Promise<void> => {
     setIsLoading(true);
-    const payload = buildDirtyPayload(dirtyFields, data);
+    const latest = getValues();
+    const payload = buildDirtyPayload(dirtyFields, { ...data, ...latest });
+    // RHF dirty tracking / resolver can drop File values; prefer the live form value.
+    const logoFile =
+      latest.image instanceof File ? latest.image : data.image instanceof File ? data.image : null;
+    if (logoFile) {
+      payload.image = logoFile;
+    } else if (latest.image === null && dirtyFields.image) {
+      payload.image = null;
+    }
+    const galleryFiles = (latest.images ?? data.images ?? []).filter(
+      (img): img is File => img instanceof File,
+    );
+    if (galleryFiles.length > 0) {
+      payload.images = galleryFiles;
+    }
     if (typeof payload.regularFee === 'number') {
       payload.regularFee = ghcToPesewas(payload.regularFee);
+    }
+    if (Object.keys(payload).length === 0) {
+      toast({
+        title: 'No changes to save',
+        description: 'Update a field before saving.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
     }
     const result = await dispatch(
       updateHospitalDetails(payload as Parameters<typeof updateHospitalDetails>[0]),
     );
     if (result.payload) {
       toast(result.payload as { title: string; description?: string });
-      reset(data);
+      if (showErrorToast(result.payload)) {
+        setIsLoading(false);
+        return;
+      }
+      // Reload from server so logo/gallery URLs replace any pending File values.
+      const refreshed = await dispatch(getMyHospital());
+      const refreshedPayload = refreshed.payload as
+        | IHospitalDetail
+        | { title?: string; description?: string };
+      if (refreshedPayload && 'slug' in refreshedPayload && 'images' in refreshedPayload) {
+        reset(getInitialFormValues(hospitalDetailToOrgSource(refreshedPayload)));
+      } else {
+        reset({ ...data, ...latest });
+      }
     }
     setIsLoading(false);
   };
 
-  const canSave = isDirty && !isLoading;
+  // File replacements are not always reflected in isDirty; also treat pending Files and
+  // any dirtyFields entry as unsaved changes.
+  const hasPendingFiles =
+    hospitalLogo instanceof File || hospitalImages.some((img) => img instanceof File);
+  const hasDirtyFields = (Object.keys(dirtyFields) as (keyof HospitalFormValues)[]).some((key) =>
+    isDirtyFieldValue(dirtyFields[key]),
+  );
+  const canSave = (isDirty || hasDirtyFields || hasPendingFiles) && !isLoading;
 
   const saveButtonRef = useRef<HTMLDivElement>(null);
   const [isSaveButtonInView, setIsSaveButtonInView] = useState(true);
@@ -665,7 +762,7 @@ const HospitalSettings = (): JSX.Element => {
     return (): void => observer.disconnect();
   }, [isFetchingHospital]);
 
-  const showFloatingSave = !isSaveButtonInView && isDirty;
+  const showFloatingSave = !isSaveButtonInView && canSave;
 
   if (isFetchingHospital) {
     return (
@@ -689,6 +786,23 @@ const HospitalSettings = (): JSX.Element => {
           <p className="text-gray-500">Update hospital details</p>
         </div>
         <hr className="my-7 gap-4" />
+
+        <div className="mb-8 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="space-y-0.5 pr-4">
+            <p className="font-medium">List hospital publicly</p>
+            <p className="text-sm text-gray-500">
+              When enabled, your hospital appears in public search and booking. You can change this
+              at any time.
+            </p>
+          </div>
+          <Switch
+            checked={isPubliclyListed}
+            disabled={isUpdatingVisibility}
+            onCheckedChange={(checked) => void handleVisibilityChange(checked)}
+            aria-label="List hospital publicly"
+          />
+        </div>
+
         {/* Hospital logo (separate from gallery) */}
         <div>
           <p className="font-medium">Hospital Logo</p>
@@ -713,9 +827,11 @@ const HospitalSettings = (): JSX.Element => {
             {logoUrl ? (
               <>
                 <Image
+                  key={logoUrl}
                   src={logoUrl}
                   alt="Hospital logo"
                   fill
+                  unoptimized={logoUrl.startsWith('blob:')}
                   className="object-contain p-1"
                   sizes="112px"
                   draggable={false}
