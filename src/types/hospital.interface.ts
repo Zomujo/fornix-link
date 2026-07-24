@@ -173,6 +173,11 @@ export interface IHospitalListItem {
   bedCount?: number;
   telemedicine: boolean;
   languages: string[];
+  createdAt?: Date | string;
   primaryAddress?: IHospitalAddress;
   images?: IHospitalImage[];
+  ownerUser?: {
+    email: string;
+    status: string;
+  };
 }

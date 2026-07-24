@@ -28,3 +28,12 @@ export interface IPatientCountResponse extends IDoctorCountResponse {
   deactivated: number;
   deactivatedInc: number;
 }
+
+export interface IHospitalCountResponse extends BaseCountResponse {
+  active: number;
+  activeInc: number;
+  deactivated: number;
+  deactivatedInc: number;
+  verified: number;
+  verifiedInc: number;
+}

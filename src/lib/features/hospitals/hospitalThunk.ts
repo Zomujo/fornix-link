@@ -13,6 +13,7 @@ import { AcceptDeclineStatus } from '@/types/shared.enum';
 import { Toast } from '@/hooks/use-toast';
 import { generateSuccessToast, getValidQueryString } from '@/lib/utils';
 import { buildHospitalOrgFormData } from '@/lib/utils/formDataUtils';
+import { IHospitalCountResponse } from '@/types/stats.interface';
 
 export const getHospitals = createAsyncThunk(
   'hospitals/getHospitals',
@@ -65,16 +66,39 @@ export const updateHospitalDetails = createAsyncThunk(
           hospitalProfile.images.some((v) => v instanceof File)) ||
         hospitalProfile.image instanceof File;
 
-      // Always use FormData if we have files OR imageOrder (since imageOrder needs special handling in multipart)
-      if (hasFiles || hospitalProfile.imageOrder) {
+      // Use FormData when we have files, an imageOrder (gallery sync/reorder), or a logo
+      // clear (image === null). The multipart PATCH is the only path where the controller
+      // reads clearLogo / gallery-sync signals; the JSON path drops them.
+      const clearsLogo = hospitalProfile.image === null;
+      if (hasFiles || hospitalProfile.imageOrder !== undefined || clearsLogo) {
         const formData = buildHospitalOrgFormData(hospitalProfile as Record<string, unknown>);
-        const { data } = await axios.patchForm<IResponse<IHospitalProfile>>('orgs', formData);
+        // Use patch + multipart header (same pattern as profile-picture uploads).
+        // Passing FormData to patchForm is fine, but explicit headers match working upload paths.
+        const { data } = await axios.patch<IResponse<IHospitalProfile>>('orgs', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         return generateSuccessToast(data.message);
       }
       // No files and no imageOrder: send JSON so null values are preserved (PATCH semantics)
       const { data } = await axios.patch<IResponse<IHospitalProfile>>('orgs', hospitalProfile, {
         headers: { 'Content-Type': 'application/json' },
       });
+      return generateSuccessToast(data.message);
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const updateHospitalVisibility = createAsyncThunk(
+  'hospitals/updateHospitalVisibility',
+  async ({ isActive }: { isActive: boolean }): Promise<Toast> => {
+    try {
+      const { data } = await axios.patch<IResponse>(
+        'orgs',
+        { isActive },
+        { headers: { 'Content-Type': 'application/json' } },
+      );
       return generateSuccessToast(data.message);
     } catch (error) {
       return axiosErrorHandler(error, true) as Toast;
@@ -118,11 +142,105 @@ export const getAllHospitals = createAsyncThunk(
   },
 );
 
+export const getAllHospitalsAdmin = createAsyncThunk(
+  'hospitals/allHospitalsAdmin',
+  async ({
+    pageSize,
+    status,
+    ...rest
+  }: IQueryParams<AcceptDeclineStatus | ''> & {
+    isActive?: boolean;
+  }): Promise<IPagination<IHospitalListItem> | Toast> => {
+    try {
+      const { isActive: restIsActive, ...queryRest } = rest;
+      let isActive = restIsActive;
+      if (status === AcceptDeclineStatus.Accepted) {
+        isActive = true;
+      } else if (status === AcceptDeclineStatus.Deactivated) {
+        isActive = false;
+      }
+      const params = new URLSearchParams(getValidQueryString(queryRest));
+      params.set('pageSize', String(pageSize || 10));
+      if (isActive !== undefined) {
+        params.set('isActive', String(isActive));
+      }
+      const { data } = await axios.get<IResponse<IPagination<IHospitalListItem>>>(
+        `hospitals/admin/list?${params.toString()}`,
+      );
+      return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const getHospitalByIdAdmin = createAsyncThunk(
+  'hospitals/getHospitalByIdAdmin',
+  async (id: string): Promise<IHospitalDetail | Toast> => {
+    try {
+      const { data } = await axios.get<IResponse<IHospitalDetail>>(`hospitals/admin/${id}`);
+      return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const activateHospital = createAsyncThunk(
+  'hospitals/activateHospital',
+  async (id: string): Promise<Toast> => {
+    try {
+      const { data } = await axios.patch<IResponse>(`hospitals/admin/${id}/activate`);
+      return generateSuccessToast(data.message);
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const deactivateHospital = createAsyncThunk(
+  'hospitals/deactivateHospital',
+  async (id: string): Promise<Toast> => {
+    try {
+      const { data } = await axios.delete<IResponse>(`hospitals/admin/${id}/deactivate`);
+      return generateSuccessToast(data.message);
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const hospitalStats = createAsyncThunk(
+  'hospitals/hospitalStats',
+  async (): Promise<Toast | IHospitalCountResponse> => {
+    try {
+      const { data } = await axios.get<IResponse<IHospitalCountResponse>>(
+        'dashboard/hospital-count',
+      );
+      return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
 export const getHospitalBySlug = createAsyncThunk(
   'hospitals/getHospitalBySlug',
   async (slug: string): Promise<IHospitalDetail | Toast> => {
     try {
       const { data } = await axios.get<IResponse<IHospitalDetail>>(`hospitals/${slug}`);
+      return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const getMyHospital = createAsyncThunk(
+  'hospitals/getMyHospital',
+  async (): Promise<IHospitalDetail | Toast> => {
+    try {
+      const { data } = await axios.get<IResponse<IHospitalDetail>>('hospitals/me');
       return data.data;
     } catch (error) {
       return axiosErrorHandler(error, true) as Toast;
