@@ -79,7 +79,9 @@ export const useBookingFlow = ({ provider }: UseBookingFlowParams): UseBookingFl
     }
 
     if (provider.type === 'hospital') {
-      LocalStorageManager.saveRedirectUrl(globalThis.location.pathname + globalThis.location.search);
+      LocalStorageManager.saveRedirectUrl(
+        globalThis.location.pathname + globalThis.location.search,
+      );
       router.push(
         `/sign-up?hospitalId=${provider.id}&slotId=${slotId}&hospital=${encodeURIComponent(provider.name)}`,
       );
@@ -94,8 +96,7 @@ export const useBookingFlow = ({ provider }: UseBookingFlowParams): UseBookingFl
   const handleConfirmAndPay = async (): Promise<void> => {
     const { slotId, isFollowUp } = getValues();
     setIsInitiatingPayment(true);
-    const reason =
-      provider.type === 'hospital' ? 'Hospital appointment' : 'Consultation';
+    const reason = provider.type === 'hospital' ? 'Hospital appointment' : 'Consultation';
     const { payload } = await dispatch(
       initiatePayment({ additionalInfo: '', reason, slotId, isFollowUp }),
     );

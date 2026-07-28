@@ -189,7 +189,9 @@ const AvailableDates = ({
           <div ref={timeSlotsRef}>
             <p className="mt-5 mb-2 font-medium">Available time (Africa/Accra - GMT (+00:00))</p>
             {!!availableTimeSlots.length && (
-              <small className="m-auto text-center text-red-500">*Each session is 45 minutes </small>
+              <small className="m-auto text-center text-red-500">
+                *Each session is 45 minutes{' '}
+              </small>
             )}
             <div className="flex flex-wrap gap-3">
               {!!availableTimeSlots.length &&

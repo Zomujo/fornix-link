@@ -194,8 +194,7 @@ const AppointmentDetails = ({
   const meetingLink = getAppointmentMeetingLink(appointment);
   const showJoinMeeting = Boolean(meetingLink) || canJoinMeeting(appointment);
   const counterparty = getAppointmentCounterparty(appointment, user?.role);
-  const meetingWithName =
-    `${counterparty.firstName} ${counterparty.lastName}`.trim() || 'provider';
+  const meetingWithName = `${counterparty.firstName} ${counterparty.lastName}`.trim() || 'provider';
   const contact = !showJoinMeeting ? getAppointmentContact(appointment) : undefined;
 
   // Calculate optimal position based on viewport space
@@ -357,7 +356,7 @@ const AppointmentDetails = ({
               href={meetingLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-start gap-1.5 break-all text-xs text-blue-700 underline"
+              className="flex items-start gap-1.5 text-xs break-all text-blue-700 underline"
             >
               <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               {meetingLink}

@@ -26,10 +26,7 @@ export type AppointmentHospital = {
   id: string;
   name: string;
   mainEmail?: string;
-  images?:
-    | { url: string; type: string }[]
-    | { url: string; type: string }
-    | (string | File)[];
+  images?: { url: string; type: string }[] | { url: string; type: string } | (string | File)[];
 };
 
 export function getAppointmentHospital(appointment: AppointmentLike): AppointmentHospital | null {
@@ -66,8 +63,7 @@ export function getAppointmentCounterparty(
 ): AppointmentParty {
   const { doctor, patient } = appointment;
   const hospital = getAppointmentHospital(appointment);
-  const seesPatient =
-    role === Role.Doctor || role === Role.Hospital || role === Role.SuperAdmin;
+  const seesPatient = role === Role.Doctor || role === Role.Hospital || role === Role.SuperAdmin;
 
   if (seesPatient) {
     return {

@@ -61,7 +61,11 @@ function ProviderHeader({ provider }: { provider: IBookingProvider }): JSX.Eleme
 
   return (
     <div className="flex gap-4">
-      <AvatarComp imageSrc={provider.image ?? undefined} name={provider.name} className="h-20 w-20" />
+      <AvatarComp
+        imageSrc={provider.image ?? undefined}
+        name={provider.name}
+        className="h-20 w-20"
+      />
       <div>
         <h2 className="text-lg font-bold text-gray-900 md:text-xl">Dr. {provider.name}</h2>
         <p className="text-primary-600 text-sm font-medium md:text-base">

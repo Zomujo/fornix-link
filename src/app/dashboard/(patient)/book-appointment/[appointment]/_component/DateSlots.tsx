@@ -20,7 +20,13 @@ type DateSlotsProps = {
   hospitalId?: AvailabilityProps['hospitalId'];
 };
 
-const DateSlots = ({ date, setValue, watch, doctorId, hospitalId }: DateSlotsProps): JSX.Element => {
+const DateSlots = ({
+  date,
+  setValue,
+  watch,
+  doctorId,
+  hospitalId,
+}: DateSlotsProps): JSX.Element => {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -46,7 +52,8 @@ const DateSlots = ({ date, setValue, watch, doctorId, hospitalId }: DateSlotsPro
           getAppointmentSlotsByDate({
             date: new Date(date).toISOString(),
             doctorId: doctorId || (appointmentType === MedicalAppointmentType.Doctor ? id : ''),
-            hospitalId: hospitalId || (appointmentType === MedicalAppointmentType.Hospital ? id : ''),
+            hospitalId:
+              hospitalId || (appointmentType === MedicalAppointmentType.Hospital ? id : ''),
           }),
         );
 

@@ -57,11 +57,11 @@ const CreateTimeSlots = ({ onSlotCreated }: CreateTimeSlotsProps): JSX.Element =
       ? Boolean(startDate && hasValidTimes)
       : Boolean(
           selectedWeekDays.length > 0 &&
-            frequency &&
-            startDate &&
-            endDate &&
-            endDate >= startDate &&
-            hasValidTimes,
+          frequency &&
+          startDate &&
+          endDate &&
+          endDate >= startDate &&
+          hasValidTimes,
         );
 
   const getSlotPattern = (): ISlotPatternBase => {

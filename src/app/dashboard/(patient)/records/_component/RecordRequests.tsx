@@ -94,9 +94,7 @@ const RecordRequests = (): JSX.Element => {
         const isPending = status === ApproveDeclineStatus.Pending;
         const isApproved = status === ApproveDeclineStatus.Approved;
         const isDeclined = status === ApproveDeclineStatus.Declined;
-        const doctorName = doctor
-          ? `${doctor.firstName} ${doctor.lastName}`
-          : 'this doctor';
+        const doctorName = doctor ? `${doctor.firstName} ${doctor.lastName}` : 'this doctor';
         return (
           <ActionsDropdownMenus
             menuContent={[

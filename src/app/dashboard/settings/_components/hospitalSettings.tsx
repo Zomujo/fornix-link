@@ -252,8 +252,7 @@ function getInitialFormValues(org: OrgSource): HospitalFormValues {
     image: logoImage?.url ?? null,
     specialties: org?.specialties ?? ['general practice'],
     supportedInsurance: org?.supportedInsurance ?? ['nhis'],
-    regularFee:
-      org?.regularFee != null ? pesewasToGhc(Number(org.regularFee)) : MIN_AMOUNT,
+    regularFee: org?.regularFee != null ? pesewasToGhc(Number(org.regularFee)) : MIN_AMOUNT,
     description: (org as IHospitalDetail | undefined)?.description ?? '',
     organizationType: (org as IHospitalDetail | undefined)?.organizationType,
     mainPhone: (org as IHospitalDetail | undefined)?.mainPhone ?? '',
@@ -720,7 +719,11 @@ const HospitalSettings = (): JSX.Element => {
     if (galleryFiles.length > 0) {
       payload.images = galleryFiles;
     }
-    if (payload.regularFee !== undefined && payload.regularFee !== null && payload.regularFee !== '') {
+    if (
+      payload.regularFee !== undefined &&
+      payload.regularFee !== null &&
+      payload.regularFee !== ''
+    ) {
       payload.regularFee = ghcToPesewas(Number(payload.regularFee));
     }
     if (Object.keys(payload).length === 0) {
@@ -821,13 +824,15 @@ const HospitalSettings = (): JSX.Element => {
           <div className="space-y-0.5 pr-4">
             <p className="font-medium">List hospital publicly</p>
             <p className="text-sm text-gray-500">
-              When enabled, your hospital appears in public search and booking. A consultation fee of
-              at least GHS {MIN_AMOUNT} must be saved first.
+              When enabled, your hospital appears in public search and booking. A consultation fee
+              of at least GHS {MIN_AMOUNT} must be saved first.
             </p>
           </div>
           <Switch
             checked={isPubliclyListed}
-            disabled={isUpdatingVisibility || (isPubliclyListed === false && !hasSavedConsultationFee)}
+            disabled={
+              isUpdatingVisibility || (isPubliclyListed === false && !hasSavedConsultationFee)
+            }
             onCheckedChange={(checked) => void handleVisibilityChange(checked)}
             aria-label="List hospital publicly"
           />
