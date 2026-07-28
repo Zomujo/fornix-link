@@ -14,6 +14,7 @@ import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
 import { IAppointment } from '@/types/appointment.interface';
 import { toast } from '@/hooks/use-toast';
 import { shortDaysOfTheWeek } from '@/constants/constants';
+import { getHospitalLogoUrl } from '@/lib/utils/appointmentUtils';
 
 const UpcomingAppointmentCard = (): JSX.Element => {
   const user = useAppSelector(selectUser);
@@ -86,28 +87,50 @@ const UpcomingAppointmentCard = (): JSX.Element => {
         {visibleAppointment?.length === 0 && !isLoading && (
           <p className="text-sm text-gray-500">No upcoming appointments</p>
         )}
-        {visibleAppointment?.map(({ doctor, id, slot: { startTime, endTime } }) => (
+        {visibleAppointment?.map(({ doctor, hospital, id, slot: { startTime, endTime } }) => {
+          const hospitalLogo = getHospitalLogoUrl(hospital);
+          return (
           <div
             key={id}
             className="flex w-full flex-col gap-4 rounded-xl border border-gray-200 p-4"
           >
             <div className="flex flex-row gap-3">
-              <div className="h-10 w-10 rounded-full bg-gray-400">
-                <Image
-                  className="h-full w-full rounded-full"
-                  src={doctor.profilePicture}
-                  width={40}
-                  height={40}
-                  alt="profile"
-                />
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-100">
+                {doctor?.profilePicture ? (
+                  <Image
+                    className="h-full w-full rounded-full object-cover"
+                    src={doctor.profilePicture}
+                    width={40}
+                    height={40}
+                    alt="profile"
+                  />
+                ) : hospitalLogo ? (
+                  <Image
+                    className="h-full w-full rounded-full object-cover"
+                    src={hospitalLogo}
+                    width={40}
+                    height={40}
+                    alt={hospital?.name ?? 'Hospital logo'}
+                  />
+                ) : (
+                  <span className="text-primary text-xs font-bold">
+                    {(hospital?.name ?? 'H').charAt(0)}
+                  </span>
+                )}
               </div>
               <div className="flex w-full flex-col justify-center">
                 <p className="text-sm font-bold">
-                  Dr {doctor?.firstName} {doctor?.lastName}{' '}
+                  {doctor
+                    ? `Dr ${doctor.firstName} ${doctor.lastName}`
+                    : (hospital?.name ?? 'Hospital appointment')}
                 </p>
                 <div>
                   <p className="text-xs font-medium text-gray-400">
-                    {doctor?.specializations ? doctor?.specializations[0] : 'General Practitioner'}
+                    {doctor?.specializations
+                      ? doctor.specializations[0]
+                      : hospital
+                        ? 'Hospital visit'
+                        : 'General Practitioner'}
                   </p>
                 </div>
               </div>
@@ -123,7 +146,8 @@ const UpcomingAppointmentCard = (): JSX.Element => {
               </p>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

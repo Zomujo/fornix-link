@@ -16,7 +16,13 @@ import { IRadiology } from '@/types/radiology.interface';
 interface IBaseAppointment {
   id: string;
   patient: IPatient;
-  doctor: IDoctor;
+  doctor: IDoctor | null;
+  hospital?: {
+    id: string;
+    name: string;
+    mainEmail?: string;
+    images?: { url: string; type: string }[] | { url: string; type: string };
+  } | null;
   org: IHospital;
   createdAt: string;
 }
@@ -36,6 +42,7 @@ export interface IAppointment extends IBaseAppointment, ISlotBase {
   slot: ISlot;
   status: AppointmentStatus;
   appointmentLinkId: string | null;
+  meetingLink?: string | null;
   isFollowUp: boolean;
   reason: string;
   additionalInfo: string;

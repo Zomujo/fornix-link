@@ -1,9 +1,8 @@
 'use client';
-import React, { JSX, useEffect, useRef, useState } from 'react';
+import React, { JSX, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { getHospitalBySlug } from '@/lib/features/hospitals/hospitalThunk';
-import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { useAppDispatch } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
 import {
@@ -28,12 +27,12 @@ import {
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import SkeletonDoctorPatientCard from '@/components/skeleton/skeletonDoctorPatientCard';
-import HospitalAppointmentModal, {
-  HospitalAppointmentFormData,
-} from '@/components/hospital/HospitalAppointmentModal';
+import BookingModals from '@/components/doctor/BookingModals';
 import HospitalBookingLoginDialog from '@/components/hospital/HospitalBookingLoginDialog';
 import ReviewSection from '@/components/hospital/ReviewSection';
 import { useHospitalBookingGate } from '@/hooks/useHospitalBookingGate';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { buildHospitalBookingProvider } from '@/lib/utils/bookingProviderUtils';
 import { PublicHospitalShell } from '@/components/hospital/PublicHospitalShell';
 import { getHospitalListPath, HospitalViewMode } from '@/components/hospital/hospitalPaths';
 import { Logo } from '@/assets/images';
@@ -208,19 +207,52 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
   const router = useRouter();
   const [hospital, setHospital] = useState<IHospitalDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const photoScrollRef = useRef<HTMLDivElement>(null);
+  const { loginPromptOpen, setLoginPromptOpen, requestBooking, proceedToLogin } =
+    useHospitalBookingGate();
+
+  const bookingProvider = useMemo(
+    () =>
+      hospital
+        ? buildHospitalBookingProvider({
+            id: hospital.id,
+            name: hospital.name,
+            accreditations: hospital.accreditations,
+            images: hospital.images,
+            organizationType: hospital.organizationType,
+          })
+        : null,
+    [hospital],
+  );
+
   const {
-    loginPromptOpen,
-    setLoginPromptOpen,
-    bookingModalOpen,
-    setBookingModalOpen,
-    requestBooking,
-    proceedToLogin,
-  } = useHospitalBookingGate();
+    showSlots,
+    setShowSlots,
+    showPreview,
+    setShowPreview,
+    isInitiatingPayment,
+    register,
+    setValue,
+    watch,
+    handleContinueBooking,
+    handleConfirmAndPay,
+  } = useBookingFlow({
+    provider: bookingProvider ?? {
+      type: 'hospital',
+      id: '',
+      name: '',
+      fee: 0,
+    },
+  });
+
+  const handleBookClick = (): void => {
+    if (requestBooking()) {
+      setShowSlots(true);
+    }
+  };
 
   useEffect(() => {
     async function fetchHospital(): Promise<void> {
@@ -250,33 +282,6 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
       return;
     }
     router.back();
-  };
-
-  const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
-    if (!hospital) {
-      return;
-    }
-    setIsBookingLoading(true);
-    try {
-      const result = await dispatch(
-        createHospitalAppointment({
-          hospitalId: hospital.id,
-          name: data.name,
-          telephone: data.telephone,
-          serviceType: data.serviceType,
-          additionalInfo: data.additionalInfo,
-          date: data.date,
-        }),
-      );
-      const payload = result.payload;
-      if (payload && showErrorToast(payload)) {
-        toast(payload);
-      } else {
-        toast(payload as Parameters<typeof toast>[0]);
-      }
-    } finally {
-      setIsBookingLoading(false);
-    }
   };
 
   if (isLoading) {
@@ -392,7 +397,7 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
 
   const renderBookButton = (className?: string): JSX.Element => (
     <Button
-      onClick={requestBooking}
+      onClick={handleBookClick}
       className={className}
       child={
         <>
@@ -410,13 +415,21 @@ const HospitalDetailView = ({ slug, mode }: HospitalDetailViewProps): JSX.Elemen
         onOpenChange={setLoginPromptOpen}
         onProceed={proceedToLogin}
       />
-      <HospitalAppointmentModal
-        open={bookingModalOpen}
-        setOpen={setBookingModalOpen}
-        hospitalName={hospital.name}
-        onSubmit={handleBookAppointment}
-        isLoading={isBookingLoading}
-      />
+      {bookingProvider && (
+        <BookingModals
+          showSlots={showSlots}
+          setShowSlots={setShowSlots}
+          showPreview={showPreview}
+          setShowPreview={setShowPreview}
+          isInitiatingPayment={isInitiatingPayment}
+          provider={bookingProvider}
+          register={register}
+          setValue={setValue}
+          watch={watch}
+          handleContinueBooking={handleContinueBooking}
+          handleConfirmAndPay={handleConfirmAndPay}
+        />
+      )}
 
       <Dialog
         open={lightboxIndex !== null}

@@ -62,6 +62,9 @@ const RecordRequests = (): JSX.Element => {
       header: () => <div className="flex cursor-pointer whitespace-nowrap">Doctor&#39;s Name</div>,
       cell: ({ row: { original } }): JSX.Element => {
         const { doctor } = original;
+        if (!doctor) {
+          return <span className="text-gray-400">—</span>;
+        }
         return (
           <AvatarWithName
             imageSrc={doctor.profilePicture}
@@ -91,7 +94,9 @@ const RecordRequests = (): JSX.Element => {
         const isPending = status === ApproveDeclineStatus.Pending;
         const isApproved = status === ApproveDeclineStatus.Approved;
         const isDeclined = status === ApproveDeclineStatus.Declined;
-        const doctorName = `${doctor.firstName} ${doctor.lastName}`;
+        const doctorName = doctor
+          ? `${doctor.firstName} ${doctor.lastName}`
+          : 'this doctor';
         return (
           <ActionsDropdownMenus
             menuContent={[

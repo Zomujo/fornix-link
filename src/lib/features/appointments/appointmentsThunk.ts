@@ -79,7 +79,7 @@ export const getAppointmentSlot = createAsyncThunk(
 export const getAppointmentSlotsByDate = createAsyncThunk(
   'appointments/getSlotsByDate',
   async (
-    queryParams: Pick<IQueryParams, 'date' | 'doctorId' | 'orgId'>,
+    queryParams: Pick<IQueryParams, 'date' | 'doctorId' | 'orgId' | 'hospitalId'>,
   ): Promise<Toast | AppointmentSlots[]> => {
     try {
       const { data } = await axios.get<IResponse<AppointmentSlots[]>>(

@@ -15,7 +15,6 @@ import type { IHospitalAppointment } from '@/types/hospital-appointment.interfac
 import { isAppointmentOnSameDay } from '@/lib/utils/appointmentUtils';
 import { toast } from '@/hooks/use-toast';
 import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
-import { getHospitalAppointments } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import LoadingOverlay from '@/components/loadingOverlay/loadingOverlay';
 import { AppointmentDate, useQueryParam } from '@/hooks/useQueryParam';
 import { INotification, NotificationEvent } from '@/types/notification.interface';
@@ -45,7 +44,6 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     selectedDateParam ? new Date(selectedDateParam) : new Date(),
   );
   const [now, setNow] = useState(moment());
-  const isHospital = user?.role === Role.Hospital;
   const [queryParams, setQueryParams] = useState<IQueryParams<AppointmentStatus | ''>>({
     orderDirection: OrderDirection.Ascending,
     doctorId: user?.role === Role.Doctor ? user?.id : undefined,
@@ -77,9 +75,7 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
   useEffect(() => {
     async function getUpcomingAppointments(): Promise<void> {
       setLoading(true);
-      const { payload } = isHospital
-        ? await dispatch(getHospitalAppointments(queryParams))
-        : await dispatch(getAppointments(queryParams));
+      const { payload } = await dispatch(getAppointments(queryParams));
       setLoading(false);
 
       if (payload && showErrorToast(payload)) {
@@ -92,7 +88,7 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     }
 
     void getUpcomingAppointments();
-  }, [queryParams, isHospital]);
+  }, [queryParams, dispatch]);
 
   useEffect(() => {
     const selectedMoment = moment(selectedDate);

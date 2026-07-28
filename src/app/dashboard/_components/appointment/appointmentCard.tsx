@@ -5,7 +5,7 @@ import {
   SECONDS_IN_MINUTE,
 } from '@/constants/constants';
 import { cn, showErrorToast } from '@/lib/utils';
-import { House, Phone, Video } from 'lucide-react';
+import { ExternalLink, House, Phone, Video } from 'lucide-react';
 import React, { JSX, useEffect, useRef, useState, RefObject } from 'react';
 import moment from 'moment';
 import { Role } from '@/types/shared.enum';
@@ -17,7 +17,9 @@ import { mergeDateAndTime } from '@/lib/date';
 import {
   canJoinMeeting,
   getAppointmentContact,
+  getAppointmentCounterparty,
   getAppointmentDateValue,
+  getAppointmentMeetingLink,
 } from '@/lib/utils/appointmentUtils';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser } from '@/lib/features/auth/authSelector';
@@ -44,7 +46,8 @@ const AppointmentCard = ({
   handleCloseDetails,
   calendarRef,
 }: IAppointmentCardProps): JSX.Element => {
-  const { role } = useAppSelector(selectUser)!;
+  const user = useAppSelector(selectUser);
+  const role = user?.role;
   const { status, slot, patient, doctor } = appointment;
   const type =
     'type' in appointment && appointment.type
@@ -166,7 +169,6 @@ const AppointmentDetails = ({
 }: AppointmentDetailsProps): JSX.Element => {
   const { status, patient, id } = appointment;
   const date = getAppointmentDateValue(appointment);
-  const firstName = patient?.firstName;
   const patientId = patient?.id;
   const detailsRef = useRef<HTMLDivElement>(null);
   const [isJoining, setIsJoining] = useState(false);
@@ -189,7 +191,11 @@ const AppointmentDetails = ({
   const isDoctor = user?.role === Role.Doctor;
   const isPatient = user?.role === Role.Patient;
   const router = useRouter();
-  const showJoinMeeting = canJoinMeeting(appointment);
+  const meetingLink = getAppointmentMeetingLink(appointment);
+  const showJoinMeeting = Boolean(meetingLink) || canJoinMeeting(appointment);
+  const counterparty = getAppointmentCounterparty(appointment, user?.role);
+  const meetingWithName =
+    `${counterparty.firstName} ${counterparty.lastName}`.trim() || 'provider';
   const contact = !showJoinMeeting ? getAppointmentContact(appointment) : undefined;
 
   // Calculate optimal position based on viewport space
@@ -273,8 +279,12 @@ const AppointmentDetails = ({
   };
 
   const handleJoinMeeting = async (): Promise<void> => {
-    setIsJoining(true);
+    if (meetingLink) {
+      window.open(meetingLink, '_blank', 'noopener,noreferrer');
+      return;
+    }
 
+    setIsJoining(true);
     const { payload } = await dispatch(joinConsultation(id));
 
     if (payload && showErrorToast(payload)) {
@@ -283,9 +293,9 @@ const AppointmentDetails = ({
       return;
     }
 
-    const meetingLink = payload as string;
-    if (meetingLink) {
-      window.open(meetingLink, '_blank', 'noopener,noreferrer');
+    const link = payload as string;
+    if (link) {
+      window.open(link, '_blank', 'noopener,noreferrer');
     }
 
     setIsJoining(false);
@@ -326,16 +336,34 @@ const AppointmentDetails = ({
       }}
       className={`fixed z-50 w-87.5 rounded-lg border-2 p-4 shadow-xl ${statusStyles[status]}`}
     >
-      <p className="mb-2 text-lg font-semibold">Meeting with {firstName}</p>
+      <p className="mb-2 text-lg font-semibold">Meeting with {meetingWithName}</p>
 
       {showJoinMeeting && (
-        <Button
-          child="Join Meeting"
-          onClick={handleJoinMeeting}
-          isLoading={isJoining}
-          disabled={isJoining}
-          className={`rounded-full border border-black bg-black px-4 py-2 text-white transition duration-300 hover:bg-green-600 hover:text-white`}
-        />
+        <div className="mb-3 space-y-2">
+          <Button
+            child={
+              <span className="inline-flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                Join Meeting
+              </span>
+            }
+            onClick={() => void handleJoinMeeting()}
+            isLoading={isJoining}
+            disabled={isJoining}
+            className="w-full rounded-full border border-black bg-black px-4 py-2 text-white transition duration-300 hover:bg-green-600 hover:text-white"
+          />
+          {meetingLink && (
+            <a
+              href={meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-1.5 break-all text-xs text-blue-700 underline"
+            >
+              <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {meetingLink}
+            </a>
+          )}
+        </div>
       )}
       {contact && (
         <div className="mb-2 flex items-center gap-2">

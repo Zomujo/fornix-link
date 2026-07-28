@@ -1,6 +1,6 @@
 'use client';
 import { Calendar, Medal } from 'lucide-react';
-import React, { JSX, useState } from 'react';
+import React, { JSX, useMemo, useState } from 'react';
 import { IDoctor } from '@/types/doctor.interface';
 import { Button } from '@/components/ui/button';
 import moment from 'moment';
@@ -11,6 +11,7 @@ import { DoctorProfile } from '@/components/doctor/DoctorProfile';
 import BookingModals from '@/components/doctor/BookingModals';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { useRouter } from 'next/navigation';
+import { buildDoctorBookingProvider } from '@/lib/utils/bookingProviderUtils';
 
 export type DoctorCardProps = {
   doctor: IDoctor;
@@ -31,6 +32,19 @@ const DoctorCard = ({ doctor }: DoctorCardProps): JSX.Element => {
   const router = useRouter();
   const [openDoctorDetails, setOpenDoctorDetails] = useState(false);
 
+  const bookingProvider = useMemo(
+    () =>
+      buildDoctorBookingProvider({
+        id,
+        firstName,
+        lastName,
+        fee,
+        profilePicture,
+        specializations,
+      }),
+    [id, firstName, lastName, fee, profilePicture, specializations],
+  );
+
   const {
     showSlots,
     setShowSlots,
@@ -42,7 +56,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps): JSX.Element => {
     watch,
     handleContinueBooking,
     handleConfirmAndPay,
-  } = useBookingFlow({ doctorId: id, fullName });
+  } = useBookingFlow({ provider: bookingProvider });
 
   const getAvailability = (): string => {
     if (appointmentSlots.length === 0) {
@@ -84,8 +98,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps): JSX.Element => {
         showPreview={showPreview}
         setShowPreview={setShowPreview}
         isInitiatingPayment={isInitiatingPayment}
-        doctor={doctor}
-        doctorId={id}
+        provider={bookingProvider}
         register={register}
         setValue={setValue}
         watch={watch}

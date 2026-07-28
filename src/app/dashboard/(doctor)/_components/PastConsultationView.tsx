@@ -95,11 +95,13 @@ const PastConsultationView = ({
                 <StatusBadge status={appointment.status} />
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                <span>📅 {getFormattedDate(appointment.slot.date)}</span>
-                <span>🕐 {getTimeFromDateStamp(appointment.slot.startTime)}</span>
-                <span>
-                  👨‍⚕️ Dr. {appointment.doctor.firstName} {appointment.doctor.lastName}
-                </span>
+                <span>📅 {getFormattedDate(appointment.slot?.date ?? '')}</span>
+                <span>🕐 {getTimeFromDateStamp(appointment.slot?.startTime ?? '')}</span>
+                {appointment.doctor && (
+                  <span>
+                    👨‍⚕️ Dr. {appointment.doctor.firstName} {appointment.doctor.lastName}
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -50,9 +50,11 @@ const PostInvestigationScheduler = ({
     },
   });
 
-  const doctorName = `${consultationDetails.doctor.firstName} ${consultationDetails.doctor.lastName}`;
-  const doctorId = consultationDetails.doctor.id;
-  const doctorProfilePicture = consultationDetails.doctor.profilePicture ?? '';
+  const doctorName = consultationDetails.doctor
+    ? `${consultationDetails.doctor.firstName} ${consultationDetails.doctor.lastName}`
+    : (consultationDetails.hospital?.name ?? 'Provider');
+  const doctorId = consultationDetails.doctor?.id ?? '';
+  const doctorProfilePicture = consultationDetails.doctor?.profilePicture ?? '';
 
   const handleSchedule = async (): Promise<void> => {
     const slotId = watch('slotId');

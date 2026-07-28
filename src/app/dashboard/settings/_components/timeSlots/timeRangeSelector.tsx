@@ -115,28 +115,31 @@ export const TimeRangeSelector = ({
       </div>
     </div>
 
-    {creationMode === 'single' && (
-      <div className="space-y-3">
-        <Label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-          Quick Shifts
-        </Label>
-        <div className="flex flex-wrap gap-2">
-          {QUICK_SHIFTS.map(({ label, start, end }) => (
-            <Button
-              key={label}
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => {
-                onStartTimeChange(start);
-                onEndTimeChange(end);
-              }}
-              child={label}
-            />
-          ))}
-        </div>
+    <div className="space-y-3">
+      <Label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+        Quick Shifts
+      </Label>
+      <p className="text-muted-foreground text-xs">
+        {creationMode === 'single'
+          ? 'Auto-fill start and end times for this day, then generate slots.'
+          : 'Auto-fill the daily start and end times used by this pattern.'}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {QUICK_SHIFTS.map(({ label, start, end }) => (
+          <Button
+            key={label}
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => {
+              onStartTimeChange(start);
+              onEndTimeChange(end);
+            }}
+            child={label}
+          />
+        ))}
       </div>
-    )}
+    </div>
   </>
 );

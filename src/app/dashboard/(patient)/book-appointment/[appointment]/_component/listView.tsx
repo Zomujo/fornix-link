@@ -13,7 +13,7 @@ import { AvailabilityProps } from '@/types/booking.interface';
 import DateSlots from './DateSlots';
 import { DateAppointmentSlots, SlotStatus } from '@/types/slots.interface';
 
-type ListViewProps = Pick<AvailabilityProps, 'setValue' | 'watch' | 'doctorId'>;
+type ListViewProps = Pick<AvailabilityProps, 'setValue' | 'watch' | 'doctorId' | 'hospitalId'>;
 
 type AppointmentDate = Pick<DateAppointmentSlots, 'date'>;
 
@@ -24,7 +24,7 @@ const formatDate = (date: Date): string =>
     day: 'numeric',
   });
 
-const ListView = ({ setValue, watch, doctorId }: ListViewProps): JSX.Element => {
+const ListView = ({ setValue, watch, doctorId, hospitalId }: ListViewProps): JSX.Element => {
   const dispatch = useAppDispatch();
   const params = useParams();
   const id = params.appointment as string;
@@ -43,8 +43,17 @@ const ListView = ({ setValue, watch, doctorId }: ListViewProps): JSX.Element => 
   });
 
   const updateDates = (appointmentDates: AppointmentDate[]): void => {
-    const dates = appointmentDates.map((r) => r.date);
-    setDates((prev) => [...prev, ...dates]);
+    setDates((prev) => {
+      const seen = new Set(prev);
+      const next = [...prev];
+      for (const { date } of appointmentDates) {
+        if (!seen.has(date)) {
+          seen.add(date);
+          next.push(date);
+        }
+      }
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -58,8 +67,8 @@ const ListView = ({ setValue, watch, doctorId }: ListViewProps): JSX.Element => 
         getAppointmentSlotsDates({
           startDate,
           endDate,
-          doctorId: appointmentType === MedicalAppointmentType.Doctor ? id : doctorId || '',
-          orgId: appointmentType === MedicalAppointmentType.Hospital ? id : '',
+          doctorId: doctorId || (appointmentType === MedicalAppointmentType.Doctor ? id : ''),
+          hospitalId: hospitalId || (appointmentType === MedicalAppointmentType.Hospital ? id : ''),
           pageSize: 10,
           page,
           status: SlotStatus.Available,
@@ -85,9 +94,14 @@ const ListView = ({ setValue, watch, doctorId }: ListViewProps): JSX.Element => 
 
   const renderGroupedDates = (): (JSX.Element | null)[] => {
     if (dates.length === 0 && !isLoading) {
+      const providerLabel = hospitalId ? 'This hospital' : 'This doctor';
       return [
-        <div key={'no-appointments-found'} className="text-red-500">
-          No available appointments found.
+        <div key={'no-appointments-found'} className="space-y-1 text-sm text-gray-600">
+          <p className="font-medium text-gray-800">No booking times available yet</p>
+          <p>
+            {providerLabel} has not published any open appointment slots. Please check back later or
+            try another provider.
+          </p>
         </div>,
       ];
     }
@@ -111,7 +125,7 @@ const ListView = ({ setValue, watch, doctorId }: ListViewProps): JSX.Element => 
               <p className="font-semibold text-gray-600">
                 {formatDate(startDate)} - {formatDate(endDate)}
               </p>
-              <p className="text-sm text-gray-500">No available appointments</p>
+              <p className="text-sm text-gray-500">No open times in this range</p>
             </div>,
           );
         }
@@ -121,7 +135,13 @@ const ListView = ({ setValue, watch, doctorId }: ListViewProps): JSX.Element => 
       renderedElements.push(
         <div key={dateString} ref={isLastElement ? lastDateElementRef : null} className="my-4">
           <p className="font-semibold">{formatDate(currentDate)}</p>
-          <DateSlots date={dateString} setValue={setValue} watch={watch} doctorId={doctorId} />
+          <DateSlots
+            date={dateString}
+            setValue={setValue}
+            watch={watch}
+            doctorId={doctorId}
+            hospitalId={hospitalId}
+          />
         </div>,
       );
 

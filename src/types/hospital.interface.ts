@@ -174,6 +174,7 @@ export interface IHospitalListItem {
   telemedicine: boolean;
   languages: string[];
   createdAt?: Date | string;
+  accreditations?: unknown;
   primaryAddress?: IHospitalAddress;
   images?: IHospitalImage[];
   ownerUser?: {

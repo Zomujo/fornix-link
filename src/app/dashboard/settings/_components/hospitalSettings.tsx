@@ -8,11 +8,13 @@ import {
   specialties,
   organizationTypes,
   languages as languageOptions,
+  MIN_AMOUNT,
+  MAX_AMOUNT,
 } from '@/constants/constants';
 import { toast } from '@/hooks/use-toast';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { positiveNumberSchema, hospitalNameSchema } from '@/schemas/zod.schemas';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { hospitalNameSchema } from '@/schemas/zod.schemas';
+import { GripVertical, Info, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import React, { JSX, useState, useRef, useEffect } from 'react';
 import { useForm, Controller, type FieldErrors, type Resolver } from 'react-hook-form';
@@ -24,7 +26,7 @@ import {
   updateHospitalVisibility,
 } from '@/lib/features/hospitals/hospitalThunk';
 import { selectExtra, selectUserRole } from '@/lib/features/auth/authSelector';
-import { cn, ghcToPesewas, pesewasToGhc, showErrorToast } from '@/lib/utils';
+import { cn, ghcToPesewas, pesewasToGhc, showErrorToast, sliderPosition } from '@/lib/utils';
 import { PLACEHOLDER_HOSPITAL_NAME } from '@/constants/branding.constant';
 import { IHospital, IHospitalDetail, IHospitalImage } from '@/types/hospital.interface';
 import { ApproveDeclineStatus, Role } from '@/types/shared.enum';
@@ -32,6 +34,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { SelectInput } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { motion } from 'framer-motion';
+import { DOCTOR_EARNINGS_PERCENTAGE, PLATFORM_FEE_PERCENTAGE } from '@/constants/payment.constants';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TooltipComp } from '@/components/ui/tooltip';
@@ -108,10 +113,10 @@ const hospitalSettingsSchema = z.object({
   imageOrder: z.array(z.string()).optional().nullable(),
   name: hospitalNameSchema,
   specialties: optionalNameArraySchema,
-  regularFee: z
-    .union([z.literal(''), z.literal(null), positiveNumberSchema])
-    .optional()
-    .nullable(),
+  regularFee: z.coerce
+    .number({ error: 'Consultation fee is required' })
+    .min(MIN_AMOUNT, `Minimum fee is GHS ${MIN_AMOUNT}`)
+    .max(MAX_AMOUNT, `Maximum fee is GHS ${MAX_AMOUNT}`),
   supportedInsurance: optionalNameArraySchema,
   description: optionalString,
   organizationType: z.enum(['private', 'public', 'teaching', 'clinic']).optional().nullable(),
@@ -193,32 +198,38 @@ function createDirtyOnlyResolver(
   };
 }
 
-type OrgSource = (IHospital & Partial<IHospitalDetail>) | undefined;
+type OrgData = IHospital & Partial<IHospitalDetail>;
+type OrgSource = OrgData | undefined;
 
 function getOrgFromExtra(extra: unknown, role: Role | undefined): OrgSource {
   if (!extra || !role) {
     return undefined;
   }
   if (role === Role.Hospital && extra && typeof extra === 'object' && 'id' in extra) {
-    return extra as OrgSource;
+    return extra as OrgData;
   }
   return undefined;
 }
 
 /** Map API hospital detail to the org shape expected by getInitialFormValues */
-function hospitalDetailToOrgSource(hospital: IHospitalDetail): OrgSource {
+function hospitalDetailToOrgSource(hospital: IHospitalDetail): OrgData {
   const accreditations = hospital.accreditations as
     | { specialties?: string[]; regularFee?: number }
     | undefined;
   const geom = (hospital.primaryAddress as { geom?: { gpsLink?: string } } | undefined)?.geom;
+  const images = Array.isArray(hospital.images)
+    ? hospital.images
+    : hospital.images
+      ? [hospital.images]
+      : [];
   return {
     ...hospital,
     specialties: accreditations?.specialties ?? [],
     supportedInsurance: hospital.insuranceNetworks?.map((n) => n.insuranceCompany.name) ?? [],
-    regularFee: accreditations?.regularFee ?? 100,
+    regularFee: accreditations?.regularFee ?? MIN_AMOUNT * 100,
     gpsLink: geom?.gpsLink ?? '',
-    image: hospital.images?.find((img) => img.type === 'logo')?.url ?? null,
-  } as OrgSource;
+    image: images.find((img) => img.type === 'logo')?.url ?? null,
+  } as OrgData;
 }
 
 function getInitialFormValues(org: OrgSource): HospitalFormValues {
@@ -241,7 +252,8 @@ function getInitialFormValues(org: OrgSource): HospitalFormValues {
     image: logoImage?.url ?? null,
     specialties: org?.specialties ?? ['general practice'],
     supportedInsurance: org?.supportedInsurance ?? ['nhis'],
-    regularFee: org?.regularFee != null ? pesewasToGhc(Number(org.regularFee)) : '',
+    regularFee:
+      org?.regularFee != null ? pesewasToGhc(Number(org.regularFee)) : MIN_AMOUNT,
     description: (org as IHospitalDetail | undefined)?.description ?? '',
     organizationType: (org as IHospitalDetail | undefined)?.organizationType,
     mainPhone: (org as IHospitalDetail | undefined)?.mainPhone ?? '',
@@ -470,6 +482,7 @@ const HospitalSettings = (): JSX.Element => {
   const [isFetchingHospital, setIsFetchingHospital] = useState(true);
   const [isPubliclyListed, setIsPubliclyListed] = useState(true);
   const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
+  const [hasSavedConsultationFee, setHasSavedConsultationFee] = useState(false);
   const selectRef = useRef<HTMLButtonElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
@@ -522,6 +535,9 @@ const HospitalSettings = (): JSX.Element => {
         const orgSource = hospitalDetailToOrgSource(payload);
         reset(getInitialFormValues(orgSource));
         setIsPubliclyListed(payload.isActive !== false);
+        const feePesewas =
+          typeof orgSource.regularFee === 'number' ? Number(orgSource.regularFee) : 0;
+        setHasSavedConsultationFee(feePesewas >= MIN_AMOUNT * 100);
       }
     })();
     return (): void => {
@@ -530,6 +546,14 @@ const HospitalSettings = (): JSX.Element => {
   }, [dispatch, reset]);
 
   const handleVisibilityChange = async (checked: boolean): Promise<void> => {
+    if (checked && !hasSavedConsultationFee) {
+      toast({
+        title: 'Consultation fee required',
+        description: `Set a consultation fee of at least GHS ${MIN_AMOUNT} and save before listing publicly.`,
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsUpdatingVisibility(true);
     const previous = isPubliclyListed;
     setIsPubliclyListed(checked);
@@ -696,8 +720,8 @@ const HospitalSettings = (): JSX.Element => {
     if (galleryFiles.length > 0) {
       payload.images = galleryFiles;
     }
-    if (typeof payload.regularFee === 'number') {
-      payload.regularFee = ghcToPesewas(payload.regularFee);
+    if (payload.regularFee !== undefined && payload.regularFee !== null && payload.regularFee !== '') {
+      payload.regularFee = ghcToPesewas(Number(payload.regularFee));
     }
     if (Object.keys(payload).length === 0) {
       toast({
@@ -723,9 +747,16 @@ const HospitalSettings = (): JSX.Element => {
         | IHospitalDetail
         | { title?: string; description?: string };
       if (refreshedPayload && 'slug' in refreshedPayload && 'images' in refreshedPayload) {
-        reset(getInitialFormValues(hospitalDetailToOrgSource(refreshedPayload)));
+        const orgSource = hospitalDetailToOrgSource(refreshedPayload);
+        reset(getInitialFormValues(orgSource));
+        const feePesewas =
+          typeof orgSource.regularFee === 'number' ? Number(orgSource.regularFee) : 0;
+        setHasSavedConsultationFee(feePesewas >= MIN_AMOUNT * 100);
       } else {
         reset({ ...data, ...latest });
+        if (typeof payload.regularFee === 'number') {
+          setHasSavedConsultationFee(payload.regularFee >= MIN_AMOUNT * 100);
+        }
       }
     }
     setIsLoading(false);
@@ -790,13 +821,13 @@ const HospitalSettings = (): JSX.Element => {
           <div className="space-y-0.5 pr-4">
             <p className="font-medium">List hospital publicly</p>
             <p className="text-sm text-gray-500">
-              When enabled, your hospital appears in public search and booking. You can change this
-              at any time.
+              When enabled, your hospital appears in public search and booking. A consultation fee of
+              at least GHS {MIN_AMOUNT} must be saved first.
             </p>
           </div>
           <Switch
             checked={isPubliclyListed}
-            disabled={isUpdatingVisibility}
+            disabled={isUpdatingVisibility || (isPubliclyListed === false && !hasSavedConsultationFee)}
             onCheckedChange={(checked) => void handleVisibilityChange(checked)}
             aria-label="List hospital publicly"
           />
@@ -1131,13 +1162,58 @@ const HospitalSettings = (): JSX.Element => {
         {/* Pricing */}
         <div className="mb-8 max-w-md">
           <h3 className="mb-4 text-lg font-semibold">Pricing</h3>
-          <Input
-            labelName="Consultation Fees (Starting Price)"
-            className="bg-transparent"
-            placeholder="Enter starting consultation fee"
-            type="number"
-            error={errors?.regularFee?.message ?? ''}
-            {...register('regularFee')}
+          <Controller
+            control={control}
+            name="regularFee"
+            render={({ field }) => {
+              const currentAmount = Number.isFinite(field.value) ? Number(field.value) : MIN_AMOUNT;
+              const hospitalEarnings = Math.round(
+                currentAmount * (DOCTOR_EARNINGS_PERCENTAGE / 100),
+              );
+              return (
+                <div className="flex w-full flex-col gap-24">
+                  <div className="relative flex w-full flex-1 flex-col gap-4">
+                    <p className="text-sm">Select amount</p>
+                    <Slider
+                      value={[currentAmount]}
+                      onValueChange={(value) => field.onChange(value[0])}
+                      min={MIN_AMOUNT}
+                      max={MAX_AMOUNT}
+                      step={10}
+                    />
+                    <motion.div
+                      style={{
+                        x: `${sliderPosition(window.innerWidth < 430 ? 20 : currentAmount / 35, 'amount')}px`,
+                      }}
+                      className="bg-primary absolute top-[calc(100%+8px)] flex h-8 w-16 items-center justify-center rounded-full"
+                    >
+                      <p className="text-sm text-white">₵{currentAmount}</p>
+                    </motion.div>
+                  </div>
+                  <div className="flex w-full items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+                    <Info size={16} className="mt-0.5 shrink-0" />
+                    <div className="flex flex-col gap-1">
+                      <p className="font-semibold">Earnings breakdown</p>
+                      <p className="leading-5">
+                        You will receive{' '}
+                        <span className="font-bold">
+                          ₵{hospitalEarnings} ({DOCTOR_EARNINGS_PERCENTAGE}%)
+                        </span>{' '}
+                        per appointment. A{' '}
+                        <span className="font-bold">{PLATFORM_FEE_PERCENTAGE}% platform fee</span>{' '}
+                        is deducted from your set fee of{' '}
+                        <span className="font-bold">₵{currentAmount}</span>.
+                      </p>
+                    </div>
+                  </div>
+                  {errors?.regularFee?.message && (
+                    <small className="text-xs font-medium text-red-500">
+                      {errors.regularFee.message}
+                    </small>
+                  )}
+                </div>
+              );
+            }}
           />
         </div>
 
