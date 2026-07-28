@@ -27,7 +27,7 @@ function createAppointmentRequestColumns(user: IUser | null): ColumnDef<IAppoint
           {getAppointmentCounterpartyLabel(user?.role)}
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }): JSX.Element => {
         const person = getAppointmentCounterparty(row.original, user?.role);
         return (
           <AvatarWithName
@@ -41,7 +41,7 @@ function createAppointmentRequestColumns(user: IUser | null): ColumnDef<IAppoint
     {
       accessorKey: 'date',
       header: 'Date',
-      cell: ({ row }) =>
+      cell: ({ row }): string =>
         row.original.slot?.date
           ? moment(row.original.slot.date).format('LL')
           : moment(row.original.createdAt).format('LL'),
@@ -49,7 +49,7 @@ function createAppointmentRequestColumns(user: IUser | null): ColumnDef<IAppoint
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
+      cell: ({ row }): JSX.Element => (
         <StatusBadge
           status={row.original.status}
           approvedTitle="Accepted"

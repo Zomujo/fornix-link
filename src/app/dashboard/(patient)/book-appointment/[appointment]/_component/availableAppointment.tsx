@@ -4,13 +4,7 @@ import { Building2, ChevronLeft } from 'lucide-react';
 import React, { JSX, useCallback, useEffect, useState } from 'react';
 import AvailableDates from './availableDates';
 import AppointmentReason from './appointmentReason';
-import {
-  FieldErrors,
-  useForm,
-  UseFormRegister,
-  UseFormSetValue,
-  UseFormWatch,
-} from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MODE } from '@/constants/constants';
 import { IBookingForm } from '@/types/booking.interface';

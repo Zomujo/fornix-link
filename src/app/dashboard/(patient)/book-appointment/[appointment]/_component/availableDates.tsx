@@ -23,7 +23,6 @@ const AvailableDates = ({
   watch,
   doctorId,
   hospitalId,
-  isHospitalAppointment: isHospitalAppointmentProp,
   onNoSlotsFound,
 }: AvailabilityProps & { isHospitalAppointment?: boolean }): JSX.Element => {
   const date = watch('date');
@@ -42,7 +41,6 @@ const AvailableDates = ({
     () => doctorId ?? (appointmentType === MedicalAppointmentType.Doctor ? id : undefined),
     [doctorId, appointmentType, id],
   );
-  const isHospitalAppointment = isHospitalAppointmentProp ?? !!resolvedHospitalId;
 
   const [availableTimeSlots, setAvailableTimeSlots] = useState<AppointmentSlots[]>([]);
   const [isAvailableSlotLoading, setIsAvailableSlotLoading] = useState(false);
