@@ -24,6 +24,7 @@ import BookingModals from '@/components/doctor/BookingModals';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { doctorInfo as getDoctorInfo } from '@/lib/features/doctors/doctorsThunk';
 import Loading from '@/components/loadingOverlay/loading';
+import { buildDoctorBookingProvider } from '@/lib/utils/bookingProviderUtils';
 
 type DoctorProfileProps = {
   ctaLabel: string | null;
@@ -46,6 +47,26 @@ export const DoctorProfile = ({
     [doctorInfo],
   );
 
+  const bookingProvider = useMemo(
+    () =>
+      doctorInfo
+        ? buildDoctorBookingProvider({
+            id: doctorId,
+            firstName: doctorInfo.firstName,
+            lastName: doctorInfo.lastName,
+            fee: doctorInfo.fee,
+            profilePicture: doctorInfo.profilePicture,
+            specializations: doctorInfo.specializations,
+          })
+        : {
+            type: 'doctor' as const,
+            id: doctorId,
+            name: fullName,
+            fee: 0,
+          },
+    [doctorInfo, doctorId, fullName],
+  );
+
   const {
     showSlots,
     setShowSlots,
@@ -57,7 +78,7 @@ export const DoctorProfile = ({
     watch,
     handleContinueBooking,
     handleConfirmAndPay,
-  } = useBookingFlow({ doctorId, fullName });
+  } = useBookingFlow({ provider: bookingProvider });
 
   useEffect(() => {
     async function getDoctorDetails(): Promise<void> {
@@ -350,8 +371,7 @@ export const DoctorProfile = ({
         showPreview={showPreview}
         setShowPreview={setShowPreview}
         isInitiatingPayment={isInitiatingPayment}
-        doctor={doctorInfo}
-        doctorId={doctorId}
+        provider={bookingProvider}
         register={register}
         setValue={setValue}
         watch={watch}

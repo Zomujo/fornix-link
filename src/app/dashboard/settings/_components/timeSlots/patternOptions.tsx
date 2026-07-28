@@ -1,6 +1,7 @@
 'use client';
 import { JSX } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
 import { capitalize } from '@/lib/utils';
 import { shortDaysOfTheWeek } from '@/constants/constants';
 import { frequencies, weekDays } from '@/constants/appointments.constant';
@@ -37,7 +38,7 @@ export const PatternOptions = ({
         }
         tips={[
           'Example: Select Mon, Wed, Fri for a typical part-time schedule',
-          'Most doctors choose 3-5 days per week',
+          'Use All days for every day of the week',
         ]}
       />
       <ToggleGroup
@@ -57,6 +58,24 @@ export const PatternOptions = ({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => onWeekDaysChange([...weekDays])}
+          child="All days"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => onWeekDaysChange([])}
+          child="Clear days"
+        />
+      </div>
     </div>
     <div>
       <SectionLabel
@@ -78,7 +97,7 @@ export const PatternOptions = ({
             </ul>
           </div>
         }
-        tips={['Most doctors use "Weekly" to maintain a consistent weekly schedule']}
+        tips={['Weekly is the most common choice for a consistent schedule']}
       />
       <ToggleGroup
         onValueChange={(freq: IFrequency) => onFrequencyChange(freq)}

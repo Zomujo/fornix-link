@@ -2,7 +2,7 @@
 
 import { MapPin, MoreVertical, Clock, Globe, BedDouble } from 'lucide-react';
 import Image from 'next/image';
-import React, { JSX, useState } from 'react';
+import React, { JSX, useMemo } from 'react';
 import { IHospitalListItem } from '@/types/hospital.interface';
 import { useRouter } from 'next/navigation';
 import {
@@ -12,16 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/assets/images';
-import { useAppDispatch } from '@/lib/hooks';
-import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
-import { showErrorToast } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
-import HospitalAppointmentModal, {
-  HospitalAppointmentFormData,
-} from '@/components/hospital/HospitalAppointmentModal';
+import BookingModals from '@/components/doctor/BookingModals';
 import HospitalBookingLoginDialog from '@/components/hospital/HospitalBookingLoginDialog';
 import { getHospitalDetailPath, HospitalViewMode } from '@/components/hospital/hospitalPaths';
 import { useHospitalBookingGate } from '@/hooks/useHospitalBookingGate';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { buildHospitalBookingProvider } from '@/lib/utils/bookingProviderUtils';
 
 interface HospitalCardProps {
   hospital: IHospitalListItem;
@@ -29,17 +25,9 @@ interface HospitalCardProps {
 }
 
 const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
-  const [isBookingLoading, setIsBookingLoading] = useState(false);
-  const dispatch = useAppDispatch();
   const router = useRouter();
-  const {
-    loginPromptOpen,
-    setLoginPromptOpen,
-    bookingModalOpen,
-    setBookingModalOpen,
-    requestBooking,
-    proceedToLogin,
-  } = useHospitalBookingGate();
+  const { loginPromptOpen, setLoginPromptOpen, requestBooking, proceedToLogin } =
+    useHospitalBookingGate();
   const {
     id,
     name,
@@ -50,7 +38,40 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
     primaryAddress,
     images,
     bedCount,
+    accreditations,
   } = hospital;
+
+  const bookingProvider = useMemo(
+    () =>
+      buildHospitalBookingProvider({
+        id,
+        name,
+        images,
+        organizationType,
+        accreditations,
+      }),
+    [id, name, images, organizationType, accreditations],
+  );
+
+  const {
+    showSlots,
+    setShowSlots,
+    showPreview,
+    setShowPreview,
+    isInitiatingPayment,
+    register,
+    setValue,
+    watch,
+    handleContinueBooking,
+    handleConfirmAndPay,
+  } = useBookingFlow({ provider: bookingProvider });
+
+  const handleBookClick = (event?: React.MouseEvent): void => {
+    event?.stopPropagation();
+    if (requestBooking()) {
+      setShowSlots(true);
+    }
+  };
 
   const galleryImages = (images?.filter((img) => img.type === 'photo') ?? []).sort((a, b) => {
     const orderA = (a.meta as { displayOrder?: number })?.displayOrder ?? 999;
@@ -66,30 +87,6 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
       return;
     }
     router.push(getHospitalDetailPath(slug, mode));
-  };
-
-  const handleBookAppointment = async (data: HospitalAppointmentFormData): Promise<void> => {
-    setIsBookingLoading(true);
-    try {
-      const result = await dispatch(
-        createHospitalAppointment({
-          hospitalId: id,
-          name: data.name,
-          telephone: data.telephone,
-          serviceType: data.serviceType,
-          additionalInfo: data.additionalInfo,
-          date: data.date,
-        }),
-      );
-      const payload = result.payload;
-      if (payload && showErrorToast(payload)) {
-        toast(payload);
-      } else {
-        toast(payload as Parameters<typeof toast>[0]);
-      }
-    } finally {
-      setIsBookingLoading(false);
-    }
   };
 
   const getOrganizationTypeLabel = (type?: string): string => {
@@ -116,12 +113,18 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
         onOpenChange={setLoginPromptOpen}
         onProceed={proceedToLogin}
       />
-      <HospitalAppointmentModal
-        open={bookingModalOpen}
-        setOpen={setBookingModalOpen}
-        hospitalName={name}
-        onSubmit={handleBookAppointment}
-        isLoading={isBookingLoading}
+      <BookingModals
+        showSlots={showSlots}
+        setShowSlots={setShowSlots}
+        showPreview={showPreview}
+        setShowPreview={setShowPreview}
+        isInitiatingPayment={isInitiatingPayment}
+        provider={bookingProvider}
+        register={register}
+        setValue={setValue}
+        watch={watch}
+        handleContinueBooking={handleContinueBooking}
+        handleConfirmAndPay={handleConfirmAndPay}
       />
 
       <div
@@ -192,8 +195,7 @@ const HospitalCard = ({ hospital, mode }: HospitalCardProps): JSX.Element => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
-                    e.stopPropagation();
-                    requestBooking();
+                    handleBookClick(e);
                   }}
                 >
                   Book Appointment

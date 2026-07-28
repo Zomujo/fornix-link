@@ -27,6 +27,7 @@ export type IBookingSlotId = Pick<IBookingForm, 'slotId'>;
 
 export type AvailabilityProps = {
   doctorId?: string;
+  hospitalId?: string;
   register: UseFormRegister<IBookingForm>;
   setValue: UseFormSetValue<IBookingForm>;
   setCurrentStep?: Dispatch<SetStateAction<number>>;

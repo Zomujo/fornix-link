@@ -1,6 +1,6 @@
 'use client';
 
-import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
+import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Building2,
@@ -55,6 +55,7 @@ import { IDoctor } from '@/types/doctor.interface';
 import { doctorInfo } from '@/lib/features/doctors/doctorsThunk';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import BookingModals from '@/components/doctor/BookingModals';
+import { buildDoctorBookingProvider } from '@/lib/utils/bookingProviderUtils';
 
 const notificationsToRefetch = new Set<NotificationTopic>([
   NotificationTopic.LabRequest,
@@ -84,6 +85,26 @@ const InternalReferralBookingCard = ({
   const fullName = doctor ? `${doctor.firstName} ${doctor.lastName}` : '';
   const hasSlots = (doctor?.appointmentSlots?.length ?? 0) > 0;
 
+  const bookingProvider = useMemo(
+    () =>
+      doctor
+        ? buildDoctorBookingProvider({
+            id: doctor.id,
+            firstName: doctor.firstName,
+            lastName: doctor.lastName,
+            fee: doctor.fee,
+            profilePicture: doctor.profilePicture,
+            specializations: doctor.specializations,
+          })
+        : {
+            type: 'doctor' as const,
+            id: referral.referredDoctorId,
+            name: fullName,
+            fee: 0,
+          },
+    [doctor, referral.referredDoctorId, fullName],
+  );
+
   const {
     showSlots,
     setShowSlots,
@@ -95,7 +116,7 @@ const InternalReferralBookingCard = ({
     watch,
     handleContinueBooking,
     handleConfirmAndPay,
-  } = useBookingFlow({ doctorId: referral.referredDoctorId, fullName });
+  } = useBookingFlow({ provider: bookingProvider });
 
   useEffect(() => {
     if (!referral.referredDoctorId) {
@@ -122,8 +143,7 @@ const InternalReferralBookingCard = ({
           showPreview={showPreview}
           setShowPreview={setShowPreview}
           isInitiatingPayment={isInitiatingPayment}
-          doctor={doctor}
-          doctorId={doctor.id}
+          provider={bookingProvider}
           register={register}
           setValue={setValue}
           watch={watch}

@@ -40,7 +40,13 @@ export type IPatientSymptomMap = {
 export interface IConsultationDetails {
   id: string;
   status: ConsultationStatus | AppointmentStatus;
-  doctor: Pick<IExtraBase, 'id' | 'firstName' | 'lastName' | 'profilePicture'>;
+  doctor: Pick<IExtraBase, 'id' | 'firstName' | 'lastName' | 'profilePicture'> | null;
+  hospital?: {
+    id: string;
+    name: string;
+    mainEmail?: string;
+    images?: { url: string; type: string }[] | { url: string; type: string };
+  } | null;
   patient: Pick<IExtraBase, 'id' | 'firstName' | 'lastName' | 'profilePicture'>;
   prescriptionUrl: string;
   symptoms: null;

@@ -4,48 +4,42 @@ import { Building2, ChevronLeft } from 'lucide-react';
 import React, { JSX, useCallback, useEffect, useState } from 'react';
 import AvailableDates from './availableDates';
 import AppointmentReason from './appointmentReason';
-import {
-  FieldErrors,
-  useForm,
-  UseFormRegister,
-  UseFormSetValue,
-  UseFormWatch,
-} from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MODE } from '@/constants/constants';
-import { IBookingForm, IHospitalBookingForm } from '@/types/booking.interface';
+import { IBookingForm } from '@/types/booking.interface';
 import { AvatarComp } from '@/components/ui/avatar';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useParams, useRouter } from 'next/navigation';
 import { IDoctor } from '@/types/doctor.interface';
-import { useAppDispatch, useAppSelector } from '@/lib/hooks';
+import { useAppDispatch } from '@/lib/hooks';
 import { doctorInfo } from '@/lib/features/doctors/doctorsThunk';
 import { toast } from '@/hooks/use-toast';
 import { initiatePayment } from '@/lib/features/payments/paymentsThunk';
 import { ICheckout } from '@/types/payment.interface';
-import { IHospital } from '@/types/hospital.interface';
+import { IHospitalDetail } from '@/types/hospital.interface';
 import { MedicalAppointmentType, useQueryParam } from '@/hooks/useQueryParam';
-import { getHospital } from '@/lib/features/hospitals/hospitalThunk';
-import { createHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
+import { getHospitalDetailById } from '@/lib/features/hospitals/hospitalThunk';
 import Image from 'next/image';
 import { AppointmentType } from '@/types/slots.interface';
-import { bookingSchema, hospitalBookingSchema } from '@/schemas/booking.schema';
-import { selectUser } from '@/lib/features/auth/authSelector';
+import { bookingSchema } from '@/schemas/booking.schema';
 import { SERVICE_CHARGE_PERCENTAGE } from '@/constants/payment.constants';
+import { getHospitalRegularFee } from '@/lib/utils/bookingProviderUtils';
+
+type BookingInformation = IDoctor | IHospitalDetail;
 
 const AvailableAppointment = (): JSX.Element => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPaymentInitiated, setIsPaymentInitiated] = useState<boolean>(false);
-  const [information, setInformation] = useState<IDoctor | IHospital>();
+  const [information, setInformation] = useState<BookingInformation>();
   const dispatch = useAppDispatch();
   const params = useParams();
   const router = useRouter();
   const { getQueryParam } = useQueryParam();
   const id = params.appointment as string;
   const dateToday = new Date();
-  const user = useAppSelector(selectUser);
   const appointmentType = getQueryParam('appointmentType');
   const isHospitalAppointment = appointmentType === MedicalAppointmentType.Hospital;
 
@@ -56,8 +50,8 @@ const AvailableAppointment = (): JSX.Element => {
     if ('fee' in information) {
       return Number(information.fee);
     }
-    if ('regularFee' in information) {
-      return information.regularFee;
+    if ('accreditations' in information) {
+      return getHospitalRegularFee(information.accreditations);
     }
     return 0;
   }, [information]);
@@ -69,54 +63,23 @@ const AvailableAppointment = (): JSX.Element => {
     getValues,
     watch,
     formState: { errors, isValid },
-  } = useForm<IBookingForm | IHospitalBookingForm>({
-    resolver: zodResolver(isHospitalAppointment ? hospitalBookingSchema : bookingSchema),
+  } = useForm<IBookingForm>({
+    resolver: zodResolver(bookingSchema),
     mode: MODE.ON_TOUCH,
     defaultValues: {
-      appointmentType: AppointmentType.Virtual,
+      appointmentType: isHospitalAppointment ? AppointmentType.Visit : AppointmentType.Virtual,
       date: dateToday.toISOString(),
-      ...(isHospitalAppointment ? {} : { time: '', slotId: '' }),
+      time: '',
+      slotId: '',
     },
   });
 
-  const onSubmit = async (formData: IBookingForm | IHospitalBookingForm): Promise<void> => {
-    const { reason, additionalInfo, date, isFollowUp } = formData;
+  const onSubmit = async (formData: IBookingForm): Promise<void> => {
+    const { reason, additionalInfo, slotId, time, isFollowUp } = formData;
     if (!information) {
       return;
     }
 
-    // Hospital appointments don't use slots or payment - create directly
-    if (isHospitalAppointment && 'id' in information) {
-      setIsPaymentInitiated(true);
-      const { payload } = await dispatch(
-        createHospitalAppointment({
-          hospitalId: information.id,
-          name: user ? `${user.firstName} ${user.lastName}` : '',
-          telephone: user?.contact || '',
-          serviceType: reason,
-          additionalInfo,
-          date: date || new Date().toISOString(),
-        }),
-      );
-
-      if (payload && showErrorToast(payload)) {
-        toast(payload);
-        setIsPaymentInitiated(false);
-        return;
-      }
-
-      toast({
-        title: 'Success',
-        description: 'Hospital appointment request submitted successfully',
-        variant: 'default',
-      });
-      router.push('/dashboard/appointment');
-      setIsPaymentInitiated(false);
-      return;
-    }
-
-    // Doctor appointments use payment flow with slots
-    const { slotId, time } = formData as IBookingForm;
     if (!slotId || !time) {
       toast({
         title: 'Error',
@@ -125,6 +88,7 @@ const AvailableAppointment = (): JSX.Element => {
       });
       return;
     }
+
     setIsPaymentInitiated(true);
     const { payload } = await dispatch(
       initiatePayment({ additionalInfo, reason, slotId, isFollowUp }),
@@ -153,7 +117,7 @@ const AvailableAppointment = (): JSX.Element => {
         const { payload: doctorResponse } = await dispatch(doctorInfo(id));
         payload = doctorResponse;
       } else {
-        const { payload: hospitalResponse } = await dispatch(getHospital(id));
+        const { payload: hospitalResponse } = await dispatch(getHospitalDetailById(id));
         payload = hospitalResponse;
       }
 
@@ -163,7 +127,7 @@ const AvailableAppointment = (): JSX.Element => {
         return;
       }
 
-      setInformation(payload as IHospital | IDoctor);
+      setInformation(payload as BookingInformation);
     }
     void getInfo();
   }, []);
@@ -194,21 +158,22 @@ const AvailableAppointment = (): JSX.Element => {
         </div>
         {currentStep === 1 && (
           <AvailableDates
-            register={register as UseFormRegister<IBookingForm>}
-            setValue={setValue as UseFormSetValue<IBookingForm>}
+            register={register}
+            setValue={setValue}
             setCurrentStep={setCurrentStep}
-            watch={watch as UseFormWatch<IBookingForm>}
-            isHospitalAppointment={isHospitalAppointment}
+            watch={watch}
+            hospitalId={isHospitalAppointment ? id : undefined}
+            doctorId={!isHospitalAppointment ? id : undefined}
           />
         )}
         {currentStep === 2 && (
           <AppointmentReason
-            register={register as UseFormRegister<IBookingForm>}
-            setValue={setValue as UseFormSetValue<IBookingForm>}
+            register={register}
+            setValue={setValue}
             setCurrentStep={setCurrentStep}
             isValid={isValid}
-            watch={watch as UseFormWatch<IBookingForm>}
-            errors={errors as FieldErrors<IBookingForm>}
+            watch={watch}
+            errors={errors}
           />
         )}
         {currentStep === 3 && (
@@ -238,11 +203,11 @@ const AvailableAppointment = (): JSX.Element => {
                   </div>
                 </>
               )}
-              {information && 'name' in information && (
+              {information && 'slug' in information && (
                 <>
-                  {information.image ? (
+                  {information.images?.find((img) => img.type === 'logo')?.url ? (
                     <Image
-                      src={information.image}
+                      src={information.images.find((img) => img.type === 'logo')!.url}
                       alt={information.name}
                       width={80}
                       height={80}
@@ -255,13 +220,9 @@ const AvailableAppointment = (): JSX.Element => {
                   )}
                   <div className="flex flex-col">
                     <p className="text-lg font-bold">{information.name}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {information.specialties?.map((specialty) => (
-                        <Badge key={specialty} variant="secondary">
-                          {specialty}
-                        </Badge>
-                      ))}
-                    </div>
+                    <Badge variant="secondary" className="w-fit capitalize">
+                      {information.organizationType}
+                    </Badge>
                   </div>
                 </>
               )}
@@ -273,12 +234,10 @@ const AvailableAppointment = (): JSX.Element => {
               <div className="text-gray-500">Date</div>
               <div className="font-medium">{moment(getValues('date')).format('LL')}</div>
             </div>
-            {!isHospitalAppointment && (
-              <div className="mb-4 flex items-center justify-between">
-                <div className="text-gray-500">Time</div>
-                <div className="font-medium">{(getValues() as IBookingForm).time}</div>
-              </div>
-            )}
+            <div className="mb-4 flex items-center justify-between">
+              <div className="text-gray-500">Time</div>
+              <div className="font-medium">{getValues('time')}</div>
+            </div>
             <div className="mb-4 flex items-center justify-between gap-4">
               <div className="whitespace-nowrap text-gray-500">Reason for consult</div>
               <div className="truncate font-medium">{getValues('reason')}</div>
@@ -297,52 +256,49 @@ const AvailableAppointment = (): JSX.Element => {
               </div>
             )}
 
-            {!isHospitalAppointment && (
-              <>
-                <div className="my-8 flex items-center justify-center">
-                  <div className="w-full max-w-32 border-b border-dashed text-gray-400"></div>
-                  <div className="rounded-2xl border p-1 text-gray-400">BILL DETAILS</div>
-                  <div className="w-full max-w-32 border-b border-dashed text-gray-400"></div>
-                </div>
+            <div className="my-8 flex items-center justify-center">
+              <div className="w-full max-w-32 border-b border-dashed text-gray-400"></div>
+              <div className="rounded-2xl border p-1 text-gray-400">BILL DETAILS</div>
+              <div className="w-full max-w-32 border-b border-dashed text-gray-400"></div>
+            </div>
 
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="text-gray-500">Consultation Fee</div>
-                  <div className="font-medium">GHC {pesewasToGhc(getAmount())}.00</div>
-                </div>
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-gray-500">
-                    Service &amp; Tax Fee{''}
-                    <span
-                      className="inline-flex h-4 w-4 cursor-default items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500"
-                      title={`A ${SERVICE_CHARGE_PERCENTAGE}% platform service and tax fee applied to every booking.`}
-                    >
-                      ?
-                    </span>
-                  </div>
-                  <div className="font-medium">
-                    GHC {((pesewasToGhc(getAmount()) * SERVICE_CHARGE_PERCENTAGE) / 100).toFixed(2)}
-                  </div>
-                </div>
-                <div className="my-3 border-t border-dashed border-gray-200" />
-                <div className="flex items-center justify-between">
-                  <div className="font-semibold text-gray-800">Total</div>
-                  <div className="text-primary text-lg font-bold">
-                    GHC{' '}
-                    {(pesewasToGhc(getAmount()) * (1 + SERVICE_CHARGE_PERCENTAGE / 100)).toFixed(2)}
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-gray-400">
-                  Includes a {SERVICE_CHARGE_PERCENTAGE}% (GHC{' '}
-                  {((pesewasToGhc(getAmount()) * SERVICE_CHARGE_PERCENTAGE) / 100).toFixed(2)})
-                  service &amp; tax fee charged by the platform.
-                </p>
-              </>
-            )}
+            <div className="mb-3 flex items-center justify-between">
+              <div className="text-gray-500">
+                {isHospitalAppointment ? 'Appointment Fee' : 'Consultation Fee'}
+              </div>
+              <div className="font-medium">GHC {pesewasToGhc(getAmount())}.00</div>
+            </div>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-gray-500">
+                Service &amp; Tax Fee
+                <span
+                  className="inline-flex h-4 w-4 cursor-default items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500"
+                  title={`A ${SERVICE_CHARGE_PERCENTAGE}% platform service and tax fee applied to every booking.`}
+                >
+                  ?
+                </span>
+              </div>
+              <div className="font-medium">
+                GHC {((pesewasToGhc(getAmount()) * SERVICE_CHARGE_PERCENTAGE) / 100).toFixed(2)}
+              </div>
+            </div>
+            <div className="my-3 border-t border-dashed border-gray-200" />
+            <div className="flex items-center justify-between">
+              <div className="font-semibold text-gray-800">Total</div>
+              <div className="text-primary text-lg font-bold">
+                GHC {(pesewasToGhc(getAmount()) * (1 + SERVICE_CHARGE_PERCENTAGE / 100)).toFixed(2)}
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-gray-400">
+              Includes a {SERVICE_CHARGE_PERCENTAGE}% (GHC{' '}
+              {((pesewasToGhc(getAmount()) * SERVICE_CHARGE_PERCENTAGE) / 100).toFixed(2)}) service
+              &amp; tax fee charged by the platform.
+            </p>
 
             <div className="mt-4 flex justify-between">
               <Button child={'Back'} variant={'outline'} onClick={() => setCurrentStep(2)} />
               <Button
-                child={isHospitalAppointment ? 'Submit Request' : 'Make Payment'}
+                child="Make Payment"
                 onClick={handleSubmit(onSubmit)}
                 disabled={!isValid || isPaymentInitiated}
                 isLoading={isPaymentInitiated}

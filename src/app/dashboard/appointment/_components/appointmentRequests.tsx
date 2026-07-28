@@ -16,12 +16,7 @@ import {
   rescheduleAppointment,
 } from '@/lib/features/appointments/appointmentsThunk';
 import { joinConsultation } from '@/lib/features/appointments/consultation/consultationThunk';
-import {
-  acceptHospitalAppointment,
-  assignDoctorToHospitalAppointment,
-  declineHospitalAppointment,
-  getHospitalAppointments,
-} from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
+import { assignDoctorToHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
@@ -67,7 +62,14 @@ import { IBookingForm } from '@/types/booking.interface';
 import { AppointmentType } from '@/types/slots.interface';
 import { bookingSchema } from '@/schemas/booking.schema';
 import PatientDetailsDrawer from './PatientDetailsDrawer';
-import { canJoinMeeting, getAppointmentType } from '@/lib/utils/appointmentUtils';
+import {
+  canJoinMeeting,
+  getAppointmentCounterparty,
+  getAppointmentCounterpartyLabel,
+  getAppointmentMeetingLink,
+  getAppointmentProviderName,
+  getAppointmentType,
+} from '@/lib/utils/appointmentUtils';
 
 type SelectedAppointment = {
   date: Date;
@@ -106,9 +108,9 @@ const AppointmentRequests = (): JSX.Element => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-  // Use hospital appointments endpoint for hospital role, doctor appointments for others
+  // Use regular appointments for all roles (hospital slotted bookings use hospitalId on Appointment)
   const isHospital = user?.role === Role.Hospital;
-  const fetchAction = isHospital ? getHospitalAppointments : getAppointments;
+  const fetchAction = getAppointments;
 
   const {
     isLoading,
@@ -237,30 +239,20 @@ const AppointmentRequests = (): JSX.Element => {
       // prettier-ignore
       header: () => ( //NOSONAR
         <div className="flex cursor-pointer whitespace-nowrap">
-          {user?.role === Role.Doctor || user?.role === Role.Hospital || isSuperAdmin
-            ? 'Patient Name'
-            : 'Doctor Name'}
+          {getAppointmentCounterpartyLabel(user?.role)}
         </div>
       ),
       // prettier-ignore
       cell: ({ row: { original } }): JSX.Element => { //NOSONAR
-        const { doctor, patient } = original;
-        const isDoctor = user?.role === Role.Doctor;
-        const isHospital = user?.role === Role.Hospital;
+        const person = getAppointmentCounterparty(original, user?.role);
         const isAdmin = isSuperAdmin;
-        // Determine which entity to show as "person"
-        const person =
-          isDoctor || isAdmin || isHospital
-            ? patient
-            : doctor;
-        // Show all possibly available union data (email/contact for admin & superadmin)
         return (
           <AvatarWithName
-            imageSrc={person?.profilePicture ?? ''}
-            firstName={person?.firstName ?? ''}
-            lastName={person?.lastName ?? ''}
-            email={isAdmin ? person?.email : undefined}
-            contact={isAdmin ? person?.contact : undefined}
+            imageSrc={person.imageSrc ?? ''}
+            firstName={person.firstName}
+            lastName={person.lastName}
+            email={isAdmin ? person.email : undefined}
+            contact={isAdmin ? person.contact : undefined}
           />
         );
       },
@@ -269,17 +261,20 @@ const AppointmentRequests = (): JSX.Element => {
       ? [
           {
             accessorKey: 'doctor',
-            header: 'Doctor Name',
+            header: 'Provider',
             // prettier-ignore
-            cell: ({ row: { original } }): JSX.Element => ( //NOSONAR
-              <AvatarWithName
-                imageSrc={original.doctor?.profilePicture}
-                firstName={original.doctor?.firstName}
-                lastName={original.doctor?.lastName}
-                email={original.doctor?.email}
-                contact={original.doctor?.contact}
-              />
-            ),
+            cell: ({ row: { original } }): JSX.Element => { //NOSONAR
+              const provider = getAppointmentCounterparty(original, Role.Patient);
+              return (
+                <AvatarWithName
+                  imageSrc={provider.imageSrc}
+                  firstName={provider.firstName}
+                  lastName={provider.lastName}
+                  email={provider.email}
+                  contact={provider.contact}
+                />
+              );
+            },
           } satisfies ColumnDef<IAppointment | IHospitalAppointment>,
         ]
       : []),
@@ -295,7 +290,7 @@ const AppointmentRequests = (): JSX.Element => {
             <Presentation size={16} /> Virtual
           </div>
         ) : (
-          <div>
+          <div className="flex items-center gap-2">
             <House size={16} /> Visit
           </div>
         );
@@ -343,7 +338,7 @@ const AppointmentRequests = (): JSX.Element => {
         const isInProgress = status === AppointmentStatus.Progress;
         const getName = (): string => {
           if (user?.role === Role.Patient) {
-            return `${doctor?.firstName ?? ''} ${doctor?.lastName ?? ''}`.trim();
+            return getAppointmentProviderName(original);
           }
           return `${patient?.firstName ?? ''} ${patient?.lastName ?? ''}`.trim();
         };
@@ -361,7 +356,7 @@ const AppointmentRequests = (): JSX.Element => {
                     'Accept',
                     `accept ${getName()}'s appointment request`,
                     id,
-                    isHospital ? acceptHospitalAppointment : acceptAppointment,
+                    acceptAppointment,
                     'Yes, accept',
                     'Cancel',
                   ),
@@ -377,7 +372,7 @@ const AppointmentRequests = (): JSX.Element => {
                   </>
                 ),
                 clickCommand: () =>
-                  user?.role === Role.Doctor
+                  user?.role === Role.Doctor || user?.role === Role.Hospital
                     ? handleConfirmationOpen(
                         'Decline',
                         `decline ${getName()}'s appointment request`,
@@ -386,23 +381,14 @@ const AppointmentRequests = (): JSX.Element => {
                         'Yes, decline',
                         'Cancel',
                       )
-                    : user?.role === Role.Hospital
-                      ? handleConfirmationOpen(
-                          'Decline',
-                          `decline ${getName()}'s appointment request`,
-                          id,
-                          declineHospitalAppointment,
-                          'Yes, decline',
-                          'Cancel',
-                        )
-                      : handleConfirmationOpen(
-                          'Cancel',
-                          `cancel your appointment with ${getName()}`,
-                          id,
-                          cancelAppointment,
-                          'Yes, cancel',
-                          'No, keep it',
-                        ),
+                    : handleConfirmationOpen(
+                        'Cancel',
+                        `cancel your appointment with ${getName()}`,
+                        id,
+                        cancelAppointment,
+                        'Yes, cancel',
+                        'No, keep it',
+                      ),
                 visible: !isDone && !isCancelled,
               },
               {
@@ -455,6 +441,20 @@ const AppointmentRequests = (): JSX.Element => {
                   }
                 },
                 visible: canJoinMeeting(original),
+              },
+              {
+                title: (
+                  <>
+                    <Video /> Open Meeting Link
+                  </>
+                ),
+                clickCommand: (): void => {
+                  const link = getAppointmentMeetingLink(original);
+                  if (link) {
+                    window.open(link, '_blank', 'noopener,noreferrer');
+                  }
+                },
+                visible: Boolean(getAppointmentMeetingLink(original)),
               },
               {
                 title: (
@@ -556,7 +556,9 @@ const AppointmentRequests = (): JSX.Element => {
         <form className="flex" onSubmit={handleSubmit}>
           <Input
             error=""
-            placeholder="Search by patient"
+            placeholder={
+              user?.role === Role.Patient ? 'Search by doctor or hospital' : 'Search by patient'
+            }
             className="max-w-83.25 sm:w-83.25"
             type="search"
             leftIcon={<Search className="cursor-pointer text-gray-500" size={20} />}

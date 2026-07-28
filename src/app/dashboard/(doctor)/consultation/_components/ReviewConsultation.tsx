@@ -144,7 +144,7 @@ const LinkedConsultationBanner = ({
         <span className="text-green-400">·</span>
         <span className="flex items-center gap-1">
           <User className="h-3 w-3" />
-          Dr. {linked.doctor.firstName} {linked.doctor.lastName}
+          Dr. {linked.doctor?.firstName} {linked.doctor?.lastName}
         </span>
         {diagnosisCount > 0 && (
           <>

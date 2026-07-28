@@ -361,6 +361,11 @@ export const HOSPITAL_SIDE_BAR: ISidebar = {
           Icon: CalendarDays,
         },
         {
+          title: 'Availability',
+          url: `${DASHBOARD_ROUTE}/availability`,
+          Icon: BetweenHorizontalStart,
+        },
+        {
           title: 'Settings',
           url: `${DASHBOARD_ROUTE}/${SETTINGS_ROUTE}`,
           Icon: Settings,
