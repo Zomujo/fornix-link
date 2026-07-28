@@ -16,10 +16,17 @@ type DateSlotsProps = {
   date: string;
   setValue: AvailabilityProps['setValue'];
   watch: AvailabilityProps['watch'];
-  doctorId: AvailabilityProps['doctorId'];
+  doctorId?: AvailabilityProps['doctorId'];
+  hospitalId?: AvailabilityProps['hospitalId'];
 };
 
-const DateSlots = ({ date, setValue, watch, doctorId }: DateSlotsProps): JSX.Element => {
+const DateSlots = ({
+  date,
+  setValue,
+  watch,
+  doctorId,
+  hospitalId,
+}: DateSlotsProps): JSX.Element => {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -45,7 +52,8 @@ const DateSlots = ({ date, setValue, watch, doctorId }: DateSlotsProps): JSX.Ele
           getAppointmentSlotsByDate({
             date: new Date(date).toISOString(),
             doctorId: doctorId || (appointmentType === MedicalAppointmentType.Doctor ? id : ''),
-            orgId: appointmentType === MedicalAppointmentType.Hospital ? id : '',
+            hospitalId:
+              hospitalId || (appointmentType === MedicalAppointmentType.Hospital ? id : ''),
           }),
         );
 
@@ -66,7 +74,7 @@ const DateSlots = ({ date, setValue, watch, doctorId }: DateSlotsProps): JSX.Ele
     };
 
     void fetchSlotsForDate();
-  }, [inView, date, dispatch, doctorId, id, appointmentType, slots.length]);
+  }, [inView, date, dispatch, doctorId, hospitalId, id, appointmentType, slots.length]);
 
   const handleSlotSelection = (startTime: string, slotId: string): void => {
     setValue('date', new Date(date).toISOString(), {
@@ -90,7 +98,7 @@ const DateSlots = ({ date, setValue, watch, doctorId }: DateSlotsProps): JSX.Ele
           <div key={index} className="h-8 w-20 animate-pulse rounded-sm bg-gray-200" />
         ))}
       {!isLoading && slots.length === 0 && inView && (
-        <p className="text-sm text-gray-500">No available slots for this day.</p>
+        <p className="text-sm text-gray-500">No open times on this day.</p>
       )}
       {slots.map(({ startTime, id: slotId }) => {
         const isSelected =

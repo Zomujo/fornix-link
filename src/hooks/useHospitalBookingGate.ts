@@ -9,23 +9,20 @@ import { LocalStorageManager } from '@/lib/localStorage';
 export function useHospitalBookingGate(): {
   loginPromptOpen: boolean;
   setLoginPromptOpen: Dispatch<SetStateAction<boolean>>;
-  bookingModalOpen: boolean;
-  setBookingModalOpen: Dispatch<SetStateAction<boolean>>;
-  requestBooking: () => void;
+  requestBooking: () => boolean;
   proceedToLogin: () => void;
 } {
   const user = useAppSelector(selectUser);
   const isPatient = useAppSelector(selectIsPatient);
   const router = useRouter();
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
-  const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
-  const requestBooking = useCallback((): void => {
+  const requestBooking = useCallback((): boolean => {
     if (!user || !isPatient) {
       setLoginPromptOpen(true);
-      return;
+      return false;
     }
-    setBookingModalOpen(true);
+    return true;
   }, [user, isPatient]);
 
   const proceedToLogin = useCallback((): void => {
@@ -37,8 +34,6 @@ export function useHospitalBookingGate(): {
   return {
     loginPromptOpen,
     setLoginPromptOpen,
-    bookingModalOpen,
-    setBookingModalOpen,
     requestBooking,
     proceedToLogin,
   };

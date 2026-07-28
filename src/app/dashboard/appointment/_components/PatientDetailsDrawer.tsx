@@ -33,11 +33,7 @@ import {
   declineAppointment,
   reopenAppointment,
 } from '@/lib/features/appointments/appointmentsThunk';
-import {
-  acceptHospitalAppointment,
-  declineHospitalAppointment,
-  reopenHospitalAppointment,
-} from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
+import { reopenHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 import { toast, Toast } from '@/hooks/use-toast';
 import { showErrorToast } from '@/lib/utils';
@@ -76,8 +72,7 @@ const PatientDetailsDrawer = ({
 
   const handleApprove = async (): Promise<void> => {
     setIsApproving(true);
-    const approveAction = isHospital ? acceptHospitalAppointment(id) : acceptAppointment(id);
-    const { payload } = await dispatch(approveAction);
+    const { payload } = await dispatch(acceptAppointment(id));
 
     if (payload && showErrorToast(payload)) {
       toast(payload as Toast);
@@ -93,8 +88,7 @@ const PatientDetailsDrawer = ({
 
   const handleCancel = async (): Promise<void> => {
     setIsCancelling(true);
-    const cancelAction = isHospital ? declineHospitalAppointment(id) : declineAppointment(id);
-    const { payload } = await dispatch(cancelAction);
+    const { payload } = await dispatch(declineAppointment(id));
 
     if (payload && showErrorToast(payload)) {
       toast(payload as Toast);

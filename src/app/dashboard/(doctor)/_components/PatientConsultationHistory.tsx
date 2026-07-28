@@ -105,7 +105,7 @@ const PatientConsultationHistory = ({
   const activeFilterCount = (showMyConsultationsOnly ? 1 : 0) + (hasDateFilter ? 1 : 0);
 
   const displayedConsultations = consultations.filter((c) => {
-    if (showMyConsultationsOnly && doctorId && c.doctor.id !== doctorId) {
+    if (showMyConsultationsOnly && doctorId && c.doctor?.id !== doctorId) {
       return false;
     }
     if (startDate) {
@@ -580,7 +580,7 @@ const PatientConsultationHistory = ({
             const isLoadingPreview = loadingPreviews[consultation.id];
             const hasLab = !!preview?.lab;
             const isLinked = consultation.id === appointmentLinkId;
-            const isByCurrentDoctor = doctorId ? consultation.doctor.id === doctorId : false;
+            const isByCurrentDoctor = doctorId ? consultation.doctor?.id === doctorId : false;
             // Show link action only: follow-up, not current consultation, not already linked, doctor's own consult, has handler, consultation still active
             const canLink =
               isFollowUp &&
@@ -731,7 +731,9 @@ const PatientConsultationHistory = ({
                           <User className="h-3 w-3 text-gray-500" />
                         </div>
                         <span className="font-medium">
-                          Dr. {consultation.doctor.firstName} {consultation.doctor.lastName}
+                          {consultation.doctor
+                            ? `Dr. ${consultation.doctor.firstName} ${consultation.doctor.lastName}`
+                            : 'Unknown doctor'}
                         </span>
                         {isByCurrentDoctor && (
                           <Badge className="border-primary/20 bg-primary/5 text-primary text-[10px]">

@@ -236,6 +236,18 @@ export const getHospitalBySlug = createAsyncThunk(
   },
 );
 
+export const getHospitalDetailById = createAsyncThunk(
+  'hospitals/getHospitalDetailById',
+  async (id: string): Promise<IHospitalDetail | Toast> => {
+    try {
+      const { data } = await axios.get<IResponse<IHospitalDetail>>(`hospitals/by-id/${id}`);
+      return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
 export const getMyHospital = createAsyncThunk(
   'hospitals/getMyHospital',
   async (): Promise<IHospitalDetail | Toast> => {

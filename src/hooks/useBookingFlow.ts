@@ -20,10 +20,11 @@ import { initiatePayment } from '@/lib/features/payments/paymentsThunk';
 import { ICheckout } from '@/types/payment.interface';
 import { showErrorToast } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { IBookingProvider } from '@/types/bookingProvider.interface';
+import { LocalStorageManager } from '@/lib/localStorage';
 
 interface UseBookingFlowParams {
-  doctorId: string;
-  fullName: string;
+  provider: IBookingProvider;
 }
 
 export interface UseBookingFlowReturn {
@@ -40,10 +41,7 @@ export interface UseBookingFlowReturn {
   handleConfirmAndPay: () => Promise<void>;
 }
 
-export const useBookingFlow = ({
-  doctorId,
-  fullName,
-}: UseBookingFlowParams): UseBookingFlowReturn => {
+export const useBookingFlow = ({ provider }: UseBookingFlowParams): UseBookingFlowReturn => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const user = useAppSelector(selectUser);
@@ -79,16 +77,28 @@ export const useBookingFlow = ({
       setShowPreview(true);
       return;
     }
+
+    if (provider.type === 'hospital') {
+      LocalStorageManager.saveRedirectUrl(
+        globalThis.location.pathname + globalThis.location.search,
+      );
+      router.push(
+        `/sign-up?hospitalId=${provider.id}&slotId=${slotId}&hospital=${encodeURIComponent(provider.name)}`,
+      );
+      return;
+    }
+
     router.push(
-      `/sign-up?doctorId=${doctorId}&slotId=${getValues('slotId')}&doctor=${encodeURIComponent(fullName)}`,
+      `/sign-up?doctorId=${provider.id}&slotId=${slotId}&doctor=${encodeURIComponent(provider.name)}`,
     );
   };
 
   const handleConfirmAndPay = async (): Promise<void> => {
     const { slotId, isFollowUp } = getValues();
     setIsInitiatingPayment(true);
+    const reason = provider.type === 'hospital' ? 'Hospital appointment' : 'Consultation';
     const { payload } = await dispatch(
-      initiatePayment({ additionalInfo: '', reason: 'Consultation', slotId, isFollowUp }),
+      initiatePayment({ additionalInfo: '', reason, slotId, isFollowUp }),
     );
     if (payload && showErrorToast(payload)) {
       toast(payload);

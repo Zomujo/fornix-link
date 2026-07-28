@@ -14,14 +14,14 @@ import { createAppointmentSlot } from '@/lib/features/appointments/appointmentsT
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { generateRecurrenceRule, generateSlotDescription } from '@/lib/rule';
 import { Toast, toast } from '@/hooks/use-toast';
-import { ToastStatus } from '@/types/shared.enum';
 import { Confirmation } from '@/components/ui/dialog';
 import { weekDays } from '@/constants/appointments.constant';
 import { IFrequency, ISlotPatternBase, IWeekDays, AppointmentType } from '@/types/slots.interface';
 import { PaymentTab } from '@/hooks/useQueryParam';
-import { selectExtra } from '@/lib/features/auth/authSelector';
+import { selectExtra, selectUserRole } from '@/lib/features/auth/authSelector';
 import { IDoctor } from '@/types/doctor.interface';
 import { useRouter } from 'next/navigation';
+import { Role } from '@/types/shared.enum';
 import { QuickSetupGuide } from './quickSetupGuide';
 import { PatternOptions } from './patternOptions';
 import { DateRangeSelector } from './dateRangeSelector';
@@ -34,6 +34,8 @@ interface CreateTimeSlotsProps {
 
 const CreateTimeSlots = ({ onSlotCreated }: CreateTimeSlotsProps): JSX.Element => {
   const doctorInfo = useAppSelector(selectExtra) as IDoctor;
+  const userRole = useAppSelector(selectUserRole);
+  const isHospitalUser = userRole === Role.Hospital;
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -49,28 +51,18 @@ const CreateTimeSlots = ({ onSlotCreated }: CreateTimeSlotsProps): JSX.Element =
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [showGuide, setShowGuide] = useState(false);
 
-  const canGenerateSlot = (): boolean => {
-    if (creationMode === 'single') {
-      if (startTime && endTime && startDate) {
-        return true;
-      }
-      toast({
-        title: ToastStatus.Info,
-        description: 'Please select a date and time slots',
-        variant: 'default',
-      });
-      return false;
-    }
-    if (selectedWeekDays.length > 0 && frequency && startTime && endTime && startDate && endDate) {
-      return true;
-    }
-    toast({
-      title: ToastStatus.Info,
-      description: 'Please select a date range (start and end), frequency, and time slots',
-      variant: 'default',
-    });
-    return false;
-  };
+  const hasValidTimes = Boolean(startTime && endTime && startTime < endTime);
+  const canGenerateSlot =
+    creationMode === 'single'
+      ? Boolean(startDate && hasValidTimes)
+      : Boolean(
+          selectedWeekDays.length > 0 &&
+          frequency &&
+          startDate &&
+          endDate &&
+          endDate >= startDate &&
+          hasValidTimes,
+        );
 
   const getSlotPattern = (): ISlotPatternBase => {
     let finalWeekDays = selectedWeekDays;
@@ -89,7 +81,7 @@ const CreateTimeSlots = ({ onSlotCreated }: CreateTimeSlotsProps): JSX.Element =
       endTime,
       recurrence: generateRecurrenceRule(finalWeekDays, finalFrequency!),
       duration: slotDuration,
-      type: AppointmentType.Virtual,
+      type: isHospitalUser ? AppointmentType.Visit : AppointmentType.Virtual,
     };
 
     if (finalEndDate) {
@@ -113,6 +105,9 @@ const CreateTimeSlots = ({ onSlotCreated }: CreateTimeSlotsProps): JSX.Element =
       toast(toastData);
       if (toastData.variant === 'success') {
         onSlotCreated?.();
+        if (isHospitalUser) {
+          return;
+        }
         if (!doctorInfo?.bio) {
           router.push('/dashboard/settings');
           toast(dataCompletionToast('profile'));
@@ -223,8 +218,9 @@ const CreateTimeSlots = ({ onSlotCreated }: CreateTimeSlotsProps): JSX.Element =
 
             <Button
               child="Generate Time Slots"
-              onClick={() => canGenerateSlot() && setConfirmation(true)}
-              className="w-full cursor-pointer text-sm sm:text-base"
+              disabled={!canGenerateSlot}
+              onClick={() => setConfirmation(true)}
+              className="w-full text-sm sm:text-base"
             />
           </div>
         </CardContent>

@@ -52,6 +52,7 @@ export interface IQueryParams<T = undefined> {
   date?: string;
   month?: Month;
   orgId?: string;
+  hospitalId?: string;
   endDate?: Date;
   priceMin?: string;
   priceMax?: string;

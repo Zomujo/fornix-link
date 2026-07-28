@@ -94,7 +94,7 @@ const NotificationActions = (): JSX.Element => {
     } else if (recordRequest?.status === ApproveDeclineStatus.Declined) {
       return `Your request to access the medical records of ${recordRequest?.patient.firstName} ${recordRequest?.patient.lastName} has been declined.`;
     }
-    return `Dr. ${recordRequest?.doctor.firstName} ${recordRequest?.doctor.lastName} has requested
+    return `Dr. ${recordRequest?.doctor?.firstName} ${recordRequest?.doctor?.lastName} has requested
                 access to your medical records. If you accept he/she will be granted access to your
                 records. If you decline then no further actions will be required`;
   };
@@ -157,7 +157,7 @@ const NotificationActions = (): JSX.Element => {
                     </div>
                   ) : (
                     <div className="font-medium">
-                      {appointment?.doctor.firstName} {appointment?.doctor.lastName}
+                      {appointment?.doctor?.firstName} {appointment?.doctor?.lastName}
                     </div>
                   )}
                 </div>

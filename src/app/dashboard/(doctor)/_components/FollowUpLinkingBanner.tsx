@@ -58,9 +58,13 @@ const FollowUpLinkingBanner = ({
               <p className="text-xs font-semibold text-green-800">Linked to:</p>
               {linkedAppointment ? (
                 <p className="truncate text-xs text-green-700">
-                  {moment(linkedAppointment.slot.date).format('MMM DD, YYYY')} —{' '}
-                  {caseToSentence(linkedAppointment.status, true)} · Dr.{' '}
-                  {linkedAppointment.doctor.firstName} {linkedAppointment.doctor.lastName}
+                  {linkedAppointment.slot?.date
+                    ? moment(linkedAppointment.slot.date).format('MMM DD, YYYY')
+                    : 'Unknown date'}{' '}
+                  — {caseToSentence(linkedAppointment.status, true)}
+                  {linkedAppointment.doctor
+                    ? ` · Dr. ${linkedAppointment.doctor.firstName} ${linkedAppointment.doctor.lastName}`
+                    : ''}
                 </p>
               ) : (
                 <p className="text-xs text-green-700">Past consultation</p>

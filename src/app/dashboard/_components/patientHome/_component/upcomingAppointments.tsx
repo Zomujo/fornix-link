@@ -14,6 +14,7 @@ import { getAppointments } from '@/lib/features/appointments/appointmentsThunk';
 import { IAppointment } from '@/types/appointment.interface';
 import { toast } from '@/hooks/use-toast';
 import { shortDaysOfTheWeek } from '@/constants/constants';
+import { getHospitalLogoUrl } from '@/lib/utils/appointmentUtils';
 
 const UpcomingAppointmentCard = (): JSX.Element => {
   const user = useAppSelector(selectUser);
@@ -86,44 +87,67 @@ const UpcomingAppointmentCard = (): JSX.Element => {
         {visibleAppointment?.length === 0 && !isLoading && (
           <p className="text-sm text-gray-500">No upcoming appointments</p>
         )}
-        {visibleAppointment?.map(({ doctor, id, slot: { startTime, endTime } }) => (
-          <div
-            key={id}
-            className="flex w-full flex-col gap-4 rounded-xl border border-gray-200 p-4"
-          >
-            <div className="flex flex-row gap-3">
-              <div className="h-10 w-10 rounded-full bg-gray-400">
-                <Image
-                  className="h-full w-full rounded-full"
-                  src={doctor.profilePicture}
-                  width={40}
-                  height={40}
-                  alt="profile"
-                />
-              </div>
-              <div className="flex w-full flex-col justify-center">
-                <p className="text-sm font-bold">
-                  Dr {doctor?.firstName} {doctor?.lastName}{' '}
-                </p>
-                <div>
-                  <p className="text-xs font-medium text-gray-400">
-                    {doctor?.specializations ? doctor?.specializations[0] : 'General Practitioner'}
+        {visibleAppointment?.map(({ doctor, hospital, id, slot: { startTime, endTime } }) => {
+          const hospitalLogo = getHospitalLogoUrl(hospital);
+          return (
+            <div
+              key={id}
+              className="flex w-full flex-col gap-4 rounded-xl border border-gray-200 p-4"
+            >
+              <div className="flex flex-row gap-3">
+                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-100">
+                  {doctor?.profilePicture ? (
+                    <Image
+                      className="h-full w-full rounded-full object-cover"
+                      src={doctor.profilePicture}
+                      width={40}
+                      height={40}
+                      alt="profile"
+                    />
+                  ) : hospitalLogo ? (
+                    <Image
+                      className="h-full w-full rounded-full object-cover"
+                      src={hospitalLogo}
+                      width={40}
+                      height={40}
+                      alt={hospital?.name ?? 'Hospital logo'}
+                    />
+                  ) : (
+                    <span className="text-primary text-xs font-bold">
+                      {(hospital?.name ?? 'H').charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex w-full flex-col justify-center">
+                  <p className="text-sm font-bold">
+                    {doctor
+                      ? `Dr ${doctor.firstName} ${doctor.lastName}`
+                      : (hospital?.name ?? 'Hospital appointment')}
                   </p>
+                  <div>
+                    <p className="text-xs font-medium text-gray-400">
+                      {doctor?.specializations
+                        ? doctor.specializations[0]
+                        : hospital
+                          ? 'Hospital visit'
+                          : 'General Practitioner'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <hr />
-            <div className="flex flex-row items-center justify-between">
-              <div className="bg-success-50 text-primary flex w-fit flex-row items-center gap-1 rounded-full px-4 py-2">
-                <div className="bg-primary h-1.25 w-1.25 rounded-full"></div>
-                <p className="text-xs font-medium">Accepted</p>
+              <hr />
+              <div className="flex flex-row items-center justify-between">
+                <div className="bg-success-50 text-primary flex w-fit flex-row items-center gap-1 rounded-full px-4 py-2">
+                  <div className="bg-primary h-1.25 w-1.25 rounded-full"></div>
+                  <p className="text-xs font-medium">Accepted</p>
+                </div>
+                <p className="text-xs font-medium text-gray-500">
+                  {moment(startTime).format('hh:mm A')} - {moment(endTime).format('hh:mm A')}
+                </p>
               </div>
-              <p className="text-xs font-medium text-gray-500">
-                {moment(startTime).format('hh:mm A')} - {moment(endTime).format('hh:mm A')}
-              </p>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
