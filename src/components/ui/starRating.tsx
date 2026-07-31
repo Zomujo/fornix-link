@@ -27,7 +27,7 @@ export const StarRating = ({
     <div
       className={cn('flex items-center gap-1', className)}
       role={isReadOnly ? 'img' : undefined}
-      aria-label={isReadOnly ? `Rated ${rating} out of ${maxRating}` : undefined}
+      aria-label={isReadOnly ? `Rated ${rating} out  of ${maxRating}` : undefined}
     >
       {Array.from({ length: maxRating }, (_, index) => {
         const starValue = index + 1;
