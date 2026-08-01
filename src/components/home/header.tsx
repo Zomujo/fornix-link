@@ -29,9 +29,15 @@ const Header = (): JSX.Element => {
       }`}
     >
       <Link href="/" className="flex items-center gap-2">
-        <Image src={Logo} alt="Fornix Link logo" width={32} height={32} className="sm:w-[36px] sm:h-[36px]" />
+        <Image
+          src={Logo}
+          alt="Fornix Link logo"
+          width={32}
+          height={32}
+          className="sm:h-[36px] sm:w-[36px]"
+        />
         <span
-          className={`text-[15px] sm:text-[17px] font-bold tracking-tight whitespace-nowrap transition-colors duration-300 ${
+          className={`text-[15px] font-bold tracking-tight whitespace-nowrap transition-colors duration-300 sm:text-[17px] ${
             isSolid ? 'text-slate-900' : 'text-white'
           }`}
         >

@@ -117,7 +117,10 @@ const SolutionsOffered = (): JSX.Element => {
                   'HD video consultations from home',
                   'Secure digital prescriptions',
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-4 text-lg font-medium text-slate-700">
+                  <li
+                    key={item}
+                    className="flex items-center gap-4 text-lg font-medium text-slate-700"
+                  >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700 shadow-sm">
                       ✓
                     </div>
@@ -243,10 +246,11 @@ const SolutionsOffered = (): JSX.Element => {
                   'Built-in telehealth platform',
                   'Zero upfront setup costs',
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-4 text-lg font-medium text-slate-700">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 shadow-sm">
-                
-                    </div>
+                  <li
+                    key={item}
+                    className="flex items-center gap-4 text-lg font-medium text-slate-700"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 shadow-sm"></div>
                     {item}
                   </li>
                 ))}

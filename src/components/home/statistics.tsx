@@ -138,7 +138,7 @@ const Statistics = (): JSX.Element => {
             <div className="mb-3 bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
               <CountUp24_7 duration={2000} isVisible={inView} />
             </div>
-            <p className="text-center text-sm font-medium leading-relaxed text-slate-500">
+            <p className="text-center text-sm leading-relaxed font-medium text-slate-500">
               Access healthcare specialists
               <br />
               anytime, anywhere
@@ -153,7 +153,7 @@ const Statistics = (): JSX.Element => {
             <div className="mb-3 bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
               <CountUp end={1000} suffix="+" duration={2000} isVisible={inView} />
             </div>
-            <p className="text-center text-sm font-medium leading-relaxed text-slate-500">
+            <p className="text-center text-sm leading-relaxed font-medium text-slate-500">
               Empowered
               <br />
               Clients
@@ -168,7 +168,7 @@ const Statistics = (): JSX.Element => {
             <div className="mb-3 bg-gradient-to-r from-cyan-600 to-teal-500 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
               <CountUp end={150} duration={2000} isVisible={inView} />
             </div>
-            <p className="text-center text-sm font-medium leading-relaxed text-slate-500">
+            <p className="text-center text-sm leading-relaxed font-medium text-slate-500">
               Expert
               <br />
               Collaborations

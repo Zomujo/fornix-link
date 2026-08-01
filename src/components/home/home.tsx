@@ -107,7 +107,7 @@ export default function Home(): JSX.Element {
           <WhyBookWithUs />
           <PatientReviews />
           <OngoingCare />
-          
+
           <Faq />
           <AppPromo />
         </>
