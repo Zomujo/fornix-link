@@ -45,7 +45,10 @@ export enum PaymentTab {
   RegistrationFee = 'registrationFee',
 }
 
-interface IQuery extends Pick<Required<IQueryParams>, 'specialty' | 'priceMax' | 'search' | 'location' | 'date'> {
+interface IQuery extends Pick<
+  Required<IQueryParams>,
+  'specialty' | 'priceMax' | 'search' | 'location' | 'date'
+> {
   tab: Tab;
   appointmentType: MedicalAppointmentType;
   [PaymentVerification.reference]: string;

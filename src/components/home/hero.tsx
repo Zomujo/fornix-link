@@ -75,17 +75,26 @@ const Hero = (): JSX.Element => {
         {/* Warm yellow blob — top-right */}
         <div
           className="absolute -top-20 -right-16 h-72 w-72 rounded-full opacity-30 blur-3xl"
-          style={{ background: '#fbbf24', animation: 'floatBlob1 14s ease-in-out infinite alternate' }}
+          style={{
+            background: '#fbbf24',
+            animation: 'floatBlob1 14s ease-in-out infinite alternate',
+          }}
         />
         {/* Teal blob — bottom-left */}
         <div
           className="absolute -bottom-24 -left-12 h-80 w-80 rounded-full opacity-25 blur-3xl"
-          style={{ background: '#14b8a6', animation: 'floatBlob2 11s ease-in-out infinite alternate' }}
+          style={{
+            background: '#14b8a6',
+            animation: 'floatBlob2 11s ease-in-out infinite alternate',
+          }}
         />
         {/* Pink accent — center-right */}
         <div
           className="absolute top-1/3 right-[15%] h-44 w-44 rounded-full opacity-20 blur-2xl"
-          style={{ background: '#f472b6', animation: 'floatBlob1 9s ease-in-out infinite alternate-reverse' }}
+          style={{
+            background: '#f472b6',
+            animation: 'floatBlob1 9s ease-in-out infinite alternate-reverse',
+          }}
         />
         {/* Small green dot */}
         <div
@@ -103,7 +112,7 @@ const Hero = (): JSX.Element => {
           style={{ animation: 'floatBlob2 8s ease-in-out infinite alternate' }}
         />
         <div
-          className="absolute bottom-[20%] right-[10%] h-10 w-10 rounded-full border-2 border-amber-300/30"
+          className="absolute right-[10%] bottom-[20%] h-10 w-10 rounded-full border-2 border-amber-300/30"
           style={{ animation: 'floatBlob1 7s ease-in-out infinite alternate-reverse' }}
         />
       </div>
@@ -111,7 +120,7 @@ const Hero = (): JSX.Element => {
       {/* Content */}
       <div className="relative z-10 flex min-h-[calc(100vh-65px)] flex-col items-center justify-center px-4 pb-16">
         <div className="w-full max-w-4xl text-center">
-          <h1 className="mb-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
+          <h1 className="mb-5 text-4xl leading-[1.1] font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
             Find care. Book instantly.
             <br />
             <span className="relative inline-block">
@@ -154,7 +163,11 @@ const Hero = (): JSX.Element => {
                 <Button
                   type="button"
                   variant={searchMode === 'doctors' ? 'default' : 'outline'}
-                  className={searchMode === 'doctors' ? 'rounded-full px-5' : 'rounded-full px-5 text-slate-700'}
+                  className={
+                    searchMode === 'doctors'
+                      ? 'rounded-full px-5'
+                      : 'rounded-full px-5 text-slate-700'
+                  }
                   onClick={() => setSearchMode('doctors')}
                   child="Doctors"
                 />
@@ -188,7 +201,7 @@ const Hero = (): JSX.Element => {
                     />
                   </div>
 
-                  <div className="hidden md:block h-10 w-px bg-slate-200"></div>
+                  <div className="hidden h-10 w-px bg-slate-200 md:block"></div>
 
                   <div className="relative md:min-w-0 md:flex-1">
                     <Input
@@ -226,13 +239,11 @@ const Hero = (): JSX.Element => {
                     <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
                   </div>
 
-                  <div className="hidden md:block h-10 w-px bg-slate-200"></div>
+                  <div className="hidden h-10 w-px bg-slate-200 md:block"></div>
 
                   <div className="md:w-52">
                     <Combobox
-                      onChange={(value) =>
-                        setHospitalQuery((prev) => ({ ...prev, city: value }))
-                      }
+                      onChange={(value) => setHospitalQuery((prev) => ({ ...prev, city: value }))}
                       options={LOCATIONS}
                       value={hospitalQuery.city}
                       placeholder="Any city"
@@ -260,12 +271,14 @@ const Hero = (): JSX.Element => {
           </div>
 
           <div className="mt-8 flex flex-col items-center gap-4">
-            <p className="text-sm md:text-base text-white/90 font-medium flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-teal-400" /> Free to search. No account needed. Cancel most bookings free of charge.
+            <p className="flex items-center justify-center gap-2 text-sm font-medium text-white/90 md:text-base">
+              <CheckCircle2 className="h-4 w-4 text-teal-400" /> Free to search. No account needed.
+              Cancel most bookings free of charge.
             </p>
-            
-            <p className="text-xs md:text-sm text-white/50 font-medium">
-              Ghana Medical and Dental Council verified providers &nbsp;·&nbsp; 500+ appointments booked &nbsp;·&nbsp; Real patient reviews
+
+            <p className="text-xs font-medium text-white/50 md:text-sm">
+              Ghana Medical and Dental Council verified providers &nbsp;·&nbsp; 500+ appointments
+              booked &nbsp;·&nbsp; Real patient reviews
             </p>
           </div>
         </div>

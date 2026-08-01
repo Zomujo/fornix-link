@@ -34,7 +34,7 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
       <Link
         href="/for-providers"
         className={cn(
-          'group relative hidden sm:inline-block px-3 py-2 sm:px-4 sm:py-2 text-sm font-semibold transition-colors duration-300 whitespace-nowrap',
+          'group relative hidden px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors duration-300 sm:inline-block sm:px-4 sm:py-2',
           isSolid ? 'text-slate-600 hover:text-teal-700' : 'text-white/90 hover:text-white',
         )}
       >
@@ -53,7 +53,9 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
             <button
               className={cn(
                 'ml-2 h-10 w-10 overflow-hidden rounded-full border-2 transition-all duration-300 hover:scale-105 hover:shadow-md',
-                isSolid ? 'border-slate-200 hover:border-teal-400' : 'border-white/20 hover:border-white/60',
+                isSolid
+                  ? 'border-slate-200 hover:border-teal-400'
+                  : 'border-white/20 hover:border-white/60',
               )}
             >
               <AvatarComp
@@ -64,10 +66,16 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="rounded-xl shadow-xl">
-            <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer font-medium hover:bg-slate-50">
+            <DropdownMenuItem
+              onClick={() => router.push('/dashboard')}
+              className="cursor-pointer font-medium hover:bg-slate-50"
+            >
               <span>Dashboard</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={logoutHandler} className="cursor-pointer font-medium text-red-600 hover:bg-red-50 hover:text-red-700">
+            <DropdownMenuItem
+              onClick={logoutHandler}
+              className="cursor-pointer font-medium text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
               <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -77,7 +85,7 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
           <Link
             href="/login"
             className={cn(
-              'group relative px-2 py-2 sm:px-5 sm:py-2.5 text-sm font-semibold transition-colors duration-300 whitespace-nowrap',
+              'group relative px-2 py-2 text-sm font-semibold whitespace-nowrap transition-colors duration-300 sm:px-5 sm:py-2.5',
               isSolid ? 'text-slate-600 hover:text-teal-700' : 'text-white/90 hover:text-white',
             )}
           >
@@ -92,10 +100,10 @@ export const Navigation = ({ isSolid = true }: NavigationProps): JSX.Element => 
           <Link
             href="/sign-up"
             className={cn(
-              'relative ml-1 overflow-hidden rounded-full px-4 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap',
+              'relative ml-1 overflow-hidden rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg sm:px-6 sm:py-2.5 sm:text-sm',
               isSolid
                 ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:shadow-teal-500/25'
-                : 'bg-white text-teal-800 hover:bg-white hover:shadow-white/30 hover:ring-2 hover:ring-white/50 hover:ring-offset-1 hover:ring-offset-transparent',
+                : 'bg-white text-teal-800 hover:bg-white hover:ring-2 hover:shadow-white/30 hover:ring-white/50 hover:ring-offset-1 hover:ring-offset-transparent',
             )}
           >
             Sign up

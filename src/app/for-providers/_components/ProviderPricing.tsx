@@ -22,29 +22,29 @@ const HOSPITAL_FEATURES = [
 
 const ProviderPricing = (): JSX.Element => (
   <section className="bg-slate-50 py-24 md:py-32">
-    <div className="container mx-auto px-4 md:px-8 max-w-5xl">
-      <div className="mb-16 text-center max-w-3xl mx-auto">
+    <div className="container mx-auto max-w-5xl px-4 md:px-8">
+      <div className="mx-auto mb-16 max-w-3xl text-center">
         <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
           Simple pricing
         </h2>
-        <p className="mt-6 text-xl text-slate-500 leading-relaxed">
+        <p className="mt-6 text-xl leading-relaxed text-slate-500">
           Start free, grow at your own pace. No hidden fees.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Doctor */}
-        <div className="flex flex-col rounded-3xl bg-white p-8 md:p-10 border border-slate-200">
-          <span className="text-sm font-bold tracking-widest text-teal-600 mb-4">FOR DOCTORS</span>
-          <h3 className="text-3xl font-extrabold text-slate-900 mb-2">Free to join</h3>
-          <p className="text-slate-500 mb-8">
+        <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 md:p-10">
+          <span className="mb-4 text-sm font-bold tracking-widest text-teal-600">FOR DOCTORS</span>
+          <h3 className="mb-2 text-3xl font-extrabold text-slate-900">Free to join</h3>
+          <p className="mb-8 text-slate-500">
             Sign up, get verified, and start receiving patients at no cost.
           </p>
 
-          <ul className="space-y-3 mb-10 flex-1">
+          <ul className="mb-10 flex-1 space-y-3">
             {DOCTOR_FEATURES.map((f) => (
               <li key={f} className="flex items-start gap-3 text-sm text-slate-700">
-                <Check className="h-4 w-4 shrink-0 text-teal-500 mt-0.5" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal-500" />
                 <span>{f}</span>
               </li>
             ))}
@@ -59,17 +59,19 @@ const ProviderPricing = (): JSX.Element => (
         </div>
 
         {/* Hospital */}
-        <div className="flex flex-col rounded-3xl bg-white p-8 md:p-10 border border-slate-200">
-          <span className="text-sm font-bold tracking-widest text-teal-600 mb-4">FOR HOSPITALS</span>
-          <h3 className="text-3xl font-extrabold text-slate-900 mb-2">Enterprise</h3>
-          <p className="text-slate-500 mb-8">
+        <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 md:p-10">
+          <span className="mb-4 text-sm font-bold tracking-widest text-teal-600">
+            FOR HOSPITALS
+          </span>
+          <h3 className="mb-2 text-3xl font-extrabold text-slate-900">Enterprise</h3>
+          <p className="mb-8 text-slate-500">
             Full-featured platform with Fornix AI suite. Pricing tailored to your institution.
           </p>
 
-          <ul className="space-y-3 mb-10 flex-1">
+          <ul className="mb-10 flex-1 space-y-3">
             {HOSPITAL_FEATURES.map((f) => (
               <li key={f} className="flex items-start gap-3 text-sm text-slate-700">
-                <Check className="h-4 w-4 shrink-0 text-teal-500 mt-0.5" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal-500" />
                 <span>{f}</span>
               </li>
             ))}
@@ -77,7 +79,7 @@ const ProviderPricing = (): JSX.Element => (
 
           <Link
             href="/sign-up?role=hospital"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-4 text-base font-bold text-slate-900 border border-slate-200 transition-all hover:border-slate-300"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 text-base font-bold text-slate-900 transition-all hover:border-slate-300"
           >
             Register Your Hospital <ArrowRight className="h-4 w-4" />
           </Link>

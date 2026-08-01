@@ -37,46 +37,47 @@ const Footer = (): JSX.Element => {
     <footer className="relative overflow-hidden bg-teal-950 pt-20 pb-10 text-teal-100/80">
       {/* Decorative Background Elements */}
       <div className="pointer-events-none absolute top-0 left-1/4 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-teal-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-[400px] w-[400px] translate-y-1/3 rounded-full bg-blue-500/10 blur-[100px]" />
+      <div className="pointer-events-none absolute right-0 bottom-0 h-[400px] w-[400px] translate-y-1/3 rounded-full bg-blue-500/10 blur-[100px]" />
 
-      <div className="container relative z-10 mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 gap-16 md:grid-cols-2 lg:grid-cols-5 xl:gap-24 mb-16">
-          
+      <div className="relative z-10 container mx-auto max-w-7xl px-6">
+        <div className="mb-16 grid grid-cols-1 gap-16 md:grid-cols-2 lg:grid-cols-5 xl:gap-24">
           {/* Brand Column */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
+          <div className="flex flex-col gap-6 lg:col-span-2">
             <Link href="/" className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-lg">
-                <Image src={Logo} alt={`${BRANDING.APP_NAME} logo`} width={32} height={32} className="object-contain" />
+                <Image
+                  src={Logo}
+                  alt={`${BRANDING.APP_NAME} logo`}
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
               </div>
               <span className="text-2xl font-black tracking-tight text-white">
                 {BRANDING.APP_NAME}
               </span>
             </Link>
-            
-            <p className="text-lg text-teal-100/70 font-medium max-w-sm leading-relaxed">
+
+            <p className="max-w-sm text-lg leading-relaxed font-medium text-teal-100/70">
               {BRANDING.SLOGAN}. <br />
               <span className="text-teal-400">{BRANDING.APP_TAGLINE}</span>
             </p>
-
-
           </div>
 
           {/* Link Columns */}
-          <div className="grid grid-cols-2 gap-10 lg:col-span-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-3">
             {footerSections.map(({ links, title }) => (
               <div key={title} className="flex flex-col gap-6">
-                <h4 className="text-sm font-bold uppercase tracking-widest text-white">
-                  {title}
-                </h4>
+                <h4 className="text-sm font-bold tracking-widest text-white uppercase">{title}</h4>
                 <ul className="flex flex-col gap-4">
                   {links.map((link) => (
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="group flex w-max items-center text-teal-200/60 transition-colors hover:text-white font-medium"
+                        className="group flex w-max items-center font-medium text-teal-200/60 transition-colors hover:text-white"
                       >
                         {link.label}
-                        <ArrowRight className="ml-2 h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                        <ArrowRight className="ml-2 h-3 w-3 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                       </Link>
                     </li>
                   ))}

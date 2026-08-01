@@ -21,7 +21,7 @@ const InterestedProvider = (): JSX.Element => (
     {/* Decorative blob */}
     <div className="pointer-events-none absolute top-1/2 left-0 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500 opacity-10 blur-3xl" />
 
-    <div className="container relative z-10 mx-auto px-4">
+    <div className="relative z-10 container mx-auto px-4">
       <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
         {/* Image side */}
         <div className="relative lg:w-1/2">
@@ -34,7 +34,7 @@ const InterestedProvider = (): JSX.Element => (
           </div>
           {/* Floating badge */}
           <div className="absolute -top-4 -right-4 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-500 px-5 py-3 shadow-xl">
-            <p className="text-xs font-bold text-white uppercase tracking-wide">Powered by</p>
+            <p className="text-xs font-bold tracking-wide text-white uppercase">Powered by</p>
             <p className="text-lg font-black text-white">Fornix AI</p>
           </div>
         </div>
@@ -69,7 +69,7 @@ const InterestedProvider = (): JSX.Element => (
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link href="/for-providers">
               <Button
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:brightness-110 hover:shadow-xl"
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl hover:brightness-110"
                 child={
                   <>
                     Explore Provider Solutions
