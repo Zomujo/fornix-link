@@ -1,7 +1,7 @@
 'use client';
 
 import { ContentProfile } from '@/assets/images';
-import { Shield, Zap, BarChart, Star, Loader2 } from 'lucide-react';
+import { Shield, Zap, BarChart, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { JSX, useEffect, useMemo, useState } from 'react';
 import { ILandingPageReview } from '@/types/review.interface';
@@ -9,6 +9,7 @@ import { useAppDispatch } from '@/lib/hooks';
 import { getLandingPageReviews } from '@/lib/features/reviews/reviewsThunk';
 import { showErrorToast } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { StarRating } from '@/components/ui/starRating';
 
 const SolutionsOffered = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -154,10 +155,7 @@ const SolutionsOffered = (): JSX.Element => {
                         <div className="flex items-center gap-2">
                           <div className="font-semibold">{currentUser.name}</div>
                           {currentReview.rating > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm font-medium">{currentReview.rating}</span>
-                            </div>
+                            <StarRating rating={currentReview.rating} size="sm" disabled />
                           )}
                         </div>
                         <div className="text-muted-foreground">{currentUser.role}</div>
