@@ -77,7 +77,7 @@ export const selectUserId = createSelector(selectAuthentication, ({ user }) => u
 export const selectPatientMustUpdateMandatoryInfo = createSelector(
   selectIsPatient,
   selectExtra,
-  (isPatient, extra) => isPatient && (!extra?.dob || !extra?.gender || !extra?.contact),
+  (isPatient, extra) => isPatient && (!extra?.gender || !extra?.contact),
 );
 
 export const selectDoctorMustCompleteOnboarding = createSelector(
