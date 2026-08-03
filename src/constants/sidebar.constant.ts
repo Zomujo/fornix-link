@@ -60,11 +60,6 @@ export const PATIENT_SIDE_BAR: ISidebar = {
           url: `${DASHBOARD_ROUTE}/records`,
           Icon: Archive,
         },
-        {
-          title: 'Leaderboard',
-          url: `${DASHBOARD_ROUTE}/leaderboard`,
-          Icon: Trophy,
-        },
       ],
     },
 
