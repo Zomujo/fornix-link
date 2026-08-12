@@ -26,6 +26,8 @@ export enum NotificationEvent {
   NewNotification = 'newNotification',
   NewRequest = 'newRequest',
   RecordRequest = 'recordRequest',
+  DoctorAssigned = 'doctorAssigned',
+  AssignmentNeeded = 'assignmentNeeded',
 }
 
 export enum NotificationTopic {
@@ -38,4 +40,9 @@ export enum NotificationTopic {
   ConsultationCompleted = 'Consultation Completed',
   DiagnosisAdded = 'Diagnosis Added',
   RadiologyRequest = 'Radiology Test Requests',
+  DoctorAssigned = 'Doctor Assigned',
+  AssignmentNeeded = 'Assignment Needed',
+  ClientAssigned = 'Client Assigned',
+  AppointmentRequest = 'Appointment Request',
+  AppointmentUpdate = 'Appointment Update',
 }

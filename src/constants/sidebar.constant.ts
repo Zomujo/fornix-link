@@ -12,6 +12,7 @@ import {
   Settings,
   Trophy,
   User,
+  Users,
   UserSearch,
   Hospital,
   ShieldCheck,
@@ -21,6 +22,7 @@ import {
   Smile,
   MessageSquare,
   Receipt,
+  UsersRound,
 } from 'lucide-react';
 import { getDynamicParamFromUrl } from '@/lib/utils';
 
@@ -59,6 +61,12 @@ export const PATIENT_SIDE_BAR: ISidebar = {
           title: 'Records',
           url: `${DASHBOARD_ROUTE}/records`,
           Icon: Archive,
+        },
+        {
+          title: 'My Data Access',
+          url: `${DASHBOARD_ROUTE}/data-access`,
+          Icon: ShieldCheck,
+          phoneTitle: 'Data Access',
         },
       ],
     },
@@ -354,6 +362,16 @@ export const HOSPITAL_SIDE_BAR: ISidebar = {
           title: 'Appointments',
           url: `${DASHBOARD_ROUTE}/appointment`,
           Icon: CalendarDays,
+        },
+        {
+          title: 'Clients',
+          url: `${DASHBOARD_ROUTE}/hospital-clients`,
+          Icon: Users,
+        },
+        {
+          title: 'Staff',
+          url: `${DASHBOARD_ROUTE}/hospital-staff`,
+          Icon: UsersRound,
         },
         {
           title: 'Availability',

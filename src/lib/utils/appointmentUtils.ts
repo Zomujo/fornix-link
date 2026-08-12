@@ -5,7 +5,10 @@ import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 import { AppointmentType } from '@/types/slots.interface';
 import { Role } from '@/types/shared.enum';
 
-export type AppointmentLike = IAppointment | IHospitalAppointment;
+export type AppointmentLike = (IAppointment | IHospitalAppointment) & {
+  doctorId?: string | null;
+  hospitalId?: string | null;
+};
 
 export type AppointmentParty = {
   firstName: string;
@@ -173,4 +176,20 @@ export function getAppointmentMoment(appointment: AppointmentLike): Moment {
 
 export function isAppointmentOnSameDay(appointment: AppointmentLike, date: Date): boolean {
   return getAppointmentMoment(appointment).isSame(date, 'day');
+}
+
+export function needsDoctorAssignment(appointment: AppointmentLike): boolean {
+  const hospital = getAppointmentHospital(appointment);
+  if (!hospital?.id && !('hospitalId' in appointment && appointment.hospitalId)) {
+    return false;
+  }
+  return !appointment.doctorId && !appointment.doctor;
+}
+
+export function isAssignmentUrgent(appointment: AppointmentLike): boolean {
+  if (!needsDoctorAssignment(appointment)) {
+    return false;
+  }
+  const hoursAway = Math.abs(getAppointmentMoment(appointment).diff(moment(), 'hours', true));
+  return hoursAway <= 24;
 }

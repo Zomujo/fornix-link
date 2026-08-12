@@ -90,6 +90,17 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
     void getUpcomingAppointments();
   }, [queryParams, dispatch]);
 
+  on(NotificationEvent.DoctorAssigned, () => {
+    void (async (): Promise<void> => {
+      const { payload } = await dispatch(getAppointments(queryParams));
+      if (payload && showErrorToast(payload)) {
+        return;
+      }
+      const { rows } = payload as IPagination<IAppointment | IHospitalAppointment>;
+      setUpcomingAppointment(rows);
+    })();
+  });
+
   useEffect(() => {
     const selectedMoment = moment(selectedDate);
     const currentWeekStart = now.clone().startOf('isoWeek');
