@@ -7,6 +7,8 @@ import paymentsReducer from '@/lib/features/payments/paymentSlice';
 import patientsReducer from '@/lib/features/patients/patientsSlice';
 import appointmentsReducer from '@/lib/features/appointments/appointmentsSlice';
 import hospitalAppointmentsReducer from '@/lib/features/hospital-appointments/hospitalAppointmentsSlice';
+import hospitalPatientsReducer from '@/lib/features/hospital-patients/hospitalPatientsSlice';
+import hospitalStaffReducer from '@/lib/features/hospital-staff/hospitalStaffSlice';
 import analyticsReducer from '@/lib/features/analytics/analyticsSlice';
 import consultationReducer from '@/lib/features/appointments/consultation/consultationSlice';
 import connectivityReducer from '@/lib/features/connectivity/connectivitySlice';
@@ -37,6 +39,8 @@ const rootReducer = combineReducers({
   patients: patientsReducer,
   appointments: appointmentsReducer,
   hospitalAppointments: hospitalAppointmentsReducer,
+  hospitalPatients: hospitalPatientsReducer,
+  hospitalStaff: hospitalStaffReducer,
   analytics: analyticsReducer,
   consultation: consultationReducer,
   connectivity: connectivityReducer,

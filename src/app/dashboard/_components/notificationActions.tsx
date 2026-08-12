@@ -66,6 +66,8 @@ const NotificationActions = (): JSX.Element => {
       return 'Appointment Accepted';
     } else if (appointment?.status === AppointmentStatus.Declined) {
       return 'Appointment Declined';
+    } else if (appointment?.status === AppointmentStatus.Cancelled) {
+      return 'Appointment Cancelled';
     }
     return 'New Appointment Request';
   };
@@ -75,6 +77,8 @@ const NotificationActions = (): JSX.Element => {
       return 'The appointment request has been accepted.';
     } else if (appointment?.status === AppointmentStatus.Declined) {
       return 'The appointment request has been declined.';
+    } else if (appointment?.status === AppointmentStatus.Cancelled) {
+      return 'The appointment request has been cancelled by the patient.';
     }
     return 'Review the details of the new appointment request below.';
   };
@@ -104,7 +108,10 @@ const NotificationActions = (): JSX.Element => {
       return (
         <CheckCircle2 className="animate-in zoom-in-50 h-12 w-12 text-green-500 duration-500" />
       );
-    } else if (appointment?.status === AppointmentStatus.Declined) {
+    } else if (
+      appointment?.status === AppointmentStatus.Declined ||
+      appointment?.status === AppointmentStatus.Cancelled
+    ) {
       return <XCircle className="animate-in zoom-in-50 h-12 w-12 text-red-500 duration-500" />;
     }
     return <Clock className="animate-in zoom-in-50 h-12 w-12 text-amber-500 duration-500" />;

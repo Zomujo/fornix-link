@@ -36,7 +36,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { motion } from 'framer-motion';
-import { DOCTOR_EARNINGS_PERCENTAGE, PLATFORM_FEE_PERCENTAGE } from '@/constants/payment.constants';
+import {
+  HOSPITAL_EARNINGS_PERCENTAGE,
+  HOSPITAL_PLATFORM_FEE_PERCENTAGE,
+} from '@/constants/payment.constants';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TooltipComp } from '@/components/ui/tooltip';
@@ -1173,7 +1176,7 @@ const HospitalSettings = (): JSX.Element => {
             render={({ field }) => {
               const currentAmount = Number.isFinite(field.value) ? Number(field.value) : MIN_AMOUNT;
               const hospitalEarnings = Math.round(
-                currentAmount * (DOCTOR_EARNINGS_PERCENTAGE / 100),
+                currentAmount * (HOSPITAL_EARNINGS_PERCENTAGE / 100),
               );
               return (
                 <div className="flex w-full flex-col gap-24">
@@ -1202,10 +1205,12 @@ const HospitalSettings = (): JSX.Element => {
                       <p className="leading-5">
                         You will receive{' '}
                         <span className="font-bold">
-                          ₵{hospitalEarnings} ({DOCTOR_EARNINGS_PERCENTAGE}%)
+                          ₵{hospitalEarnings} ({HOSPITAL_EARNINGS_PERCENTAGE}%)
                         </span>{' '}
                         per appointment. A{' '}
-                        <span className="font-bold">{PLATFORM_FEE_PERCENTAGE}% platform fee</span>{' '}
+                        <span className="font-bold">
+                          {HOSPITAL_PLATFORM_FEE_PERCENTAGE}% platform fee
+                        </span>{' '}
                         is deducted from your set fee of{' '}
                         <span className="font-bold">₵{currentAmount}</span>.
                       </p>

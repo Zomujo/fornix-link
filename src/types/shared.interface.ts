@@ -66,6 +66,7 @@ export interface IQueryParams<T = undefined> {
   doctorId?: string;
   patientId?: string;
   id?: string;
+  unassignedOnly?: boolean;
   temperature?: string;
   bloodPressure?: string;
   bloodSugarLevel?: string;
