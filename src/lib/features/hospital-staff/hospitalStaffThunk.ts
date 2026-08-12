@@ -90,10 +90,7 @@ export const removeHospitalStaff = createAsyncThunk(
 
 export const updateHospitalStaffRole = createAsyncThunk(
   'hospital-staff/updateHospitalStaffRole',
-  async (payload: {
-    staffId: string;
-    role: InviteHospitalStaffRole;
-  }): Promise<Toast> => {
+  async (payload: { staffId: string; role: InviteHospitalStaffRole }): Promise<Toast> => {
     try {
       const { data } = await axios.patch<IResponse>(`hospitals/staff/${payload.staffId}/role`, {
         role: payload.role,

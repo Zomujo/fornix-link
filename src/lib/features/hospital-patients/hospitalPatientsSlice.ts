@@ -1,9 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { IPagination } from '@/types/shared.interface';
-import {
-  IHospitalPatient,
-  IHospitalStaffDoctor,
-} from '@/types/hospital-patient.interface';
+import { IHospitalPatient, IHospitalStaffDoctor } from '@/types/hospital-patient.interface';
 import {
   getHospitalPatient,
   getHospitalPatients,
@@ -32,10 +29,7 @@ const hospitalPatientsSlice = createSlice({
   name: 'hospitalPatients',
   initialState,
   reducers: {
-    setSelectedHospitalPatient: (
-      state,
-      action: PayloadAction<IHospitalPatient | undefined>,
-    ) => {
+    setSelectedHospitalPatient: (state, action: PayloadAction<IHospitalPatient | undefined>) => {
       state.selected = action.payload;
     },
     clearHospitalPatients: (state) => {
@@ -73,6 +67,5 @@ const hospitalPatientsSlice = createSlice({
   },
 });
 
-export const { setSelectedHospitalPatient, clearHospitalPatients } =
-  hospitalPatientsSlice.actions;
+export const { setSelectedHospitalPatient, clearHospitalPatients } = hospitalPatientsSlice.actions;
 export default hospitalPatientsSlice.reducer;

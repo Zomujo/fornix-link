@@ -3,10 +3,7 @@ import { IPagination, IQueryParams, IResponse } from '@/types/shared.interface';
 import axios, { axiosErrorHandler } from '@/lib/axios';
 import { Toast } from '@/hooks/use-toast';
 import { generateSuccessToast, getValidQueryString } from '@/lib/utils';
-import {
-  IHospitalPatient,
-  IHospitalStaffDoctor,
-} from '@/types/hospital-patient.interface';
+import { IHospitalPatient, IHospitalStaffDoctor } from '@/types/hospital-patient.interface';
 import { AcceptDeclineStatus } from '@/types/shared.enum';
 
 export const getHospitalPatients = createAsyncThunk(

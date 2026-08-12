@@ -1,9 +1,7 @@
 'use client';
 
 import { Logo, LoginSlide } from '@/assets/images';
-import AuthenticationFrame, {
-  ImagePosition,
-} from '@/app/(auth)/_components/authenticationFrame';
+import AuthenticationFrame, { ImagePosition } from '@/app/(auth)/_components/authenticationFrame';
 import Text from '@/components/text/text';
 import { Button } from '@/components/ui/button';
 import { Toast, toast } from '@/hooks/use-toast';
@@ -178,7 +176,8 @@ const StaffInviteContent = (): JSX.Element => {
         <Text variantStyle="body-small" className="text-grayscale-500">
           {hospitalName ? (
             <>
-              You are now an active staff member of <strong className="text-gray-900">{hospitalName}</strong>.
+              You are now an active staff member of{' '}
+              <strong className="text-gray-900">{hospitalName}</strong>.
             </>
           ) : (
             'You are now an active staff member of this hospital.'
@@ -195,7 +194,11 @@ const StaffInviteContent = (): JSX.Element => {
             <Text variantStyle="body-small" className="text-grayscale-500">
               Log in with your email and temporary password from the invite email to continue.
             </Text>
-            <Button child="Log in to continue" onClick={() => router.push('/login')} className="mt-2" />
+            <Button
+              child="Log in to continue"
+              onClick={() => router.push('/login')}
+              className="mt-2"
+            />
           </div>
         )}
       </div>
@@ -213,7 +216,8 @@ const StaffInviteContent = (): JSX.Element => {
         <Text variantStyle="body-small" className="text-grayscale-500">
           {hospitalName ? (
             <>
-              You declined the staff invitation from <strong className="text-gray-900">{hospitalName}</strong>.
+              You declined the staff invitation from{' '}
+              <strong className="text-gray-900">{hospitalName}</strong>.
             </>
           ) : (
             'You declined this hospital staff invitation.'
@@ -234,8 +238,8 @@ const StaffInviteContent = (): JSX.Element => {
         <Text variantStyle="body-small" className="text-grayscale-500">
           {hospitalName ? (
             <>
-              You have been invited to join <strong className="text-gray-900">{hospitalName}</strong> on
-              Fornix Link
+              You have been invited to join{' '}
+              <strong className="text-gray-900">{hospitalName}</strong> on Fornix Link
               {preview?.role ? (
                 <>
                   {' '}
@@ -265,7 +269,7 @@ const StaffInviteContent = (): JSX.Element => {
         />
       </div>
       {!user && (
-        <Text variantStyle="body-small" className="text-center text-grayscale-500">
+        <Text variantStyle="body-small" className="text-grayscale-500 text-center">
           Already have an account?{' '}
           <Link href="/login" className="text-primary font-medium underline">
             Log in
@@ -284,9 +288,7 @@ const StaffInvitePage = (): JSX.Element => (
   >
     <div className="mt-8 flex w-full justify-center">
       <Suspense
-        fallback={
-          <div className="h-40 w-full max-w-sm animate-pulse rounded-lg bg-gray-100" />
-        }
+        fallback={<div className="h-40 w-full max-w-sm animate-pulse rounded-lg bg-gray-100" />}
       >
         <StaffInviteContent />
       </Suspense>

@@ -63,9 +63,7 @@ const DataAccessPanel = (): JSX.Element => {
     }
   }
 
-  const activeGrants = grants.filter(
-    (grant) => grant.status !== 'revoked' && !grant.revokedAt,
-  );
+  const activeGrants = grants.filter((grant) => grant.status !== 'revoked' && !grant.revokedAt);
   const hasAnyAccess = activeGrants.length > 0 || hospitalRelationships.length > 0;
 
   return (
@@ -183,7 +181,9 @@ const DataAccessPanel = (): JSX.Element => {
                           <p className="font-medium text-gray-900">
                             {relationship.hospital?.name ?? 'Hospital'}
                           </p>
-                          <p className="mt-1 text-sm text-gray-500">Assigned doctor: {doctorName}</p>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Assigned doctor: {doctorName}
+                          </p>
                         </div>
                       </div>
                       <Badge variant={relationship.assignedDoctorId ? 'default' : 'destructive'}>

@@ -57,7 +57,10 @@ export interface ICareAccessHospitalPatient {
   assignedDoctorId?: string | null;
   createdAt?: string;
   hospital?: { id: string; name: string } | null;
-  assignedDoctor?: Pick<IDoctor, 'id' | 'firstName' | 'lastName' | 'email' | 'profilePicture'> | null;
+  assignedDoctor?: Pick<
+    IDoctor,
+    'id' | 'firstName' | 'lastName' | 'email' | 'profilePicture'
+  > | null;
 }
 
 export interface ICareAccessResponse {

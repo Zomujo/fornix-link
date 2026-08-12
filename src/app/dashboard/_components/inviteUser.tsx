@@ -45,7 +45,9 @@ const InviteUser = ({
     control,
     formState: { errors, isValid },
   } = useForm<InviteUserForm>({
-    resolver: zodResolver(showRole ? inviteWithRoleSchema : baseInviteSchema) as Resolver<InviteUserForm>,
+    resolver: zodResolver(
+      showRole ? inviteWithRoleSchema : baseInviteSchema,
+    ) as Resolver<InviteUserForm>,
     mode: MODE.ON_TOUCH,
     defaultValues: showRole ? { role: 'doctor' } : undefined,
   });

@@ -4,11 +4,7 @@ import { AvatarWithName } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Confirmation, ConfirmationProps, Modal } from '@/components/ui/dialog';
-import {
-  ActionsDropdownMenus,
-  ISelected,
-  OptionsMenu,
-} from '@/components/ui/dropdown-menu';
+import { ActionsDropdownMenus, ISelected, OptionsMenu } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { SelectInputV2 } from '@/components/ui/select';
 import { TableData } from '@/components/ui/table';
@@ -190,9 +186,7 @@ const HospitalStaffPanel = (): JSX.Element => {
     });
   }
 
-  async function runStaffAction(
-    action: () => Promise<{ payload: unknown }>,
-  ): Promise<void> {
+  async function runStaffAction(action: () => Promise<{ payload: unknown }>): Promise<void> {
     const { payload } = await action();
     toast(payload as Toast);
     if (payload && !showErrorToast(payload)) {
@@ -435,9 +429,7 @@ const HospitalStaffPanel = (): JSX.Element => {
               Icon={ListFilter}
               menuTrigger="Status"
               selected={statusFilter}
-              setSelected={(value: string) =>
-                setStatusFilter(value as HospitalStaffStatus | '')
-              }
+              setSelected={(value: string) => setStatusFilter(value as HospitalStaffStatus | '')}
               className="h-10 cursor-pointer bg-gray-50 sm:flex"
             />
           </div>

@@ -36,7 +36,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { motion } from 'framer-motion';
-import { HOSPITAL_EARNINGS_PERCENTAGE, HOSPITAL_PLATFORM_FEE_PERCENTAGE } from '@/constants/payment.constants';
+import {
+  HOSPITAL_EARNINGS_PERCENTAGE,
+  HOSPITAL_PLATFORM_FEE_PERCENTAGE,
+} from '@/constants/payment.constants';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TooltipComp } from '@/components/ui/tooltip';
@@ -1205,7 +1208,9 @@ const HospitalSettings = (): JSX.Element => {
                           ₵{hospitalEarnings} ({HOSPITAL_EARNINGS_PERCENTAGE}%)
                         </span>{' '}
                         per appointment. A{' '}
-                        <span className="font-bold">{HOSPITAL_PLATFORM_FEE_PERCENTAGE}% platform fee</span>{' '}
+                        <span className="font-bold">
+                          {HOSPITAL_PLATFORM_FEE_PERCENTAGE}% platform fee
+                        </span>{' '}
                         is deducted from your set fee of{' '}
                         <span className="font-bold">₵{currentAmount}</span>.
                       </p>
