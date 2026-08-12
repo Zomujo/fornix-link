@@ -90,7 +90,7 @@ const StaffInviteContent = (): JSX.Element => {
     };
 
     void loadPreview();
-    return () => {
+    return (): void => {
       cancelled = true;
     };
   }, [dispatch, token]);

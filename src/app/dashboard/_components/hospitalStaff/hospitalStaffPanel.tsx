@@ -175,14 +175,14 @@ const HospitalStaffPanel = (): JSX.Element => {
     setConfirmation({
       open: true,
       description,
-      acceptCommand: () => {
-        void (async () => {
+      acceptCommand: (): void => {
+        void (async (): Promise<void> => {
           setIsConfirmationLoading(true);
           await acceptCommand();
           setIsConfirmationLoading(false);
         })();
       },
-      rejectCommand: () => setConfirmation((prev) => ({ ...prev, open: false })),
+      rejectCommand: (): void => setConfirmation((prev) => ({ ...prev, open: false })),
     });
   }
 
@@ -293,7 +293,7 @@ const HospitalStaffPanel = (): JSX.Element => {
               {
                 title: 'Resend invite',
                 visible: status === 'invited',
-                clickCommand: () => {
+                clickCommand: (): void => {
                   void handleInvite({
                     email: staffDisplayName(original).email,
                     firstName,
@@ -313,7 +313,7 @@ const HospitalStaffPanel = (): JSX.Element => {
               {
                 title: 'Change role',
                 visible: status === 'active',
-                clickCommand: () => {
+                clickCommand: (): void => {
                   setSelectedRole(
                     original.role === 'admin' ? 'admin' : 'doctor',
                   );
