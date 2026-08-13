@@ -57,6 +57,8 @@ import { useBookingFlow } from '@/hooks/useBookingFlow';
 import BookingModals from '@/components/doctor/BookingModals';
 import { buildDoctorBookingProvider } from '@/lib/utils/bookingProviderUtils';
 
+const CONSULTATION_VIEW_ROLES: Role[] = [Role.Patient, Role.Hospital, Role.SuperAdmin];
+
 const notificationsToRefetch = new Set<NotificationTopic>([
   NotificationTopic.LabRequest,
   NotificationTopic.PrescriptionGenerated,
@@ -636,7 +638,7 @@ const PatientConsultationView = (): JSX.Element => {
   }
 
   return (
-    <RoleProvider role={Role.Patient}>
+    <RoleProvider role={CONSULTATION_VIEW_ROLES}>
       <div className="space-y-8 p-4 md:p-8">
         <ConsultationHeader consultationDetails={consultationDetails} />
 
