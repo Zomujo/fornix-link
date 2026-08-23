@@ -212,7 +212,14 @@ const Doctors = (): JSX.Element => {
         return;
       }
       const { rows, ...pagination } = payload as IPagination<IDoctor>;
-      setDoctors((prev) => (queryParameters.page === 1 ? rows : [...prev, ...rows]));
+      setDoctors((prev) => {
+        const nextDoctors = queryParameters.page === 1 ? rows : [...prev, ...rows];
+
+        return nextDoctors.sort(
+          (first, second) =>
+            Number(second.appointmentSlots.length > 0) - Number(first.appointmentSlots.length > 0),
+        );
+      });
       setPaginationData(pagination);
       setIsLoading(false);
     }
