@@ -124,3 +124,18 @@ export const selectAppointmentLinkId = createSelector(
   selectAppointment,
   (appointment) => appointment?.appointmentLinkId ?? null,
 );
+
+export const selectPendingRequests = createSelector(
+  selectAppointments,
+  (appointments) => appointments.pendingRequests,
+);
+
+export const selectAppointmentListRevision = createSelector(
+  selectAppointments,
+  (appointments) => appointments.listRevision,
+);
+
+export const selectLastAppointmentPatch = createSelector(
+  selectAppointments,
+  (appointments) => appointments.lastAppointmentPatch,
+);

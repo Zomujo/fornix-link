@@ -8,9 +8,11 @@ import {
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { useAppDispatch, useAppStore } from '@/lib/hooks';
 import { updateNotifications } from '@/lib/features/notifications/notificationsSlice';
+import { applyRemoteAppointmentChange } from '@/lib/features/appointments/appointmentsSlice';
 import { toast } from '@/hooks/use-toast';
 import { updateExtra } from '@/lib/features/auth/authSlice';
 import { AcceptDeclineStatus, Role } from '@/types/shared.enum';
+import { getRemoteAppointmentChange } from '@/lib/utils/notificationRoutes';
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
 
@@ -41,6 +43,13 @@ const useWebSocket = (): IWebSocketHook => {
   const updateNotificationsHandler = (data: INotification): void => {
     dispatch(updateNotifications(data));
     playNotificationSound();
+  };
+
+  const applyAppointmentListChange = (data: unknown): void => {
+    const change = getRemoteAppointmentChange(data);
+    if (change) {
+      dispatch(applyRemoteAppointmentChange(change));
+    }
   };
 
   const playNotificationSound = (): void => {
@@ -104,12 +113,21 @@ const useWebSocket = (): IWebSocketHook => {
 
         updateNotificationsHandler(data);
         notificationHandler(topic as NotificationTopic);
+        applyAppointmentListChange(data);
         toast({
           title: topic || 'Notification',
           description: message || '',
           variant: 'default',
         });
       });
+
+      const applyAppointmentRealtime = (data: unknown): void => {
+        applyAppointmentListChange(data);
+      };
+
+      websocket.on(NotificationEvent.NewRequest, applyAppointmentRealtime);
+      websocket.on(NotificationEvent.DoctorAssigned, applyAppointmentRealtime);
+      websocket.on(NotificationEvent.AssignmentNeeded, applyAppointmentRealtime);
 
       websocket.on('error', (error) => {
         console.error('WebSocket Error:', error);

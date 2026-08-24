@@ -22,6 +22,10 @@ import {
   declineHospitalAppointment,
 } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { selectUser } from '@/lib/features/auth/authSelector';
+import {
+  selectAppointmentListRevision,
+  selectLastAppointmentPatch,
+} from '@/lib/features/appointments/appointmentSelector';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
 import { IPagination, IQueryParams } from '@/types/shared.interface';
@@ -49,10 +53,11 @@ import {
   Waypoints,
 } from 'lucide-react';
 import moment from 'moment';
-import React, { JSX, SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import React, { JSX, SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import { useQueryParam } from '@/hooks/useQueryParam';
 import { StatusBadge } from '@/components/ui/statusBadge';
 import { useFetchPaginatedData } from '@/hooks/useFetchPaginatedData';
 import { IDoctor } from '@/types/doctor.interface';
@@ -101,7 +106,13 @@ type RescheduleAppointment = {
 
 const AppointmentRequests = (): JSX.Element => {
   const { on } = useWebSocket();
+  const { getQueryParam } = useQueryParam();
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const listRevision = useAppSelector(selectAppointmentListRevision);
+  const lastAppointmentPatch = useAppSelector(selectLastAppointmentPatch);
+  const deepLinkAppointmentId = getQueryParam('appointmentId');
+  const openedDeepLinkRef = useRef<string | null>(null);
   const [confirmation, setConfirmation] = useState<ConfirmationProps>({
     acceptCommand: () => {},
     rejectCommand: () => {},
@@ -130,6 +141,7 @@ const AppointmentRequests = (): JSX.Element => {
     paginationData,
     queryParameters,
     tableData,
+    setTableData,
     updatePage,
     refetch,
   } = useFetchPaginatedData<IAppointment | IHospitalAppointment, AppointmentStatus | ''>(
@@ -157,6 +169,54 @@ const AppointmentRequests = (): JSX.Element => {
     void refetch();
   });
 
+  useEffect(() => {
+    if (listRevision === 0) {
+      return;
+    }
+    void refetch({ silent: true });
+  }, [listRevision]);
+
+  useEffect(() => {
+    if (!lastAppointmentPatch) {
+      return;
+    }
+
+    setTableData((rows) =>
+      rows.map((row) => {
+        if (row.id !== lastAppointmentPatch.id) {
+          return row;
+        }
+
+        return {
+          ...row,
+          ...(lastAppointmentPatch.status ? { status: lastAppointmentPatch.status } : {}),
+          ...(lastAppointmentPatch.doctor ? { doctor: lastAppointmentPatch.doctor } : {}),
+          ...(lastAppointmentPatch.doctorId !== undefined
+            ? { doctorId: lastAppointmentPatch.doctorId }
+            : {}),
+          ...(lastAppointmentPatch.meetingLink !== undefined
+            ? { meetingLink: lastAppointmentPatch.meetingLink }
+            : {}),
+        };
+      }),
+    );
+  }, [lastAppointmentPatch, setTableData]);
+
+  useEffect(() => {
+    if (!deepLinkAppointmentId || openedDeepLinkRef.current === deepLinkAppointmentId) {
+      return;
+    }
+
+    const match = tableData.find((row) => row.id === deepLinkAppointmentId);
+    if (!match) {
+      return;
+    }
+
+    openedDeepLinkRef.current = deepLinkAppointmentId;
+    setSelectedAppointmentForDetails(match);
+    setIsDrawerOpen(true);
+  }, [deepLinkAppointmentId, tableData]);
+
   const statusFilterOptions: ISelected[] = [
     { value: '', label: 'All' },
     { value: AppointmentStatus.Pending, label: 'Pending' },
@@ -179,7 +239,6 @@ const AppointmentRequests = (): JSX.Element => {
   const [openRescheduleModal, setOpenRescheduleModal] = useState(false);
   const [isRescheduling, setIsRescheduling] = useState(false);
 
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const {
     register,

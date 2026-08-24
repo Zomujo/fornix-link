@@ -1,5 +1,5 @@
 'use client';
-import React, { JSX, useEffect, useMemo, useState } from 'react';
+import React, { JSX, useEffect, useMemo, useRef, useState } from 'react';
 import AppointmentRequestCard from './appointmentRequestCard';
 import { Badge } from '@/components/ui/badge';
 import { Confirmation } from '@/components/ui/dialog';
@@ -14,6 +14,15 @@ import {
   declineAppointment,
   getAppointments,
 } from '@/lib/features/appointments/appointmentsThunk';
+import {
+  addPendingRequest,
+  removePendingRequest,
+  setPendingRequests,
+} from '@/lib/features/appointments/appointmentsSlice';
+import {
+  selectAppointmentListRevision,
+  selectPendingRequests,
+} from '@/lib/features/appointments/appointmentSelector';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { AcceptDecline, IPagination } from '@/types/shared.interface';
 import { Toast, toast } from '@/hooks/use-toast';
@@ -24,7 +33,10 @@ import { Calendar } from 'lucide-react';
 
 const AppointmentRequestPanel = (): JSX.Element => {
   const { on } = useWebSocket();
-  const [requests, setRequests] = useState<IAppointment[]>([]);
+  const requests = useAppSelector(selectPendingRequests);
+  const listRevision = useAppSelector(selectAppointmentListRevision);
+  const listRevisionRef = useRef(listRevision);
+  listRevisionRef.current = listRevision;
   const [openModal, setOpenModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<{
     action: AcceptDecline;
@@ -37,15 +49,20 @@ const AppointmentRequestPanel = (): JSX.Element => {
 
   on(NotificationEvent.NewRequest, (data: unknown) => {
     const notification = data as INotification;
-    setRequests((prev) => [
-      notification.payload.appointment,
-      ...prev.filter((req) => req.id !== notification.payload.appointment.id),
-    ]);
+    const appointment = notification.payload?.appointment;
+    if (!appointment) {
+      return;
+    }
+    if (appointment.status && appointment.status !== AppointmentStatus.Pending) {
+      dispatch(removePendingRequest(appointment.id));
+      return;
+    }
+    dispatch(addPendingRequest(appointment));
   });
 
   useEffect(() => {
     void getAppointmentRequests();
-  }, []);
+  }, [id]);
 
   const suggestSmallScreen = useMemo(
     () => (
@@ -72,6 +89,7 @@ const AppointmentRequestPanel = (): JSX.Element => {
   }
 
   async function getAppointmentRequests(): Promise<void> {
+    const revisionAtStart = listRevisionRef.current;
     setIsLoadingAppointments(true);
     const { payload } = await dispatch(
       getAppointments({
@@ -83,8 +101,18 @@ const AppointmentRequestPanel = (): JSX.Element => {
       }),
     );
 
-    if (payload) {
-      setRequests((payload as IPagination<IAppointment>).rows);
+    if (payload && showErrorToast(payload)) {
+      toast(payload as Toast);
+      setIsLoadingAppointments(false);
+      return;
+    }
+
+    if (
+      listRevisionRef.current === revisionAtStart &&
+      payload &&
+      'rows' in (payload as IPagination<IAppointment>)
+    ) {
+      dispatch(setPendingRequests((payload as IPagination<IAppointment>).rows));
     }
     setIsLoadingAppointments(false);
   }
@@ -105,7 +133,6 @@ const AppointmentRequestPanel = (): JSX.Element => {
 
     if (payload && !showErrorToast(payload)) {
       setOpenModal(false);
-      void getAppointmentRequests();
     }
   }
   return (
@@ -143,7 +170,7 @@ const AppointmentRequestPanel = (): JSX.Element => {
         </div>
         <hr className="mx-4 mt-4 border border-gray-200" />
 
-        {isLoadingAppointments ? (
+        {isLoadingAppointments && requests.length === 0 ? (
           <div>
             {Array.from({ length: 3 }).map((value, index) => (
               <SkeletonAcceptDeclineRequestCard key={`${index}-${value}`} />

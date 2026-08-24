@@ -24,6 +24,7 @@ import { useRouter } from 'next/navigation';
 const Toolbar = (): JSX.Element => {
   const router = useRouter();
   const [notificationPage, setNotificationPage] = useState(1);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dispatch = useAppDispatch();
   const unreadNotifications = useAppSelector(selectUnReadNotificationCount);
   const userName = useAppSelector(selectUserName);
@@ -64,7 +65,7 @@ const Toolbar = (): JSX.Element => {
       <SidebarTrigger className="me:hidden mr-auto" child={<Menu />} />
       <div className="flex items-center gap-x-3">
         {doctorStatus && <div className="shrink-0">{getStatusBadge(doctorStatus)}</div>}
-        <Popover>
+        <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
           <PopoverTrigger className="outline-hidden">
             <div className="relative cursor-pointer rounded-full border border-gray-200 bg-white p-2">
               <Bell className="text-grayscale-500" />
@@ -79,6 +80,7 @@ const Toolbar = (): JSX.Element => {
             <Notifications
               page={notificationPage}
               loadMore={() => setNotificationPage((prev) => prev + 1)}
+              onClose={() => setNotificationsOpen(false)}
             />
           </PopoverContent>
         </Popover>

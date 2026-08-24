@@ -16,6 +16,8 @@ export type AppointmentParty = {
   imageSrc?: string;
   email?: string;
   contact?: string;
+  address?: string;
+  city?: string;
 };
 
 export function getAppointmentType(appointment: AppointmentLike): AppointmentType | undefined {
@@ -29,6 +31,12 @@ export type AppointmentHospital = {
   id: string;
   name: string;
   mainEmail?: string;
+  email?: string;
+  mainPhone?: string;
+  phone?: string;
+  street?: string;
+  city?: string;
+  location?: string;
   images?: { url: string; type: string }[] | { url: string; type: string } | (string | File)[];
 };
 
@@ -75,6 +83,8 @@ export function getAppointmentCounterparty(
       imageSrc: patient?.profilePicture,
       email: patient?.email,
       contact: patient?.contact,
+      address: patient?.address,
+      city: patient?.city,
     };
   }
 
@@ -85,6 +95,8 @@ export function getAppointmentCounterparty(
       imageSrc: doctor.profilePicture,
       email: doctor.email,
       contact: doctor.contact,
+      address: doctor.address,
+      city: doctor.city,
     };
   }
 
@@ -93,7 +105,10 @@ export function getAppointmentCounterparty(
       firstName: hospital.name,
       lastName: '',
       imageSrc: getHospitalLogoUrl(hospital),
-      email: hospital.mainEmail,
+      email: hospital.mainEmail ?? hospital.email,
+      contact: hospital.mainPhone ?? hospital.phone,
+      address: hospital.street ?? hospital.location,
+      city: hospital.city,
     };
   }
 

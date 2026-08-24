@@ -18,7 +18,11 @@ interface IPayload {
   scope: Role;
   message: string;
   appointmentId: string;
-  appointment: IAppointment;
+  patientId?: string;
+  status?: string;
+  doctorId?: string | null;
+  meetingLink?: string | null;
+  appointment?: IAppointment;
   request: IRecordRequest;
 }
 
