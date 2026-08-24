@@ -13,8 +13,9 @@ import { cn, parseNotificationMessage, showErrorToast } from '@/lib/utils';
 import { deleteNotification, markAsRead } from '@/lib/features/notifications/notificationsThunk';
 import { INotification, NotificationTopic } from '@/types/notification.interface';
 import { useRouter } from 'next/navigation';
-import { selectIsDoctor, selectIsPatient } from '@/lib/features/auth/authSelector';
+import { selectUserRole } from '@/lib/features/auth/authSelector';
 import { toast } from '@/hooks/use-toast';
+import { getNotificationDetailsHref } from '@/lib/utils/notificationRoutes';
 
 const notificationTopicsWithoutDetails: NotificationTopic[] = [
   NotificationTopic.DoctorApproved,
@@ -23,13 +24,13 @@ const notificationTopicsWithoutDetails: NotificationTopic[] = [
 export type NotificationsProps = {
   loadMore: () => void;
   page: number;
+  onClose?: () => void;
 };
 
-const Notifications = ({ loadMore, page }: NotificationsProps): JSX.Element => {
+const Notifications = ({ loadMore, page, onClose }: NotificationsProps): JSX.Element => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const isDoctor = useAppSelector(selectIsDoctor);
-  const isPatient = useAppSelector(selectIsPatient);
+  const role = useAppSelector(selectUserRole);
   const notifications = useAppSelector(selectUserNotifications);
   const isLoading = useAppSelector(selectNotificationsLoading);
   const totalPages = useAppSelector(selectTotalPages);
@@ -69,40 +70,12 @@ const Notifications = ({ loadMore, page }: NotificationsProps): JSX.Element => {
   const loadingContainerStyle =
     'flex w-full flex-col items-center justify-center px-4 py-8 gap-3 min-h-[200px]';
 
-  const viewNotificationDetails = ({ payload }: INotification): void => {
-    if (isPatient) {
-      switch (payload.topic) {
-        case NotificationTopic.ConsultationStarted:
-        case NotificationTopic.DiagnosisAdded:
-        case NotificationTopic.ConsultationCompleted:
-        case NotificationTopic.ConsultationUpdate: {
-          router.push(
-            `/dashboard/consultation-patient/${payload.requestId || payload.appointmentId}`,
-          );
-          break;
-        }
-
-        default: {
-          break;
-        }
-      }
-      return;
+  const viewNotificationDetails = (notification: INotification): void => {
+    if (!notification.read) {
+      void dispatch(markAsRead(notification.id));
     }
-    if (isDoctor) {
-      switch (payload.topic) {
-        case NotificationTopic.ConsultationStarted: {
-          router.push('/dashboard/consultations');
-          break;
-        }
-        case NotificationTopic.ConsultationUpdate: {
-          router.push('/dashboard/consultations');
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    }
+    onClose?.();
+    router.push(getNotificationDetailsHref(notification, role));
   };
 
   return (

@@ -27,16 +27,20 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import moment from 'moment';
-import { useAppDispatch } from '@/lib/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/hooks';
+import { selectUser } from '@/lib/features/auth/authSelector';
 import {
   acceptAppointment,
+  cancelAppointment,
   declineAppointment,
   reopenAppointment,
 } from '@/lib/features/appointments/appointmentsThunk';
 import { reopenHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { AppointmentStatus } from '@/types/appointmentStatus.enum';
+import { Role } from '@/types/shared.enum';
 import { toast, Toast } from '@/hooks/use-toast';
 import { showErrorToast } from '@/lib/utils';
+import { getAppointmentCounterparty } from '@/lib/utils/appointmentUtils';
 
 type PatientDetailsDrawerProps = {
   open: boolean;
@@ -54,21 +58,24 @@ const PatientDetailsDrawer = ({
   onActionComplete,
 }: PatientDetailsDrawerProps): JSX.Element => {
   const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
   const [isApproving, setIsApproving] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isReopening, setIsReopening] = useState(false);
+  const isPatientViewer = user?.role === Role.Patient;
 
   if (!appointment) {
     return <></>;
   }
 
-  const { patient, reason, additionalInfo, status, slot, createdAt, id } = appointment;
+  const { reason, additionalInfo, status, slot, createdAt, id } = appointment;
+  const contact = getAppointmentCounterparty(appointment, user?.role);
   const isPending = status === AppointmentStatus.Pending;
   const isDone = status === AppointmentStatus.Completed;
   const isCancelled = status === AppointmentStatus.Cancelled;
-  const canApprove = isPending;
+  const canApprove = !isPatientViewer && isPending;
   const canCancel = !isDone && !isCancelled;
-  const canReopen = isCancelled;
+  const canReopen = !isPatientViewer && isCancelled;
 
   const handleApprove = async (): Promise<void> => {
     setIsApproving(true);
@@ -88,7 +95,8 @@ const PatientDetailsDrawer = ({
 
   const handleCancel = async (): Promise<void> => {
     setIsCancelling(true);
-    const { payload } = await dispatch(declineAppointment(id));
+    const cancelAction = isPatientViewer ? cancelAppointment(id) : declineAppointment(id);
+    const { payload } = await dispatch(cancelAction);
 
     if (payload && showErrorToast(payload)) {
       toast(payload as Toast);
@@ -175,8 +183,14 @@ const PatientDetailsDrawer = ({
             >
               <X className="h-4 w-4" />
             </DrawerClose>
-            <DrawerTitle className="pr-8 text-xl">Patient Contact Information</DrawerTitle>
-            <DrawerDescription>View patient details and appointment information</DrawerDescription>
+            <DrawerTitle className="pr-8 text-xl">
+              {isPatientViewer ? 'Provider Contact Information' : 'Patient Contact Information'}
+            </DrawerTitle>
+            <DrawerDescription>
+              {isPatientViewer
+                ? 'View doctor or hospital details and appointment information'
+                : 'View patient details and appointment information'}
+            </DrawerDescription>
           </DrawerHeader>
 
           <div className="mt-6 space-y-6">
@@ -186,12 +200,11 @@ const PatientDetailsDrawer = ({
                 <h3 className="text-lg font-semibold">Contact Information</h3>
               </div>
 
-              {/* Patient Name with Avatar */}
               <div className="flex items-center gap-3">
                 <AvatarWithName
-                  imageSrc={patient.profilePicture}
-                  firstName={patient.firstName}
-                  lastName={patient.lastName}
+                  imageSrc={contact.imageSrc}
+                  firstName={contact.firstName}
+                  lastName={contact.lastName}
                 />
               </div>
 
@@ -200,12 +213,12 @@ const PatientDetailsDrawer = ({
                 <Mail className="mt-0.5 h-5 w-5 text-gray-500" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-500">Email</p>
-                  {patient.email ? (
+                  {contact.email ? (
                     <a
-                      href={`mailto:${patient.email}`}
+                      href={`mailto:${contact.email}`}
                       className="text-primary text-sm font-medium hover:underline"
                     >
-                      {patient.email}
+                      {contact.email}
                     </a>
                   ) : (
                     <p className="text-sm font-medium text-gray-400">N/A</p>
@@ -218,12 +231,12 @@ const PatientDetailsDrawer = ({
                 <Phone className="mt-0.5 h-5 w-5 text-gray-500" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-500">Phone</p>
-                  {patient.contact ? (
+                  {contact.contact ? (
                     <a
-                      href={`tel:${patient.contact}`}
+                      href={`tel:${contact.contact}`}
                       className="text-primary text-sm font-medium hover:underline"
                     >
-                      {patient.contact}
+                      {contact.contact}
                     </a>
                   ) : (
                     <p className="text-sm font-medium text-gray-400">N/A</p>
@@ -232,23 +245,23 @@ const PatientDetailsDrawer = ({
               </div>
 
               {/* Address */}
-              {patient.address && (
+              {contact.address && (
                 <div className="flex items-start gap-3">
                   <MapPin className="mt-0.5 h-5 w-5 text-gray-500" />
                   <div className="flex-1">
                     <p className="text-sm text-gray-500">Address</p>
-                    <p className="text-sm font-medium">{patient.address}</p>
+                    <p className="text-sm font-medium">{contact.address}</p>
                   </div>
                 </div>
               )}
 
               {/* City */}
-              {patient.city && (
+              {contact.city && (
                 <div className="flex items-start gap-3">
                   <MapPin className="mt-0.5 h-5 w-5 text-gray-500" />
                   <div className="flex-1">
                     <p className="text-sm text-gray-500">City</p>
-                    <p className="text-sm font-medium">{patient.city}</p>
+                    <p className="text-sm font-medium">{contact.city}</p>
                   </div>
                 </div>
               )}
@@ -310,52 +323,54 @@ const PatientDetailsDrawer = ({
             </div>
           </div>
 
-          <DrawerFooter className="flex flex-col gap-2">
-            <div className="flex gap-2">
-              {canApprove && (
-                <Button
-                  variant="default"
-                  onClick={handleApprove}
-                  className="flex-1"
-                  isLoading={isApproving}
-                  disabled={isApproving || isCancelling || isReopening}
-                  child={
-                    <>
-                      <Signature className="mr-2 h-4 w-4" /> Approve
-                    </>
-                  }
-                />
-              )}
-              {canCancel && (
-                <Button
-                  variant="destructive"
-                  onClick={handleCancel}
-                  className="flex-1"
-                  isLoading={isCancelling}
-                  disabled={isApproving || isCancelling || isReopening}
-                  child={
-                    <>
-                      <Ban className="mr-2 h-4 w-4" /> Cancel
-                    </>
-                  }
-                />
-              )}
-              {canReopen && (
-                <Button
-                  variant="default"
-                  onClick={handleReopen}
-                  className="flex-1"
-                  isLoading={isReopening}
-                  disabled={isApproving || isCancelling || isReopening}
-                  child={
-                    <>
-                      <RotateCcw className="mr-2 h-4 w-4" /> Reopen
-                    </>
-                  }
-                />
-              )}
-            </div>
-          </DrawerFooter>
+          {(canApprove || canCancel || canReopen) && (
+            <DrawerFooter className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {canApprove && (
+                  <Button
+                    variant="default"
+                    onClick={handleApprove}
+                    className="flex-1"
+                    isLoading={isApproving}
+                    disabled={isApproving || isCancelling || isReopening}
+                    child={
+                      <>
+                        <Signature className="mr-2 h-4 w-4" /> Approve
+                      </>
+                    }
+                  />
+                )}
+                {canCancel && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleCancel}
+                    className="flex-1"
+                    isLoading={isCancelling}
+                    disabled={isApproving || isCancelling || isReopening}
+                    child={
+                      <>
+                        <Ban className="mr-2 h-4 w-4" /> Cancel
+                      </>
+                    }
+                  />
+                )}
+                {canReopen && (
+                  <Button
+                    variant="default"
+                    onClick={handleReopen}
+                    className="flex-1"
+                    isLoading={isReopening}
+                    disabled={isApproving || isCancelling || isReopening}
+                    child={
+                      <>
+                        <RotateCcw className="mr-2 h-4 w-4" /> Reopen
+                      </>
+                    }
+                  />
+                )}
+              </div>
+            </DrawerFooter>
+          )}
         </div>
       </DrawerContent>
     </Drawer>

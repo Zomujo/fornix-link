@@ -19,6 +19,7 @@ import LoadingOverlay from '@/components/loadingOverlay/loadingOverlay';
 import { AppointmentDate, useQueryParam } from '@/hooks/useQueryParam';
 import { INotification, NotificationEvent } from '@/types/notification.interface';
 import useWebSocket from '@/hooks/useWebSocket';
+import { selectAppointmentListRevision } from '@/lib/features/appointments/appointmentSelector';
 
 type AppointmentProps = {
   customClass?: string;
@@ -33,6 +34,7 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
+  const listRevision = useAppSelector(selectAppointmentListRevision);
   const { getQueryParam } = useQueryParam();
   const selectedDateParam = getQueryParam(AppointmentDate.selectedDate);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -89,6 +91,21 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
 
     void getUpcomingAppointments();
   }, [queryParams, dispatch]);
+
+  useEffect(() => {
+    if (listRevision === 0) {
+      return;
+    }
+
+    void (async (): Promise<void> => {
+      const { payload } = await dispatch(getAppointments(queryParams));
+      if (payload && showErrorToast(payload)) {
+        return;
+      }
+      const { rows } = payload as IPagination<IAppointment | IHospitalAppointment>;
+      setUpcomingAppointment(rows);
+    })();
+  }, [listRevision]);
 
   on(NotificationEvent.DoctorAssigned, () => {
     void (async (): Promise<void> => {
