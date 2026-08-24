@@ -130,7 +130,10 @@ const appointmentsSlice = createSlice({
       state.lastAppointmentPatch = patch;
       state.listRevision += 1;
 
-      if (appointment && (!appointment.status || appointment.status === AppointmentStatus.Pending)) {
+      if (
+        appointment &&
+        (!appointment.status || appointment.status === AppointmentStatus.Pending)
+      ) {
         state.pendingRequests = [
           appointment,
           ...state.pendingRequests.filter((request) => request.id !== appointment.id),
