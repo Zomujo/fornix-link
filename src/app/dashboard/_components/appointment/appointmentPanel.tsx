@@ -68,9 +68,13 @@ const AppointmentPanel = ({ customClass }: AppointmentProps): JSX.Element => {
 
   on(NotificationEvent.NewRequest, (data: unknown) => {
     const notification = data as INotification;
+    const appointment = notification.payload?.appointment;
+    if (!appointment) {
+      return;
+    }
     setUpcomingAppointment((prev) => [
-      notification.payload.appointment,
-      ...prev.filter((req) => req.id !== notification.payload.appointment.id),
+      appointment,
+      ...prev.filter((req) => req.id !== appointment.id),
     ]);
   });
 
