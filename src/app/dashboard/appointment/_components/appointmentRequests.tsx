@@ -187,17 +187,17 @@ const AppointmentRequests = (): JSX.Element => {
           return row;
         }
 
-        return {
-          ...row,
-          ...(lastAppointmentPatch.status ? { status: lastAppointmentPatch.status } : {}),
-          ...(lastAppointmentPatch.doctor ? { doctor: lastAppointmentPatch.doctor } : {}),
-          ...(lastAppointmentPatch.doctorId !== undefined
-            ? { doctorId: lastAppointmentPatch.doctorId }
-            : {}),
-          ...(lastAppointmentPatch.meetingLink !== undefined
-            ? { meetingLink: lastAppointmentPatch.meetingLink }
-            : {}),
-        };
+        const next = { ...row };
+        if (lastAppointmentPatch.status) {
+          next.status = lastAppointmentPatch.status;
+        }
+        if (lastAppointmentPatch.doctor) {
+          next.doctor = lastAppointmentPatch.doctor;
+        }
+        if (lastAppointmentPatch.meetingLink) {
+          next.meetingLink = lastAppointmentPatch.meetingLink;
+        }
+        return next;
       }),
     );
   }, [lastAppointmentPatch, setTableData]);

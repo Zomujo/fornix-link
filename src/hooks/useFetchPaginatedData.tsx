@@ -23,7 +23,7 @@ export const useFetchPaginatedData = <
   tableData: T[];
   paginationData: PaginationData | undefined;
   isLoading: boolean;
-  setTableData: (value: (<T>(prevState: T[]) => T[]) | T[]) => void;
+  setTableData: Dispatch<React.SetStateAction<T[]>>;
   setPaginationData: (
     value:
       | ((prevState: PaginationData | undefined) => PaginationData | undefined)
