@@ -5,7 +5,7 @@ import {
   SECONDS_IN_MINUTE,
 } from '@/constants/constants';
 import { cn, showErrorToast } from '@/lib/utils';
-import { ExternalLink, House, Phone, Video } from 'lucide-react';
+import { AlertTriangle, ExternalLink, House, Phone, Video } from 'lucide-react';
 import React, { JSX, useEffect, useRef, useState, RefObject } from 'react';
 import moment from 'moment';
 import { Role } from '@/types/shared.enum';
@@ -20,10 +20,12 @@ import {
   getAppointmentCounterparty,
   getAppointmentDateValue,
   getAppointmentMeetingLink,
+  needsDoctorAssignment,
 } from '@/lib/utils/appointmentUtils';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectUser } from '@/lib/features/auth/authSelector';
 import { Button } from '@/components/ui/button';
+import { TooltipComp } from '@/components/ui/tooltip';
 import { useRouter } from 'next/navigation';
 import { joinConsultation } from '@/lib/features/appointments/consultation/consultationThunk';
 import { toast } from '@/hooks/use-toast';
@@ -116,6 +118,17 @@ const AppointmentCard = ({
               <p className="text-sm font-bold">
                 {type === AppointmentType.Visit ? 'Visit' : 'Virtual'}
               </p>
+              {(role === Role.Hospital || role === Role.SuperAdmin) &&
+                needsDoctorAssignment(appointment) && (
+                  <TooltipComp tip="Doctor not assigned">
+                    <span title="Doctor not assigned">
+                      <AlertTriangle
+                        className="h-4 w-4 text-red-500"
+                        aria-label="Doctor not assigned"
+                      />
+                    </span>
+                  </TooltipComp>
+                )}
               {/*{appointment.isFollowUp && (*/}
               {/*  <Badge variant="blue" className="flex items-center gap-1 px-1.5 py-0.5 text-xs">*/}
               {/*    <CalendarCheck className="h-3 w-3" />*/}

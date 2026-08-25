@@ -16,8 +16,16 @@ import {
   rescheduleAppointment,
 } from '@/lib/features/appointments/appointmentsThunk';
 import { joinConsultation } from '@/lib/features/appointments/consultation/consultationThunk';
-import { assignDoctorToHospitalAppointment } from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
+import {
+  acceptHospitalAppointment,
+  assignDoctorToHospitalAppointment,
+  declineHospitalAppointment,
+} from '@/lib/features/hospital-appointments/hospitalAppointmentsThunk';
 import { selectUser } from '@/lib/features/auth/authSelector';
+import {
+  selectAppointmentListRevision,
+  selectLastAppointmentPatch,
+} from '@/lib/features/appointments/appointmentSelector';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { showErrorToast } from '@/lib/utils';
 import { IPagination, IQueryParams } from '@/types/shared.interface';
@@ -28,6 +36,7 @@ import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 import { AsyncThunk } from '@reduxjs/toolkit';
 import { ColumnDef } from '@tanstack/react-table';
 import {
+  AlertTriangle,
   Ban,
   Calendar as CalendarIcon,
   CalendarClock,
@@ -44,16 +53,19 @@ import {
   Waypoints,
 } from 'lucide-react';
 import moment from 'moment';
-import React, { JSX, SyntheticEvent, useMemo, useState } from 'react';
+import React, { JSX, SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import { useQueryParam } from '@/hooks/useQueryParam';
 import { StatusBadge } from '@/components/ui/statusBadge';
 import { useFetchPaginatedData } from '@/hooks/useFetchPaginatedData';
 import { IDoctor } from '@/types/doctor.interface';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { getAllDoctors } from '@/lib/features/doctors/doctorsThunk';
+import { getHospitalStaffDoctors } from '@/lib/features/hospital-patients/hospitalPatientsThunk';
+import type { IHospitalStaffDoctor } from '@/types/hospital-patient.interface';
 import { Toast, toast } from '@/hooks/use-toast';
 import { NotificationEvent } from '@/types/notification.interface';
 import useWebSocket from '@/hooks/useWebSocket';
@@ -69,11 +81,16 @@ import {
   getAppointmentMeetingLink,
   getAppointmentProviderName,
   getAppointmentType,
+  needsDoctorAssignment,
 } from '@/lib/utils/appointmentUtils';
+import { TooltipComp } from '@/components/ui/tooltip';
 
 type SelectedAppointment = {
   date: Date;
   appointmentId: string;
+  doctorId?: string;
+  doctorFirstName?: string;
+  doctorLastName?: string;
 };
 
 type RescheduleAppointment = {
@@ -89,7 +106,13 @@ type RescheduleAppointment = {
 
 const AppointmentRequests = (): JSX.Element => {
   const { on } = useWebSocket();
+  const { getQueryParam } = useQueryParam();
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const listRevision = useAppSelector(selectAppointmentListRevision);
+  const lastAppointmentPatch = useAppSelector(selectLastAppointmentPatch);
+  const deepLinkAppointmentId = getQueryParam('appointmentId');
+  const openedDeepLinkRef = useRef<string | null>(null);
   const [confirmation, setConfirmation] = useState<ConfirmationProps>({
     acceptCommand: () => {},
     rejectCommand: () => {},
@@ -118,6 +141,7 @@ const AppointmentRequests = (): JSX.Element => {
     paginationData,
     queryParameters,
     tableData,
+    setTableData,
     updatePage,
     refetch,
   } = useFetchPaginatedData<IAppointment | IHospitalAppointment, AppointmentStatus | ''>(
@@ -141,6 +165,58 @@ const AppointmentRequests = (): JSX.Element => {
     void refetch();
   });
 
+  on(NotificationEvent.DoctorAssigned, () => {
+    void refetch();
+  });
+
+  useEffect(() => {
+    if (listRevision === 0) {
+      return;
+    }
+    void refetch({ silent: true });
+  }, [listRevision]);
+
+  useEffect(() => {
+    if (!lastAppointmentPatch) {
+      return;
+    }
+
+    setTableData((rows) =>
+      rows.map((row) => {
+        if (row.id !== lastAppointmentPatch.id) {
+          return row;
+        }
+
+        const next = { ...row };
+        if (lastAppointmentPatch.status) {
+          next.status = lastAppointmentPatch.status;
+        }
+        if (lastAppointmentPatch.doctor) {
+          next.doctor = lastAppointmentPatch.doctor;
+        }
+        if (lastAppointmentPatch.meetingLink) {
+          next.meetingLink = lastAppointmentPatch.meetingLink;
+        }
+        return next;
+      }),
+    );
+  }, [lastAppointmentPatch, setTableData]);
+
+  useEffect(() => {
+    if (!deepLinkAppointmentId || openedDeepLinkRef.current === deepLinkAppointmentId) {
+      return;
+    }
+
+    const match = tableData.find((row) => row.id === deepLinkAppointmentId);
+    if (!match) {
+      return;
+    }
+
+    openedDeepLinkRef.current = deepLinkAppointmentId;
+    setSelectedAppointmentForDetails(match);
+    setIsDrawerOpen(true);
+  }, [deepLinkAppointmentId, tableData]);
+
   const statusFilterOptions: ISelected[] = [
     { value: '', label: 'All' },
     { value: AppointmentStatus.Pending, label: 'Pending' },
@@ -163,7 +239,6 @@ const AppointmentRequests = (): JSX.Element => {
   const [openRescheduleModal, setOpenRescheduleModal] = useState(false);
   const [isRescheduling, setIsRescheduling] = useState(false);
 
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const {
     register,
@@ -246,14 +321,29 @@ const AppointmentRequests = (): JSX.Element => {
       cell: ({ row: { original } }): JSX.Element => { //NOSONAR
         const person = getAppointmentCounterparty(original, user?.role);
         const isAdmin = isSuperAdmin;
+        const showUnassigned =
+          (user?.role === Role.Hospital || user?.role === Role.SuperAdmin) &&
+          needsDoctorAssignment(original);
         return (
-          <AvatarWithName
-            imageSrc={person.imageSrc ?? ''}
-            firstName={person.firstName}
-            lastName={person.lastName}
-            email={isAdmin ? person.email : undefined}
-            contact={isAdmin ? person.contact : undefined}
-          />
+          <div className="flex items-center gap-2">
+            <AvatarWithName
+              imageSrc={person.imageSrc ?? ''}
+              firstName={person.firstName}
+              lastName={person.lastName}
+              email={isAdmin ? person.email : undefined}
+              contact={isAdmin ? person.contact : undefined}
+            />
+            {showUnassigned && (
+              <TooltipComp tip="Doctor not assigned">
+                <span title="Doctor not assigned">
+                  <AlertTriangle
+                    className="h-4 w-4 shrink-0 text-red-500"
+                    aria-label="Doctor not assigned"
+                  />
+                </span>
+              </TooltipComp>
+            )}
+          </div>
         );
       },
     },
@@ -334,7 +424,8 @@ const AppointmentRequests = (): JSX.Element => {
         const { status, patient, doctor, id, createdAt } = original;
         const isPending = status === AppointmentStatus.Pending;
         const isDone = status === AppointmentStatus.Completed;
-        const isCancelled = status === AppointmentStatus.Cancelled;
+        const isCancelled =
+          status === AppointmentStatus.Cancelled || status === AppointmentStatus.Declined;
         const isInProgress = status === AppointmentStatus.Progress;
         const getName = (): string => {
           if (user?.role === Role.Patient) {
@@ -356,7 +447,7 @@ const AppointmentRequests = (): JSX.Element => {
                     'Accept',
                     `accept ${getName()}'s appointment request`,
                     id,
-                    acceptAppointment,
+                    user?.role === Role.Hospital ? acceptHospitalAppointment : acceptAppointment,
                     'Yes, accept',
                     'Cancel',
                   ),
@@ -377,7 +468,9 @@ const AppointmentRequests = (): JSX.Element => {
                         'Decline',
                         `decline ${getName()}'s appointment request`,
                         id,
-                        declineAppointment,
+                        user?.role === Role.Hospital
+                          ? declineHospitalAppointment
+                          : declineAppointment,
                         'Yes, decline',
                         'Cancel',
                       )
@@ -401,7 +494,7 @@ const AppointmentRequests = (): JSX.Element => {
                   setSelectedAppointmentForDetails(original);
                   setIsDrawerOpen(true);
                 },
-                visible: !isDone && !isCancelled,
+                visible: true,
               },
               {
                 title: (
@@ -440,7 +533,8 @@ const AppointmentRequests = (): JSX.Element => {
                     void handleJoinMeeting(id);
                   }
                 },
-                visible: canJoinMeeting(original),
+                visible:
+                  Boolean(getAppointmentMeetingLink(original)) || canJoinMeeting(original),
               },
               {
                 title: (
@@ -481,9 +575,15 @@ const AppointmentRequests = (): JSX.Element => {
                   setSelectedAppointment({
                     date: new Date(createdAt),
                     appointmentId: id,
+                    doctorId: doctor?.id,
+                    doctorFirstName: doctor?.firstName,
+                    doctorLastName: doctor?.lastName,
                   });
                 },
-                visible: user?.role === Role.SuperAdmin || user?.role === Role.Hospital,
+                visible:
+                  (user?.role === Role.SuperAdmin || user?.role === Role.Hospital) &&
+                  !isDone &&
+                  !isCancelled,
               },
             ]}
           />
@@ -581,6 +681,26 @@ const AppointmentRequests = (): JSX.Element => {
             }
             className="h-10 cursor-pointer bg-gray-50 sm:flex"
           />
+          {(user?.role === Role.Hospital || user?.role === Role.SuperAdmin) && (
+            <Button
+              type="button"
+              variant={queryParameters.unassignedOnly ? 'default' : 'outline'}
+              className="h-10 gap-2"
+              onClick={() =>
+                setQueryParameters((prev) => ({
+                  ...prev,
+                  page: 1,
+                  unassignedOnly: !prev.unassignedOnly,
+                }))
+              }
+              child={
+                <span className="inline-flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  Needs Assignment
+                </span>
+              }
+            />
+          )}
           <OptionsMenu
             options={dateSortOptions}
             Icon={ListFilter}
@@ -697,9 +817,13 @@ const AvailableDoctors = ({
   isHospital = false,
 }: AvailableDoctorsProps): JSX.Element => {
   const dispatch = useAppDispatch();
-  const { date, appointmentId } = appointment;
-  const [doctorId, setDoctorId] = useState('');
+  const { date, appointmentId, doctorId: assignedDoctorId } = appointment;
+  const [doctorId, setDoctorId] = useState(assignedDoctorId ?? '');
   const [isAssignRequestLoading, setIsAssignRequestLoading] = useState(false);
+  const [staffDoctors, setStaffDoctors] = useState<
+    { id: string; firstName: string; lastName: string }[]
+  >([]);
+  const [isLoadingStaff, setIsLoadingStaff] = useState(false);
   const initialQueryParameters = {
     page: 1,
     orderDirection: OrderDirection.Descending,
@@ -713,6 +837,63 @@ const AvailableDoctors = ({
     getAllDoctors,
     initialQueryParameters,
   );
+
+  useEffect(() => {
+    setDoctorId(assignedDoctorId ?? '');
+  }, [assignedDoctorId, appointmentId]);
+
+  useEffect(() => {
+    if (!isHospital) {
+      return;
+    }
+    const load = async (): Promise<void> => {
+      setIsLoadingStaff(true);
+      const { payload } = await dispatch(getHospitalStaffDoctors());
+      setIsLoadingStaff(false);
+      if (payload && showErrorToast(payload)) {
+        toast(payload as Toast);
+        return;
+      }
+      const staff = (payload as IHospitalStaffDoctor[]) ?? [];
+      setStaffDoctors(
+        staff
+          .map((s) => ({
+            id: s.doctorId ?? s.doctor?.id ?? s.id,
+            firstName: s.doctor?.firstName ?? s.user?.firstName ?? '',
+            lastName: s.doctor?.lastName ?? s.user?.lastName ?? '',
+          }))
+          .filter((d) => Boolean(d.id)),
+      );
+    };
+    void load();
+  }, [dispatch, isHospital]);
+
+  const doctors = useMemo(() => {
+    const list = isHospital ? staffDoctors : tableData;
+    if (
+      assignedDoctorId &&
+      !list.some((d) => d.id === assignedDoctorId) &&
+      (appointment.doctorFirstName || appointment.doctorLastName)
+    ) {
+      return [
+        {
+          id: assignedDoctorId,
+          firstName: appointment.doctorFirstName ?? '',
+          lastName: appointment.doctorLastName ?? '',
+        },
+        ...list,
+      ];
+    }
+    return list;
+  }, [
+    isHospital,
+    staffDoctors,
+    tableData,
+    assignedDoctorId,
+    appointment.doctorFirstName,
+    appointment.doctorLastName,
+  ]);
+  const loading = isHospital ? isLoadingStaff : isLoading;
 
   async function assignDoctor(): Promise<void> {
     setIsAssignRequestLoading(true);
@@ -728,7 +909,7 @@ const AvailableDoctors = ({
   return (
     <div>
       <p className="font-medium"> Available Doctors</p>
-      {isLoading ? (
+      {loading ? (
         <div className="mt-4">
           {Array.from({ length: 5 }).map((value, index) => (
             <div key={`${index}-${value}`} className="flex animate-pulse items-center space-x-4">
@@ -741,26 +922,27 @@ const AvailableDoctors = ({
         </div>
       ) : (
         <div className="mt-2 max-h-75 overflow-y-auto">
-          <RadioGroup>
-            {tableData.map(({ firstName, lastName, id }) => (
+          <RadioGroup value={doctorId} onValueChange={setDoctorId}>
+            {doctors.map(({ firstName, lastName, id }) => (
               <div className="mt-2 flex items-center space-x-2" key={id}>
-                <RadioGroupItem value={id} id={id} onClick={() => setDoctorId(id)} />
+                <RadioGroupItem value={id} id={id} />
                 <Label htmlFor={id} className="font-normal">
                   {firstName} {lastName}
+                  {id === assignedDoctorId ? ' (assigned)' : ''}
                 </Label>
               </div>
             ))}
           </RadioGroup>
         </div>
       )}
-      {!isLoading && !tableData.length && <div>Sorry, no doctors available at the moment.</div>}
+      {!loading && !doctors.length && <div>Sorry, no doctors available at the moment.</div>}
       <div className="mt-6 flex justify-end gap-2">
         <Button child={'Cancel'} variant={'ghost'} onClick={closeModal} />
         <Button
-          child={'Assign Request'}
+          child={assignedDoctorId ? 'Update Assignment' : 'Assign Request'}
           variant={'default'}
           onClick={assignDoctor}
-          disabled={!doctorId || isAssignRequestLoading}
+          disabled={!doctorId || isAssignRequestLoading || doctorId === assignedDoctorId}
           isLoading={isAssignRequestLoading}
         />
       </div>

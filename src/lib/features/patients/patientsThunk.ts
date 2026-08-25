@@ -4,6 +4,7 @@ import { AcceptDeclineStatus } from '@/types/shared.enum';
 import { Toast } from '@/hooks/use-toast';
 import axios, { axiosErrorHandler } from '@/lib/axios';
 import { IPatient, IPatientMedicalHistory } from '@/types/patient.interface';
+import { ICareAccessResponse } from '@/types/hospital-patient.interface';
 import { IDoctorCountResponse } from '@/types/stats.interface';
 import { generateSuccessToast, getValidQueryString } from '@/lib/utils';
 import { updateExtra } from '@/lib/features/auth/authSlice';
@@ -59,6 +60,32 @@ export const getPatientMedicalHistory = createAsyncThunk(
         `${patientsPath}/medical-history`,
       );
       return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const getPatientCareAccess = createAsyncThunk(
+  'patients/getPatientCareAccess',
+  async (): Promise<Toast | ICareAccessResponse> => {
+    try {
+      const { data } = await axios.get<IResponse<ICareAccessResponse>>(
+        `${patientsPath}/me/care-access`,
+      );
+      return data.data;
+    } catch (error) {
+      return axiosErrorHandler(error, true) as Toast;
+    }
+  },
+);
+
+export const revokePatientCareAccess = createAsyncThunk(
+  'patients/revokePatientCareAccess',
+  async (grantId: string): Promise<Toast> => {
+    try {
+      const { data } = await axios.delete<IResponse>(`${patientsPath}/me/care-access/${grantId}`);
+      return generateSuccessToast(data.message || 'Care access revoked');
     } catch (error) {
       return axiosErrorHandler(error, true) as Toast;
     }

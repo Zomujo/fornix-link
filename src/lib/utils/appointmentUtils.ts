@@ -5,7 +5,10 @@ import { AppointmentStatus } from '@/types/appointmentStatus.enum';
 import { AppointmentType } from '@/types/slots.interface';
 import { Role } from '@/types/shared.enum';
 
-export type AppointmentLike = IAppointment | IHospitalAppointment;
+export type AppointmentLike = (IAppointment | IHospitalAppointment) & {
+  doctorId?: string | null;
+  hospitalId?: string | null;
+};
 
 export type AppointmentParty = {
   firstName: string;
@@ -13,6 +16,8 @@ export type AppointmentParty = {
   imageSrc?: string;
   email?: string;
   contact?: string;
+  address?: string;
+  city?: string;
 };
 
 export function getAppointmentType(appointment: AppointmentLike): AppointmentType | undefined {
@@ -26,6 +31,12 @@ export type AppointmentHospital = {
   id: string;
   name: string;
   mainEmail?: string;
+  email?: string;
+  mainPhone?: string;
+  phone?: string;
+  street?: string;
+  city?: string;
+  location?: string;
   images?: { url: string; type: string }[] | { url: string; type: string } | (string | File)[];
 };
 
@@ -72,6 +83,8 @@ export function getAppointmentCounterparty(
       imageSrc: patient?.profilePicture,
       email: patient?.email,
       contact: patient?.contact,
+      address: patient?.address,
+      city: patient?.city,
     };
   }
 
@@ -82,6 +95,8 @@ export function getAppointmentCounterparty(
       imageSrc: doctor.profilePicture,
       email: doctor.email,
       contact: doctor.contact,
+      address: doctor.address,
+      city: doctor.city,
     };
   }
 
@@ -90,7 +105,10 @@ export function getAppointmentCounterparty(
       firstName: hospital.name,
       lastName: '',
       imageSrc: getHospitalLogoUrl(hospital),
-      email: hospital.mainEmail,
+      email: hospital.mainEmail ?? hospital.email,
+      contact: hospital.mainPhone ?? hospital.phone,
+      address: hospital.street ?? hospital.location,
+      city: hospital.city,
     };
   }
 
@@ -173,4 +191,20 @@ export function getAppointmentMoment(appointment: AppointmentLike): Moment {
 
 export function isAppointmentOnSameDay(appointment: AppointmentLike, date: Date): boolean {
   return getAppointmentMoment(appointment).isSame(date, 'day');
+}
+
+export function needsDoctorAssignment(appointment: AppointmentLike): boolean {
+  const hospital = getAppointmentHospital(appointment);
+  if (!hospital?.id && !('hospitalId' in appointment && appointment.hospitalId)) {
+    return false;
+  }
+  return !appointment.doctorId && !appointment.doctor;
+}
+
+export function isAssignmentUrgent(appointment: AppointmentLike): boolean {
+  if (!needsDoctorAssignment(appointment)) {
+    return false;
+  }
+  const hoursAway = Math.abs(getAppointmentMoment(appointment).diff(moment(), 'hours', true));
+  return hoursAway <= 24;
 }

@@ -34,6 +34,7 @@ import {
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import { parseInitialNotes } from '@/constants/historyNotes.constant';
+import { getAppointmentDateValue } from '@/lib/utils/appointmentUtils';
 
 // Timeline dot component
 const TimelineDot = ({ isActive }: { isActive: boolean }): JSX.Element => (
@@ -109,13 +110,13 @@ const PatientConsultationHistory = ({
       return false;
     }
     if (startDate) {
-      const slotDate = moment(c.slot.date);
+      const slotDate = moment(getAppointmentDateValue(c));
       if (slotDate.isBefore(moment(startDate), 'day')) {
         return false;
       }
     }
     if (endDate) {
-      const slotDate = moment(c.slot.date);
+      const slotDate = moment(getAppointmentDateValue(c));
       if (slotDate.isAfter(moment(endDate), 'day')) {
         return false;
       }
@@ -615,16 +616,20 @@ const PatientConsultationHistory = ({
                     {/* Date Label */}
                     <div className="-mt-0.5 mb-2 flex items-center gap-2">
                       <span className="text-primary text-xs font-bold tracking-wider uppercase">
-                        {moment(consultation.slot.date).format('dddd')}
+                        {moment(getAppointmentDateValue(consultation)).format('dddd')}
                       </span>
                       <span className="text-gray-300">•</span>
                       <span className="text-sm font-medium text-gray-600">
-                        {formatDate(consultation.slot.date)}
+                        {formatDate(getAppointmentDateValue(consultation))}
                       </span>
-                      <span className="text-gray-300">•</span>
-                      <span className="text-sm text-gray-500">
-                        {formatTime(consultation.slot.startTime)}
-                      </span>
+                      {consultation.slot?.startTime && (
+                        <>
+                          <span className="text-gray-300">•</span>
+                          <span className="text-sm text-gray-500">
+                            {formatTime(consultation.slot.startTime)}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* Card */}

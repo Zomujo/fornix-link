@@ -9,15 +9,17 @@ import { Role } from '@/types/shared.enum';
 export function RoleProvider({
   children,
   role,
-}: Readonly<{ children: ReactNode; role: Role }>): JSX.Element {
+}: Readonly<{ children: ReactNode; role: Role | Role[] }>): JSX.Element {
   const userRole = useAppSelector(selectUserRole);
   const router = useRouter();
+  const allowedRolesKey = (Array.isArray(role) ? role : [role]).join(',');
 
   useEffect(() => {
-    if (userRole !== role) {
+    const allowedRoles = allowedRolesKey.split(',') as Role[];
+    if (userRole && !allowedRoles.includes(userRole)) {
       router.push('/dashboard');
     }
-  }, [userRole, role]);
+  }, [allowedRolesKey, router, userRole]);
 
   return <>{children}</>;
 }

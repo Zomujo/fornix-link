@@ -18,7 +18,11 @@ interface IPayload {
   scope: Role;
   message: string;
   appointmentId: string;
-  appointment: IAppointment;
+  patientId?: string;
+  status?: string;
+  doctorId?: string | null;
+  meetingLink?: string | null;
+  appointment?: IAppointment;
   request: IRecordRequest;
 }
 
@@ -26,6 +30,8 @@ export enum NotificationEvent {
   NewNotification = 'newNotification',
   NewRequest = 'newRequest',
   RecordRequest = 'recordRequest',
+  DoctorAssigned = 'doctorAssigned',
+  AssignmentNeeded = 'assignmentNeeded',
 }
 
 export enum NotificationTopic {
@@ -38,4 +44,9 @@ export enum NotificationTopic {
   ConsultationCompleted = 'Consultation Completed',
   DiagnosisAdded = 'Diagnosis Added',
   RadiologyRequest = 'Radiology Test Requests',
+  DoctorAssigned = 'Doctor Assigned',
+  AssignmentNeeded = 'Assignment Needed',
+  ClientAssigned = 'Client Assigned',
+  AppointmentRequest = 'Appointment Request',
+  AppointmentUpdate = 'Appointment Update',
 }
